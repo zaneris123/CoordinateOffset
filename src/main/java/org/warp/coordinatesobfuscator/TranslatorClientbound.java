@@ -8,12 +8,14 @@ import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.comphenix.protocol.wrappers.Converters;
 import com.comphenix.protocol.wrappers.WrappedDataValue;
+import com.comphenix.protocol.wrappers.nbt.NbtBase;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.jtprince.coordinateoffset.Offset;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -53,10 +55,28 @@ public class TranslatorClientbound {
 		INTERNAL_STRUCTURE_CONVERTER = internalStructureEquivalentConverter;
 	}
 
-	public static void outgoing(@NotNull Logger logger, @NotNull final PacketContainer packet, @NotNull final Offset offset) {
+	public static @Nullable PacketContainer outgoing(@NotNull Logger logger, @NotNull PacketContainer packet, @NotNull final Offset offset) {
 		if (offset.equals(Offset.ZERO)) {
-			return;
+			return null;
 		}
+
+		// Some packets need a clone before we can manipulate them, or else we'll manipulate NMS-internal structures.
+		boolean cloneNeeded = false;
+		switch (packet.getType().name()) {
+			case "TILE_ENTITY_DATA" -> {
+				packet = cloneTileEntityData(packet);
+				cloneNeeded = true;
+			}
+			case "MAP_CHUNK" -> {
+				packet = cloneMapChunkEntitiesData(packet);
+				cloneNeeded = true;
+			}
+			case "WORLD_PARTICLES", "LOGIN", "RESPAWN" -> {
+				packet = packet.deepClone();
+				cloneNeeded = true;
+			}
+		}
+
 		switch (packet.getType().name()) {
 			case "WINDOW_DATA":
 				break;
@@ -75,11 +95,9 @@ public class TranslatorClientbound {
 			case "OPEN_SIGN_EDITOR":
 				sendBlockPosition(logger, packet, offset);
 				break;
+			case "LOGIN":
 			case "RESPAWN":
-				// TODO
-				// logger.fine("[out]Respawning player");
-				// respawn(logger, offset, player);
-				// JTP - End
+				fixDeathLocation(logger, packet, offset);
 				break;
 			case "POSITION_LOOK":
 			case "POSITION":
@@ -99,21 +117,12 @@ public class TranslatorClientbound {
 				}
 				if (!isRelativeX || !isRelativeZ) {
 					logger.fine("[out]Repositioning player");
-					Offset positionOffset;
-					if (!isRelativeX && !isRelativeZ) {
-						// JTP - Don't reset offset on absolute teleports
-						// positionOffset = respawn(logger, offset, player);
-						positionOffset = offset;
-						// JTP - End
-					} else {
-						positionOffset = offset;
-					}
 					if (packet.getDoubles().size() > 2) {
 						if (!isRelativeX) {
-							packet.getDoubles().modify(0, x -> x == null ? null : x - positionOffset.x());
+							packet.getDoubles().modify(0, x -> x == null ? null : x - offset.x());
 						}
 						if (!isRelativeZ) {
-							packet.getDoubles().modify(2, z -> z == null ? null : z - positionOffset.z());
+							packet.getDoubles().modify(2, z -> z == null ? null : z - offset.z());
 						}
 					} else {
 						logger.severe("Packet size error");
@@ -201,29 +210,20 @@ public class TranslatorClientbound {
 				logger.fine(packet.getType().name());
 				break;
 		}
+
+		if (cloneNeeded) return packet; else return null;
 	}
 
-//	private static CoordinateOffset respawn(Logger logger, CoordinateOffset offset, Player player) {
-//		boolean hasSetLastLocation = false;
-//		Optional<Location> lastLocationOpt = PlayerManager.getLastPlayerLocation(player);
-//		if (lastLocationOpt.isPresent()) {
-//			Location lastLocation = lastLocationOpt.get();
-//			if (lastLocation.getWorld().getUID().equals(player.getLocation().getWorld().getUID())) {
-//				int clientViewDistance = 64; //player.getClientViewDistance();
-//				int minTeleportDistance = clientViewDistance * 2 * 16 + 2;
-//				minTeleportDistance *= minTeleportDistance; // squared
-//				if (lastLocation.distanceSquared(player.getLocation()) > minTeleportDistance) {
-//					offset = PlayerManager.teleportPlayer(player, player.getWorld(), true);
-//					logger.fine("Teleporting player. Prev[" + lastLocation.getBlockX() + "," + lastLocation.getBlockZ() + "] Next[" + player.getLocation().getX() + "," + player.getLocation().getZ() + "]");
-//					hasSetLastLocation = true;
-//				}
-//			}
-//		}
-//		if (hasSetLastLocation) {
-//			PlayerManager.setLastPlayerLocation(player, player.getLocation());
-//		}
-//		return offset;
-//	}
+	private static void fixDeathLocation(Logger logger, PacketContainer packet, Offset offset) {
+		if (packet.getOptionalStructures().size() > 0) {
+			packet.getOptionalStructures().modify(0, p -> {
+				p.ifPresent(internalStructure -> internalStructure.getBlockPositionModifier().modify(0, q -> offsetPosition(logger, offset, q)));
+				return p;
+			});
+		} else {
+			logger.severe("Packet size error");
+		}
+	}
 
 	private static void fixWindowItems(Logger logger, PacketContainer packet, Offset offset) {
 		packet.getItemListModifier().modify(0, itemStacks -> {
@@ -465,5 +465,32 @@ public class TranslatorClientbound {
 				return nbtBase;
 			}
 		});
+	}
+
+	private static PacketContainer cloneTileEntityData(PacketContainer packet) {
+		packet = packet.shallowClone();
+		int i = 0;
+		for (final NbtBase<?> obj : packet.getNbtModifier().getValues()) {
+			if (obj == null) continue;
+			packet.getNbtModifier().write(i, obj.deepClone());
+			i++;
+		}
+
+		return packet;
+	}
+
+	private static PacketContainer cloneMapChunkEntitiesData(PacketContainer packet) {
+		packet = packet.shallowClone();
+		int i = 0;
+		for (final List<NbtBase<?>> obj : packet.getListNbtModifier().getValues()) {
+			ArrayList<NbtBase<?>> newList = new ArrayList<NbtBase<?>>(obj.size());
+			for (NbtBase<?> nbtBase : obj) {
+				newList.add(nbtBase.deepClone());
+			}
+			packet.getListNbtModifier().write(i, newList);
+			i++;
+		}
+
+		return packet;
 	}
 }

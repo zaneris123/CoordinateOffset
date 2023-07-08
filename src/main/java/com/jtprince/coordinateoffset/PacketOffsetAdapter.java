@@ -7,6 +7,7 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import org.warp.coordinatesobfuscator.TranslatorClientbound;
 import org.warp.coordinatesobfuscator.TranslatorServerbound;
@@ -28,6 +29,7 @@ public class PacketOffsetAdapter {
         Server.EXPLOSION,
         Server.SPAWN_POSITION,
 
+        Server.LOGIN,
         Server.RESPAWN,
         Server.POSITION,
 
@@ -85,9 +87,28 @@ public class PacketOffsetAdapter {
         @Override
         public void onPacketSending(PacketEvent event) {
             var packet = event.getPacket();
-            var offset = CoordinateOffset.getPlayerManager().get(event.getPlayer(), event.getPlayer().getWorld());
-            TranslatorClientbound.outgoing(CoordinateOffset.instance.getLogger(), packet, offset);
-            event.setPacket(packet);
+
+            Offset offset;
+            if (packet.getType() == Server.RESPAWN) {
+                /*
+                 * The respawn packet has a unique need: it's the packet that causes a world change. However, the packet
+                 * itself contains a coordinate for the world the player is going *to*. If we just use the regular
+                 * Player#getWorld function, we'll get the offset for the world the player is coming *from*.
+                 * The hack is to reference the last world that we generated an offset for on this player. That
+                 * works since we always generate an offset right before the respawn packet goes out.
+                 */
+                offset = CoordinateOffset.getPlayerManager().getForInFlightWorld(event.getPlayer());
+            } else {
+                offset = CoordinateOffset.getPlayerManager().get(event.getPlayer(), event.getPlayer().getWorld());
+            }
+
+            PacketContainer cloned = TranslatorClientbound.outgoing(CoordinateOffset.instance.getLogger(), packet, offset);
+            //noinspection ReplaceNullCheck
+            if (cloned != null) {
+                event.setPacket(cloned);
+            } else {
+                event.setPacket(packet);
+            }
         }
     }
 
