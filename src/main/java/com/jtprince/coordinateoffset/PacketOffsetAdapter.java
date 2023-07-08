@@ -97,10 +97,9 @@ public class PacketOffsetAdapter {
                  * The respawn packet has a unique need: it's the packet that causes a world change. However, the packet
                  * itself contains a coordinate for the world the player is going *to*. If we just use the regular
                  * Player#getWorld function, we'll get the offset for the world the player is coming *from*.
-                 * The hack is to reference the last world that we generated an offset for on this player. That
-                 * works since we always generate an offset right before the respawn packet goes out.
+                 * We shouldn't validate that the offset lookup has a matching World in this case only.
                  */
-                offset = CoordinateOffset.getPlayerManager().getForInFlightWorld(event.getPlayer());
+                offset = CoordinateOffset.getPlayerManager().get(event.getPlayer(), null);
             } else {
                 offset = CoordinateOffset.getPlayerManager().get(event.getPlayer(), event.getPlayer().getWorld());
             }
