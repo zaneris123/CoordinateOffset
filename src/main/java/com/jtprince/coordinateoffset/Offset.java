@@ -1,7 +1,7 @@
 package com.jtprince.coordinateoffset;
 
 /**
- * Represents a coordinate offset in Overworld block space.
+ * Represents a coordinate offset in block space.
  * An offset of (16, 16) would result in a player seeing themselves at (0, 0) when they are standing at (16, 16) in the
  * Overworld, and seeing themselves standing at (-16, -16) when they are standing at the real origin.
  *
@@ -26,5 +26,14 @@ public record Offset (int x, int z) {
 
     public int chunkZ() {
         return z >> 4;
+    }
+
+    /**
+     * Get an equivalent offset in the Nether for this Offset, assuming that this is an Overworld Offset, by dividing
+     * the coordinates by 8.
+     * @return A new Offset with coordinates divided by 8 and rounded to align with chunk boundaries.
+     */
+    public Offset toNetherOffset() {
+        return new Offset(x >> 7 << 4, z >> 7 << 4);
     }
 }

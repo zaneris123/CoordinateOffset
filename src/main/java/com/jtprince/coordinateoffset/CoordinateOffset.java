@@ -13,6 +13,7 @@ public final class CoordinateOffset extends JavaPlugin {
     public void onEnable() {
         instance = this;
         playerOffsetsManager = new PlayerOffsetsManager();
+//        provider = new ConstantOffsetProvider(new Offset(1024, 1024));
         provider = new RandomizedOffsetProvider();
 
         Bukkit.getPluginManager().registerEvents(new BukkitEventListener(), this);
