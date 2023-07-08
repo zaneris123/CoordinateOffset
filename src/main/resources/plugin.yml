@@ -1,11 +1,6 @@
-name: ${project.name}
-main: ${project.groupId}.coordinatesobfuscator.CoordinatesObfuscator
-version: ${project.version}
-api-version: "1.20"
-author: Cavallium
+name: CoordinateOffset
+version: '${version}'
+main: com.jtprince.coordinateoffset.CoordinateOffset
+api-version: '${apiVersion}'
 depend: [ ProtocolLib ]
-folia-supported: true
-permissions:
-  coordinatesobfuscator.bypass:
-    description: "Bypass obfuscation"
-    default: op
+authors: [ jtprince, cavallium ]
