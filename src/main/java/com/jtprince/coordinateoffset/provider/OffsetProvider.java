@@ -1,5 +1,6 @@
-package com.jtprince.coordinateoffset;
+package com.jtprince.coordinateoffset.provider;
 
+import com.jtprince.coordinateoffset.Offset;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;

@@ -1,5 +1,6 @@
-package com.jtprince.coordinateoffset;
+package com.jtprince.coordinateoffset.provider;
 
+import com.jtprince.coordinateoffset.Offset;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -17,8 +18,6 @@ public class RandomizedOffsetProvider implements OffsetProvider {
     public @NotNull Offset getOffset(@NotNull Player player, @NotNull World world) {
         int x = random.nextInt(-BOUND, BOUND) >> 4 << 4;
         int z = random.nextInt(-BOUND, BOUND) >> 4 << 4;
-        var offset = new Offset(x, z);
-        CoordinateOffset.instance.getLogger().info("Provided random " + offset + " for player " + player.getName() + ".");
-        return offset;
+        return new Offset(x, z);
     }
 }

@@ -13,9 +13,11 @@ import org.warp.coordinatesobfuscator.TranslatorClientbound;
 import org.warp.coordinatesobfuscator.TranslatorServerbound;
 
 import java.util.Set;
+import java.util.logging.Logger;
 
 public class PacketOffsetAdapter {
     private final CoordinateOffset plugin;
+    private final Logger logger;
     private static final Set<PacketType> PACKETS_SERVER = Set.of(
         // Server -> Client (Sending)
         Server.BUNDLE,
@@ -71,6 +73,7 @@ public class PacketOffsetAdapter {
 
     public PacketOffsetAdapter(CoordinateOffset plugin) {
         this.plugin = plugin;
+        this.logger = plugin.getLogger();
     }
 
     public void registerAdapters() {
@@ -102,7 +105,7 @@ public class PacketOffsetAdapter {
                 offset = CoordinateOffset.getPlayerManager().get(event.getPlayer(), event.getPlayer().getWorld());
             }
 
-            PacketContainer cloned = TranslatorClientbound.outgoing(CoordinateOffset.instance.getLogger(), packet, offset);
+            PacketContainer cloned = TranslatorClientbound.outgoing(logger, packet, offset);
             //noinspection ReplaceNullCheck
             if (cloned != null) {
                 event.setPacket(cloned);
@@ -121,7 +124,7 @@ public class PacketOffsetAdapter {
         public void onPacketReceiving(PacketEvent event) {
             var packet = event.getPacket();
             var offset = CoordinateOffset.getPlayerManager().get(event.getPlayer(), event.getPlayer().getWorld());
-            TranslatorServerbound.incoming(CoordinateOffset.instance.getLogger(), packet, offset);
+            TranslatorServerbound.incoming(logger, packet, offset);
         }
     }
 }

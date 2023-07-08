@@ -1,5 +1,6 @@
-package com.jtprince.coordinateoffset;
+package com.jtprince.coordinateoffset.provider;
 
+import com.jtprince.coordinateoffset.Offset;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,7 +13,6 @@ public class ConstantOffsetProvider extends OverworldOffsetProvider {
 
     @Override
     public @NotNull Offset getOverworldOffset(@NotNull Player player) {
-        CoordinateOffset.instance.getLogger().info("Provided constant " + overworldOffset + " for player " + player.getName() + ".");
         return overworldOffset;
     }
 }

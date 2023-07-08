@@ -57,4 +57,9 @@ public class PlayerOffsetsManager {
         playerOffsetsPerWorld.get(player.getUniqueId()).put(world.getUID(), offset);
         playersInFlightWorld.put(player.getUniqueId(), world.getUID());
     }
+
+    synchronized void remove(@NotNull Player player) {
+        playerOffsetsPerWorld.remove(player.getUniqueId());
+        playersInFlightWorld.remove(player.getUniqueId());
+    }
 }
