@@ -1,6 +1,6 @@
 name: CoordinateOffset
-version: '${version}'
+version: "${version}"
 main: com.jtprince.coordinateoffset.CoordinateOffset
-api-version: '${apiVersion}'
+api-version: "${apiVersion}"
 depend: [ ProtocolLib ]
 authors: [ jtprince, cavallium ]
