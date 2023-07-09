@@ -2,6 +2,10 @@ package com.jtprince.coordinateoffset;
 
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import com.jtprince.coordinateoffset.provider.RandomizedOffsetProvider;
+import dev.jorel.commandapi.CommandAPI;
+import dev.jorel.commandapi.CommandAPIBukkitConfig;
+import dev.jorel.commandapi.CommandAPICommand;
+import dev.jorel.commandapi.CommandPermission;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -17,6 +21,9 @@ public final class CoordinateOffset extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).silentLogs(true).verboseOutput(false));
+        CommandAPI.onEnable();
+
         instance = this;
         saveDefaultConfig();
 
@@ -27,6 +34,13 @@ public final class CoordinateOffset extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new BukkitEventListener(playerOffsetsManager), this);
 
         new PacketOffsetAdapter(this).registerAdapters();
+
+        new CommandAPICommand("offset")
+                .withPermission(CommandPermission.OP)
+                .executesPlayer((player, args) -> {
+
+                })
+                .register();
     }
 
     @Override

@@ -8,6 +8,7 @@ buildscript {
 
 plugins {
     java
+    id("com.github.johnrengelman.shadow") version "8.1.1"
     id("com.palantir.git-version") version "3.0.0"
     id("de.undercouch.download") version "5.4.0"
 }
@@ -27,6 +28,7 @@ repositories {
     mavenCentral()
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
     maven("https://oss.sonatype.org/content/repositories/snapshots")
+    maven("https://repo.codemc.org/repository/maven-public/")
 
     // maven("https://repo.dmulloy2.net/repository/public/")  // ProtocolLib
     flatDir {
@@ -35,9 +37,10 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains:annotations:24.0.0")
+    compileOnly("org.jetbrains:annotations:24.0.0")
     compileOnly("org.spigotmc:spigot-api:$spigotApiVersion")
     compileOnly(files(localDependencyDir.resolve("ProtocolLib.jar")))
+    implementation("dev.jorel:commandapi-bukkit-shade:9.0.3")
 }
 
 java {
@@ -60,14 +63,20 @@ tasks {
         }
     }
 
+    shadowJar {
+        minimize()
+    }
+
     val copyJarToSnapshot = register<Copy>("copyJarToSnapshot") {
         dependsOn(jar)
-        from(jar)
+        dependsOn(shadowJar)
+        from(shadowJar)
         into("build")
         rename { "${rootProject.name}-SNAPSHOT.jar" }
     }
 
     assemble {
+        dependsOn(shadowJar)
         dependsOn(copyJarToSnapshot)
     }
 
