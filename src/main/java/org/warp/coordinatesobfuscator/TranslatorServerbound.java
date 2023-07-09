@@ -65,15 +65,10 @@ public class TranslatorServerbound {
 
 	private static void recvPosition(Logger logger, final PacketContainer packet, final Offset offset) {
 		if (packet.getBlockPositionModifier().size() > 0) {
-			packet.getBlockPositionModifier().modify(0, pos -> offsetPosition(logger, offset, pos));
+			packet.getBlockPositionModifier().modify(0, offset::unoffsetted);
 		} else {
 			logger.severe("Packet size error");
 		}
-	}
-
-	private static BlockPosition offsetPosition(Logger logger, Offset offset, BlockPosition pos) {
-		if (pos == null) return null;
-		return pos.add(new BlockPosition(offset.x(), 0, offset.z()));
 	}
 
 	private static void recvMovingPosition(Logger logger, final PacketContainer packet, final Offset offset) {

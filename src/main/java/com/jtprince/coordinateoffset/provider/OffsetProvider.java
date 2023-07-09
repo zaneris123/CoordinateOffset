@@ -8,8 +8,9 @@ import org.jetbrains.annotations.NotNull;
 public interface OffsetProvider {
     /**
      * Generate a coordinate offset for a specific player in a world.
-     * This function is called whenever the Offset has an opportunity to change. Currently, this occurs on player login,
-     * respawn, world change, and distant teleport.
+     *
+     * <p>This function is called whenever the Offset has an opportunity to change. Currently, this occurs on player
+     * login, respawn, world change, and distant teleport.</p>
      *
      * @param player The player who will receive this offset.
      * @param world The world that the player will be in.
