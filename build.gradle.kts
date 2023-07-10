@@ -67,8 +67,8 @@ tasks {
 
     shadowJar {
         minimize()
-        relocate("dev.jorel.commandapi", "$group.lib.commandapi")
-        relocate("com.jeff_media.morepersistentdatatypes", "$group.lib.morepersistentdatatypes")
+        relocate("dev.jorel.commandapi", "${project.group}.lib.commandapi")
+        relocate("com.jeff_media.morepersistentdatatypes", "${project.group}.lib.morepersistentdatatypes")
     }
 
     val copyJarToSnapshot = register<Copy>("copyJarToSnapshot") {

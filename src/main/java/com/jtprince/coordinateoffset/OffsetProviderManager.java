@@ -9,12 +9,14 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 public class OffsetProviderManager {
-    private Map<String, OffsetProvider.ConfigurationFactory<?>> configFactories = new HashMap<>();
+    private final Map<String, OffsetProvider.ConfigurationFactory<?>> configFactories = new HashMap<>();
     private Map<String, OffsetProvider> providersFromConfig = new HashMap<>();
 
     private OffsetProvider defaultProvider;
+    private Map<UUID, OffsetProvider> perPlayerProviders = new HashMap<>();
 
     private @NotNull Set<String> getOptionNames() {
         return providersFromConfig.keySet();
@@ -25,14 +27,14 @@ public class OffsetProviderManager {
     }
 
     int loadProvidersFromConfig(@NotNull FileConfiguration config) throws IllegalArgumentException {
-        ConfigurationSection rootSection = config.getConfigurationSection("offsetProviders");
-        if (rootSection == null) {
+        ConfigurationSection providerSection = config.getConfigurationSection("offsetProviders");
+        if (providerSection == null) {
             throw new IllegalArgumentException("Missing offsetProviders section from config!");
         }
 
         Map<String, OffsetProvider> newProviders = new HashMap<>();
-        for (String providerName : rootSection.getKeys(false)) {
-            ConfigurationSection section = rootSection.getConfigurationSection(providerName);
+        for (String providerName : providerSection.getKeys(false)) {
+            ConfigurationSection section = providerSection.getConfigurationSection(providerName);
             if (section == null) {
                 throw new IllegalArgumentException("Offset provider " + providerName + " is not a valid configuration section.");
             }
@@ -51,6 +53,7 @@ public class OffsetProviderManager {
 
         providersFromConfig = newProviders;
 
+        // Load default provider
         String defaultProviderName = config.getString("defaultOffsetProvider");
         if (defaultProviderName == null) {
             throw new IllegalArgumentException("Missing defaultOffsetProvider from config!");
@@ -61,11 +64,35 @@ public class OffsetProviderManager {
             throw new IllegalArgumentException("Unknown defaultOffsetProvider " + defaultProviderName + ". Options are " + String.join(", ", getOptionNames()));
         }
 
+        // Load per-player overrides
+        Map<UUID, OffsetProvider> newPerPlayer = new HashMap<>();
+        ConfigurationSection perPlayerSection = config.getConfigurationSection("perPlayerOffsetProvider");
+        if (perPlayerSection != null) {
+            for (String uuidStr : perPlayerSection.getKeys(false)) {
+                UUID uuid = UUID.fromString(uuidStr); // throws IllegalArgumentException
+                String value = perPlayerSection.getString(uuidStr);
+                OffsetProvider provider = providersFromConfig.get(value);
+                if (provider == null) {
+                    throw new IllegalArgumentException("Unknown provider " + value + " for UUID " + uuidStr + ". Options are " + String.join(", ", getOptionNames()));
+                }
+                newPerPlayer.put(uuid, provider);
+            }
+        }
+        perPlayerProviders = newPerPlayer;
+
         return newProviders.size();
     }
 
     @NotNull Offset provideOffset(@NotNull Player player, @NotNull World world, @NotNull OffsetProvider.ProvideReason reason) {
-        Offset offset = defaultProvider.getOffset(player, world, reason);
+        OffsetProvider provider;
+        if (perPlayerProviders.containsKey(player.getUniqueId())) {
+            provider = perPlayerProviders.get(player.getUniqueId());
+        } else {
+            provider = defaultProvider;
+        }
+
+        Offset offset = provider.getOffset(player, world, reason);
+
         if (CoordinateOffset.getInstance().getConfig().getBoolean("verbose")) {
             String reasonStr = null;
             switch (reason) {
@@ -75,7 +102,7 @@ public class OffsetProviderManager {
                 case DISTANT_TELEPORT -> reasonStr = "player teleported";
             }
 
-            CoordinateOffset.getInstance().getLogger().info("Created " + offset + " for " + player.getName() + " in " + world.getName() + (reasonStr == null ? "." : (" (" + reasonStr + ").")));
+            CoordinateOffset.getInstance().getLogger().info("Using " + offset + " for " + player.getName() + " in " + world.getName() + (reasonStr == null ? "." : (" (" + reasonStr + ").")));
         }
         return offset;
     }
