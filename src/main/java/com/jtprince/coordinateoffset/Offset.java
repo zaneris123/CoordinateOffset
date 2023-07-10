@@ -1,8 +1,14 @@
 package com.jtprince.coordinateoffset;
 
 import com.comphenix.protocol.wrappers.BlockPosition;
+import com.jeff_media.morepersistentdatatypes.DataType;
+import com.jeff_media.morepersistentdatatypes.datatypes.GenericDataType;
 import org.bukkit.Location;
+import org.bukkit.persistence.PersistentDataType;
 import org.checkerframework.dataflow.qual.Pure;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Random;
 
 /**
  * Represents a coordinate offset in block space.
@@ -16,13 +22,28 @@ import org.checkerframework.dataflow.qual.Pure;
 public record Offset (int x, int z) {
     public static final Offset ZERO = new Offset(0, 0);
 
+    public static final PersistentDataType<int[], Offset> PDT_TYPE =
+            new GenericDataType<>(DataType.INTEGER_ARRAY.getPrimitiveType(), Offset.class, Offset::fromPdt, Offset::toPdt);
+
     public Offset {
         if (x % 16 != 0) {
-            throw new IllegalArgumentException("x is not aligned with the chunks!");
+            throw new IllegalArgumentException("Offset x=" + x + " is not aligned with the chunks! (must be a multiple of 16)");
         }
         if (z % 16 != 0) {
-            throw new IllegalArgumentException("z is not aligned with the chunks!");
+            throw new IllegalArgumentException("Offset z=" + z + " is not aligned with the chunks! (must be a multiple of 16)");
         }
+    }
+
+    public static @NotNull Offset random(int bound) {
+        /*
+         * Offsets MUST be aligned with chunk borders, meaning divisible by 16 (>> 4).
+         * To make Nether translations more predictable, random offsets should also be divisible by 16 even after
+         * dividing once by 8 (>> 3).
+         */
+        Random random = new Random();
+        int x = random.nextInt(-bound, bound) >> 7 << 7;
+        int z = random.nextInt(-bound, bound) >> 7 << 7;
+        return new Offset(x, z);
     }
 
     public int chunkX() {
@@ -99,5 +120,13 @@ public record Offset (int x, int z) {
     public BlockPosition unoffsetted(BlockPosition offsettedPosition) {
         if (offsettedPosition == null) return null;
         return offsettedPosition.add(new BlockPosition(this.x, 0, this.z));
+    }
+
+    private static Offset fromPdt(int[] arr) {
+        return new Offset(arr[0], arr[1]);
+    }
+
+    private int[] toPdt() {
+        return new int[] { x, z };
     }
 }

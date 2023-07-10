@@ -9,13 +9,11 @@ import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.warp.coordinatesobfuscator.TranslatorClientbound;
 import org.warp.coordinatesobfuscator.TranslatorServerbound;
 
-import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -133,7 +131,8 @@ public class PacketOffsetAdapter {
 
     private static void changeOffsetImmediately(@NotNull Player player) {
         // TODO: WIP.
-        Offset offset = CoordinateOffset.provideOffset(player, Objects.requireNonNull(player.getWorld()), "forced by command");
+        /*
+        Offset offset = CoordinateOffset.provideOffset(player, Objects.requireNonNull(player.getWorld()), null);
         CoordinateOffset.getPlayerManager().put(player, player.getWorld(), offset);
 
         Location offsettedLocation = offset.offsetted(player.getLocation());
@@ -147,5 +146,6 @@ public class PacketOffsetAdapter {
         pkt.getBytes()
             .write(0, (byte) (0x08 | 0x10));
         pm.sendServerPacket(player, pkt);
+         */
     }
 }

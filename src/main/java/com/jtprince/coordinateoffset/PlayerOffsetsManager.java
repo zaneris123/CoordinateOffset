@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+/**
+ * Container for the offset a player currently has.
+ */
 public class PlayerOffsetsManager {
     private final Map<UUID, Offset> playerOffsets = new HashMap<>();
     private final Map<UUID, UUID> playerKnownWorlds = new HashMap<>();

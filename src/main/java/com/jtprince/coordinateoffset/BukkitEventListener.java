@@ -1,11 +1,14 @@
 package com.jtprince.coordinateoffset;
 
+import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.jetbrains.annotations.NotNull;
 import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
 import java.util.Objects;
@@ -18,36 +21,39 @@ public class BukkitEventListener implements Listener {
         this.players = playerOffsetsManager;
     }
 
+    private void impulseChange(@NotNull Player player, @NotNull World world, @NotNull OffsetProvider.ProvideReason reason) {
+        Offset offset = CoordinateOffset.getOffsetProviderManager().provideOffset(player, world, reason);
+        players.put(player, world, offset);
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerSpawn(PlayerSpawnLocationEvent event) {
         /* Despite being named "SpawnLocation", this event is called every time a Player joins. */
-        Offset offset = CoordinateOffset.provideOffset(event.getPlayer(), Objects.requireNonNull(event.getSpawnLocation().getWorld()), "player joined");
-        players.put(event.getPlayer(), event.getSpawnLocation().getWorld(), offset);
+        impulseChange(event.getPlayer(), Objects.requireNonNull(event.getSpawnLocation().getWorld()), OffsetProvider.ProvideReason.JOIN);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerRespawn(PlayerRespawnEvent event) {
-        Offset offset = CoordinateOffset.provideOffset(event.getPlayer(), Objects.requireNonNull(event.getRespawnLocation().getWorld()), "player respawned");
-        players.put(event.getPlayer(), event.getRespawnLocation().getWorld(), offset);
+        impulseChange(event.getPlayer(), Objects.requireNonNull(event.getRespawnLocation().getWorld()), OffsetProvider.ProvideReason.RESPAWN);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerTeleport(PlayerTeleportEvent event) {
-        boolean reset = false;
+        OffsetProvider.ProvideReason reason = null;
         if (event.getFrom().getWorld() != Objects.requireNonNull(event.getTo()).getWorld()) {
-            reset = true;
+            reason = OffsetProvider.ProvideReason.WORLD_CHANGE;
         } else if (event.getFrom().distanceSquared(event.getTo()) > MIN_TELEPORT_DISTANCE_TO_RESET * MIN_TELEPORT_DISTANCE_TO_RESET) {
-            reset = true;
+            reason = OffsetProvider.ProvideReason.DISTANT_TELEPORT;
         }
 
-        if (!reset) return;
+        if (reason == null) return;
 
-        Offset offset = CoordinateOffset.provideOffset(event.getPlayer(), Objects.requireNonNull(event.getTo().getWorld()), "player teleported");
-        players.put(event.getPlayer(), event.getTo().getWorld(), offset);
+        impulseChange(event.getPlayer(), Objects.requireNonNull(event.getTo().getWorld()), reason);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(PlayerQuitEvent event) {
         players.remove(event.getPlayer());
+        CoordinateOffset.getOffsetProviderManager().quitPlayer(event.getPlayer());
     }
 }

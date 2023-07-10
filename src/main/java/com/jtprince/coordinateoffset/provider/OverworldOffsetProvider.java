@@ -1,6 +1,7 @@
 package com.jtprince.coordinateoffset.provider;
 
 import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.OffsetProvider;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +24,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public abstract class OverworldOffsetProvider implements OffsetProvider {
     @Override
-    public final @NotNull Offset getOffset(@NotNull Player player, @NotNull World world) {
+    public final @NotNull Offset getOffset(@NotNull Player player, @NotNull World world, @NotNull ProvideReason reason) {
         switch (world.getEnvironment()) {
             case NORMAL, CUSTOM -> { return getOverworldOffset(player); }
             case NETHER -> { return getOverworldOffset(player).toNetherOffset(); }

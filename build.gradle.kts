@@ -28,7 +28,8 @@ repositories {
     mavenCentral()
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
     maven("https://oss.sonatype.org/content/repositories/snapshots")
-    maven("https://repo.codemc.org/repository/maven-public/")
+    maven("https://repo.codemc.org/repository/maven-public/") // CommandAPI
+    maven("https://hub.jeff-media.com/nexus/repository/jeff-media-public/") // MorePDTs
 
     // maven("https://repo.dmulloy2.net/repository/public/")  // ProtocolLib
     flatDir {
@@ -41,6 +42,7 @@ dependencies {
     compileOnly("org.spigotmc:spigot-api:$spigotApiVersion")
     compileOnly(files(localDependencyDir.resolve("ProtocolLib.jar")))
     implementation("dev.jorel:commandapi-bukkit-shade:9.0.3")
+    implementation("com.jeff_media:MorePersistentDataTypes:2.4.0")
 }
 
 java {
@@ -65,6 +67,8 @@ tasks {
 
     shadowJar {
         minimize()
+        relocate("dev.jorel.commandapi", "$group.lib.commandapi")
+        relocate("com.jeff_media.morepersistentdatatypes", "$group.lib.morepersistentdatatypes")
     }
 
     val copyJarToSnapshot = register<Copy>("copyJarToSnapshot") {

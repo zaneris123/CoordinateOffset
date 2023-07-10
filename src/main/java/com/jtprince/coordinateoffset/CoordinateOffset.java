@@ -1,23 +1,20 @@
 package com.jtprince.coordinateoffset;
 
-import com.jtprince.coordinateoffset.provider.OffsetProvider;
-import com.jtprince.coordinateoffset.provider.RandomizedOffsetProvider;
+import com.jtprince.coordinateoffset.provider.ConstantOffsetProvider;
+import com.jtprince.coordinateoffset.provider.RandomOffsetProvider;
+import com.jtprince.coordinateoffset.provider.RandomPersistentOffsetProvider;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
+import dev.jorel.commandapi.arguments.LiteralArgument;
 import org.bukkit.Bukkit;
-import org.bukkit.World;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public final class CoordinateOffset extends JavaPlugin {
     private static CoordinateOffset instance;
     private static PlayerOffsetsManager playerOffsetsManager;
-    private static OffsetProvider provider;
-
+    private static OffsetProviderManager providerManager;
 
     @Override
     public void onEnable() {
@@ -28,24 +25,31 @@ public final class CoordinateOffset extends JavaPlugin {
         saveDefaultConfig();
 
         playerOffsetsManager = new PlayerOffsetsManager();
-//        provider = new ConstantOffsetProvider(new Offset(1024, 1024));
-        provider = new RandomizedOffsetProvider();
-
         Bukkit.getPluginManager().registerEvents(new BukkitEventListener(playerOffsetsManager), this);
+
+        providerManager = new OffsetProviderManager();
+        providerManager.registerConfigurationFactory("ConstantOffsetProvider", new ConstantOffsetProvider.ConfigFactory());
+        providerManager.registerConfigurationFactory("RandomOffsetProvider", new RandomOffsetProvider.ConfigFactory());
+        providerManager.registerConfigurationFactory("RandomPersistentOffsetProvider", new RandomPersistentOffsetProvider.ConfigFactory());
+
+        // TBD: Allow extensions to register their providers first.
+        int providers = providerManager.loadProvidersFromConfig(getConfig());
+        getLogger().info("Loaded " + providers + " offset providers from config.");
 
         new PacketOffsetAdapter(this).registerAdapters();
 
-        new CommandAPICommand("offset")
-                .withPermission(CommandPermission.OP)
-                .executesPlayer((player, args) -> {
-
-                })
-                .register();
+        registerCommands();
     }
 
     @Override
     public void onDisable() {
         // Plugin shutdown logic
+    }
+
+    public void reload() {
+        reloadConfig();
+        providerManager.loadProvidersFromConfig(getConfig());
+        getLogger().info("Config reloaded.");
     }
 
     public static CoordinateOffset getInstance() {
@@ -56,11 +60,23 @@ public final class CoordinateOffset extends JavaPlugin {
         return playerOffsetsManager;
     }
 
-    static @NotNull Offset provideOffset(@NotNull Player player, @NotNull World world, @Nullable String logReason) {
-        Offset offset = provider.getOffset(player, world);
-        if (instance.getConfig().getBoolean("verbose")) {
-            instance.getLogger().info("Created " + offset + " for " + player.getName() + " in " + world.getName() + (logReason == null ? "." : (" (" + logReason + ").")));
-        }
-        return offset;
+    public static OffsetProviderManager getOffsetProviderManager() {
+        return providerManager;
+    }
+
+    private void registerCommands() {
+        new CommandAPICommand("offset")
+            .withPermission(CommandPermission.OP)
+            .withArguments(LiteralArgument.of("reload"))
+            .executes((sender, args) -> {
+                try {
+                    reload();
+                    sender.sendMessage("Reloaded CoordinateOffset config. Players may need to relog to see the changes.");
+                } catch (Exception e) {
+                    sender.sendMessage("Failed to reload the config. Check the console for details.");
+                    e.printStackTrace();
+                }
+            })
+            .register();
     }
 }
