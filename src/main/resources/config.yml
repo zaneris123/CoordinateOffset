@@ -2,8 +2,7 @@
 
 # The default offset provider specifies the way that offsets will be
 #   determined for players who do not have a provider otherwise specified.
-# Options are any key under `offsetProviders` below (zero, constant, random,
-#   randomPersistent, or a custom provider)
+# Options are any key under `offsetProviders` below (e.g. constant, random...)
 defaultOffsetProvider: random
 
 
@@ -29,12 +28,13 @@ offsetProviders:
     offsetZ: 1024
 
 
-  zero:
+  disabled:
     # A constant offset of 0 will disable coordinate obfuscation and allow
     #   players to see their real coordinates.
     class: ConstantOffsetProvider
     offsetX: 0
     offsetZ: 0
+
 
   random:
     # The "random" offset provider class re-rolls the player's offset every
@@ -55,12 +55,12 @@ offsetProviders:
   randomPersistent:
     # The "random persistent" offset provider class generates an offset once
     #   per player, and reuses that offset every time they join.
-    # The offset is stored in
     class: RandomPersistentOffsetProvider
 
     # If `alignOverworldAndNether` is true, then each player's Nether offset
     #   will be set to 1/8th their Overworld offset. This will ensure that
     #   Nether portal linkage math still works out.
+    # If false, the Overworld and Nether will use the same offset.
     alignOverworldAndNether: true
 
     # If `applyInEnd` is true, then the same offset for the Overworld will be
@@ -70,6 +70,20 @@ offsetProviders:
 
     # Maximum possible offset
     randomBound: 1000000
+
+
+  zeroOnJoin:
+    # The "zero on join" offset provider class generates an offset equal to
+    #   the player's login coordinates, so they will see themselves at roughly
+    #   (0, 0) every time they join.
+    class: ZeroOnJoinOffsetProvider
+
+    # If `alignOverworldAndNether` is true, then each player's Nether offset
+    #   will be set to 1/8th their Overworld offset. This will ensure that
+    #   Nether portal linkage math still works out.
+    # If false, each world's offset will be centered on zero at the point they
+    #   first enter the world.
+    alignOverworldAndNether: true
 
 
   # Add custom offset modes here. For example:

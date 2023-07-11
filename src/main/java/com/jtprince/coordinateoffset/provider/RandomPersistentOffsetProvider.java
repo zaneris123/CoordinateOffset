@@ -3,10 +3,10 @@ package com.jtprince.coordinateoffset.provider;
 import com.jtprince.coordinateoffset.CoordinateOffset;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.OffsetProvider;
+import com.jtprince.coordinateoffset.OffsetProviderContext;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class RandomPersistentOffsetProvider extends OffsetProvider {
@@ -21,17 +21,17 @@ public class RandomPersistentOffsetProvider extends OffsetProvider {
     }
 
     @Override
-    public @NotNull Offset getOffset(@NotNull Player player, @NotNull World world, @NotNull ProvideReason reason) {
-        Offset offset = player.getPersistentDataContainer().get(offsetKey, Offset.PDT_TYPE);
+    public @NotNull Offset getOffset(@NotNull OffsetProviderContext context) {
+        Offset offset = context.player().getPersistentDataContainer().get(offsetKey, Offset.PDT_TYPE);
         if (offset == null) {
             offset = Offset.random(randomBound);
-            player.getPersistentDataContainer().set(offsetKey, Offset.PDT_TYPE, offset);
+            context.player().getPersistentDataContainer().set(offsetKey, Offset.PDT_TYPE, offset);
         }
 
-        if (alignOverworldAndNether && world.getEnvironment() == World.Environment.NETHER) {
+        if (alignOverworldAndNether && context.world().getEnvironment() == World.Environment.NETHER) {
             return offset.toNetherOffset();
         }
-        if (!applyInEnd && world.getEnvironment() == World.Environment.THE_END) {
+        if (!applyInEnd && context.world().getEnvironment() == World.Environment.THE_END) {
             return Offset.ZERO;
         }
 

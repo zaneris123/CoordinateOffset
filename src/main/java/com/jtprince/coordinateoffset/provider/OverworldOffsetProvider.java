@@ -2,7 +2,7 @@ package com.jtprince.coordinateoffset.provider;
 
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.OffsetProvider;
-import org.bukkit.World;
+import com.jtprince.coordinateoffset.OffsetProviderContext;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,14 +28,14 @@ public abstract class OverworldOffsetProvider extends OffsetProvider {
     }
 
     @Override
-    public final @NotNull Offset getOffset(@NotNull Player player, @NotNull World world, @NotNull ProvideReason reason) {
-        switch (world.getEnvironment()) {
-            case NORMAL, CUSTOM -> { return getOverworldOffset(player); }
-            case NETHER -> { return getOverworldOffset(player).toNetherOffset(); }
+    public final @NotNull Offset getOffset(@NotNull OffsetProviderContext context) {
+        switch (context.world().getEnvironment()) {
+            case NORMAL, CUSTOM -> { return getOverworldOffset(context.player()); }
+            case NETHER -> { return getOverworldOffset(context.player()).toNetherOffset(); }
             case THE_END -> { return Offset.ZERO; }
         }
 
-        throw new IllegalArgumentException("Unknown world environment for world " + world.getName());
+        throw new IllegalArgumentException("Unknown world environment for world " + context.world().getName());
     }
 
     public abstract @NotNull Offset getOverworldOffset(@NotNull Player player);

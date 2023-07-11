@@ -2,7 +2,7 @@ package com.jtprince.coordinateoffset.provider;
 
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.OffsetProvider;
-import org.bukkit.World;
+import com.jtprince.coordinateoffset.OffsetProviderContext;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -24,19 +24,19 @@ public class RandomOffsetProvider extends OffsetProvider {
     }
 
     @Override
-    public @NotNull Offset getOffset(@NotNull Player player, @NotNull World world, @NotNull ProvideReason reason) {
-        if (!playerCache.containsKey(player.getUniqueId())) {
-            playerCache.put(player.getUniqueId(), new HashMap<>());
+    public @NotNull Offset getOffset(@NotNull OffsetProviderContext context) {
+        if (!playerCache.containsKey(context.player().getUniqueId())) {
+            playerCache.put(context.player().getUniqueId(), new HashMap<>());
         }
 
-        var thisPlayerCache = playerCache.get(player.getUniqueId());
-        if (canPersist(reason) && thisPlayerCache.containsKey(world.getUID())) {
-            return thisPlayerCache.get(world.getUID());
+        var thisPlayerCache = playerCache.get(context.player().getUniqueId());
+        if (canPersist(context.reason()) && thisPlayerCache.containsKey(context.world().getUID())) {
+            return thisPlayerCache.get(context.world().getUID());
         }
 
         // Generate a new offset
         Offset offset = Offset.random(randomBound);
-        thisPlayerCache.put(world.getUID(), offset);
+        thisPlayerCache.put(context.world().getUID(), offset);
         return offset;
     }
 
@@ -45,7 +45,7 @@ public class RandomOffsetProvider extends OffsetProvider {
         playerCache.remove(player.getUniqueId());
     }
 
-    private boolean canPersist(ProvideReason reason) {
+    private boolean canPersist(OffsetProviderContext.ProvideReason reason) {
         switch (reason) {
             case RESPAWN -> { return persistAcrossRespawns; }
             case WORLD_CHANGE -> { return persistAcrossWorldChanges; }

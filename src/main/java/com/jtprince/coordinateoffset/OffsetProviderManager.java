@@ -1,6 +1,5 @@
 package com.jtprince.coordinateoffset;
 
-import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -83,21 +82,21 @@ public class OffsetProviderManager {
         return newProviders.size();
     }
 
-    @NotNull Offset provideOffset(@NotNull Player player, @NotNull World world, @NotNull OffsetProvider.ProvideReason reason) {
+    @NotNull Offset provideOffset(@NotNull OffsetProviderContext context) {
         OffsetProvider provider = defaultProvider;
         ProviderSource providerSource = ProviderSource.DEFAULT;
 
-        if (perPlayerYamlProviders.containsKey(player.getUniqueId())) {
-            provider = perPlayerYamlProviders.get(player.getUniqueId());
+        if (perPlayerYamlProviders.containsKey(context.player().getUniqueId())) {
+            provider = perPlayerYamlProviders.get(context.player().getUniqueId());
             providerSource = ProviderSource.CONFIG;
         } else {
             LuckPermsIntegration lp = CoordinateOffset.getLuckPermsIntegration();
             if (lp != null) {
-                String lpMetaStr = lp.getProviderOverride(player, world);
+                String lpMetaStr = lp.getProviderOverride(context.player(), context.world());
                 if (lpMetaStr != null) {
                     provider = providersFromConfig.get(lpMetaStr);
                     if (provider == null) {
-                        CoordinateOffset.getInstance().getLogger().severe("Unknown provider for LuckPerms meta lookup on " + player.getName() + ": " + lpMetaStr + ". Options are " + String.join(", ", getOptionNames()));
+                        CoordinateOffset.getInstance().getLogger().severe("Unknown provider for LuckPerms meta lookup on " + context.player().getName() + ": " + lpMetaStr + ". Options are " + String.join(", ", getOptionNames()));
                         provider = defaultProvider;
                     } else {
                         providerSource = ProviderSource.LUCK_PERMS_META;
@@ -106,11 +105,11 @@ public class OffsetProviderManager {
             }
         }
 
-        Offset offset = provider.getOffset(player, world, reason);
+        Offset offset = provider.getOffset(context);
 
         if (CoordinateOffset.getInstance().getConfig().getBoolean("verbose")) {
             String reasonStr = null;
-            switch (reason) {
+            switch (context.reason()) {
                 case JOIN -> reasonStr = "player joined";
                 case RESPAWN -> reasonStr = "player respawned";
                 case WORLD_CHANGE -> reasonStr = "player changed worlds";
@@ -124,7 +123,9 @@ public class OffsetProviderManager {
                 case LUCK_PERMS_META -> sourceStr = "LuckPerms meta override";
             }
 
-            CoordinateOffset.getInstance().getLogger().info("Using " + offset + " from provider \"" + provider.name + "\" (" + sourceStr + ") for player " + player.getName() + " in " + world.getName() + " (" + reasonStr + ").");
+            CoordinateOffset.getInstance().getLogger().info(
+                    "Using " + offset + " from provider \"" + provider.name + "\" (" + sourceStr + ") " +
+                            "for player " + context.player().getName() + " in " + context.world().getName() + " (" + reasonStr + ").");
         }
         return offset;
     }

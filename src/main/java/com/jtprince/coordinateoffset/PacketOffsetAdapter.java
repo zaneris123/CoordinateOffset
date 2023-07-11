@@ -94,7 +94,9 @@ public class PacketOffsetAdapter {
             var packet = event.getPacket();
 
             if (packet.getType() == Server.LOGIN) {
-                CoordinateOffset.impulseOffsetChange(event.getPlayer(), event.getPlayer().getWorld(), OffsetProvider.ProvideReason.JOIN);
+                CoordinateOffset.impulseOffsetChange(new OffsetProviderContext(
+                        event.getPlayer(), event.getPlayer().getWorld(),
+                        event.getPlayer().getLocation(), OffsetProviderContext.ProvideReason.JOIN));
             }
 
             Offset offset;

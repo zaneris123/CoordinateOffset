@@ -34,16 +34,35 @@ public record Offset (int x, int z) {
         }
     }
 
+    /**
+     * Get a random Offset, with x and z in the range <code>(-bound, bound)</code>.
+     * @param bound Maximum absolute value of each offset dimension.
+     * @return A new Offset aligned to 128-blocks.
+     */
     public static @NotNull Offset random(int bound) {
-        /*
-         * Offsets MUST be aligned with chunk borders, meaning divisible by 16 (>> 4).
-         * To make Nether translations more predictable, random offsets should also be divisible by 16 even after
-         * dividing once by 8 (>> 3).
-         */
         Random random = new Random();
-        int x = random.nextInt(-bound, bound) >> 7 << 7;
-        int z = random.nextInt(-bound, bound) >> 7 << 7;
-        return new Offset(x, z);
+        return align(random.nextInt(-bound, bound), random.nextInt(-bound, bound), true);
+    }
+
+    /**
+     * Get a new Offset closest to the specified offset that is aligned to chunk borders.
+     *
+     * <p>Offsets MUST be aligned with chunk borders, meaning each dimension is divisible by 16.</p>
+     * @param x X offset
+     * @param z Z offset
+     * @param to8Chunks To make Nether translations more predictable, Overworld offsets should also be divisible by 16
+     *                  even after dividing once by 8. If this parameter is true, the result will be aligned to
+     *                  128-blocks; if false, the result will be aligned only to 16-blocks.
+     * @return A new Offset.
+     */
+    public static @NotNull Offset align(int x, int z, boolean to8Chunks) {
+        int shift = to8Chunks ? 7 : 4;
+
+        // Add half of the divisor so that the output is rounded instead of just floored
+        x += 1 << (shift - 1);
+        z += 1 << (shift - 1);
+
+        return new Offset(x >> shift << shift, z >> shift << shift);
     }
 
     public int chunkX() {
@@ -63,6 +82,17 @@ public record Offset (int x, int z) {
     @Pure
     public Offset toNetherOffset() {
         return new Offset(x >> 7 << 4, z >> 7 << 4);
+    }
+
+    /**
+     * Get an equivalent offset in the Overworld for this Offset, assuming that this is a Nether Offset, by multiplying
+     * the values by 8.
+     *
+     * @return A new Offset with coordinates multiplied by 8.
+     */
+    @Pure
+    public Offset toOverworldFromNetherOffset() {
+        return new Offset(x << 3, z << 3);
     }
 
     /**

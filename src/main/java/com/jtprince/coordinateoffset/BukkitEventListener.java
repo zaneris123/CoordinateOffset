@@ -19,21 +19,25 @@ public class BukkitEventListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerRespawn(PlayerRespawnEvent event) {
-        CoordinateOffset.impulseOffsetChange(event.getPlayer(), Objects.requireNonNull(event.getRespawnLocation().getWorld()), OffsetProvider.ProvideReason.RESPAWN);
+        CoordinateOffset.impulseOffsetChange(new OffsetProviderContext(
+                event.getPlayer(), Objects.requireNonNull(event.getRespawnLocation().getWorld()),
+                event.getRespawnLocation(), OffsetProviderContext.ProvideReason.RESPAWN));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerTeleport(PlayerTeleportEvent event) {
-        OffsetProvider.ProvideReason reason = null;
+        OffsetProviderContext.ProvideReason reason = null;
         if (event.getFrom().getWorld() != Objects.requireNonNull(event.getTo()).getWorld()) {
-            reason = OffsetProvider.ProvideReason.WORLD_CHANGE;
+            reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
         } else if (event.getFrom().distanceSquared(event.getTo()) > MIN_TELEPORT_DISTANCE_TO_RESET * MIN_TELEPORT_DISTANCE_TO_RESET) {
-            reason = OffsetProvider.ProvideReason.DISTANT_TELEPORT;
+            reason = OffsetProviderContext.ProvideReason.DISTANT_TELEPORT;
         }
 
         if (reason == null) return;
 
-        CoordinateOffset.impulseOffsetChange(event.getPlayer(), Objects.requireNonNull(event.getTo().getWorld()), reason);
+        CoordinateOffset.impulseOffsetChange(new OffsetProviderContext(
+                event.getPlayer(), Objects.requireNonNull(event.getTo().getWorld()),
+                event.getTo(), OffsetProviderContext.ProvideReason.RESPAWN));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

@@ -1,6 +1,5 @@
 package com.jtprince.coordinateoffset;
 
-import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -10,10 +9,6 @@ import org.jetbrains.annotations.NotNull;
  * get in each world.
  */
 public abstract class OffsetProvider {
-    public enum ProvideReason {
-        JOIN, RESPAWN, WORLD_CHANGE, DISTANT_TELEPORT
-    }
-
     public final String name;
 
     public OffsetProvider(String name) {
@@ -24,14 +19,13 @@ public abstract class OffsetProvider {
      * Generate a coordinate offset for a specific player in a world.
      *
      * <p>This function is called whenever the Offset has an opportunity to change. The reasons that the Offset might
-     * be changing are enumerated in {@link ProvideReason}.</p>
+     * be changing are enumerated in {@link OffsetProviderContext.ProvideReason}.</p>
      *
-     * @param player The player who will receive this offset.
-     * @param world The world that the player will be in.
-     * @param reason The reason that this player's Offset has an opportunity to change.
+     * @param context Container for all context associated with this Offset change, such as the Player this Offset is
+     *                for and the World the Offset will be applied to.
      * @return The desired offset for this player.
      */
-    public abstract @NotNull Offset getOffset(@NotNull Player player, @NotNull World world, @NotNull ProvideReason reason);
+    public abstract @NotNull Offset getOffset(@NotNull OffsetProviderContext context);
 
     /**
      * Called on this provider whenever a player leaves. The provider should clean up or write to disk any saved state

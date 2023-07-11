@@ -3,6 +3,7 @@ package com.jtprince.coordinateoffset;
 import com.jtprince.coordinateoffset.provider.ConstantOffsetProvider;
 import com.jtprince.coordinateoffset.provider.RandomOffsetProvider;
 import com.jtprince.coordinateoffset.provider.RandomPersistentOffsetProvider;
+import com.jtprince.coordinateoffset.provider.ZeroOnJoinOffsetProvider;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import dev.jorel.commandapi.CommandAPICommand;
@@ -10,8 +11,6 @@ import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.LiteralArgument;
 import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
-import org.bukkit.World;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -46,6 +45,7 @@ public final class CoordinateOffset extends JavaPlugin {
         providerManager.registerConfigurationFactory("ConstantOffsetProvider", new ConstantOffsetProvider.ConfigFactory());
         providerManager.registerConfigurationFactory("RandomOffsetProvider", new RandomOffsetProvider.ConfigFactory());
         providerManager.registerConfigurationFactory("RandomPersistentOffsetProvider", new RandomPersistentOffsetProvider.ConfigFactory());
+        providerManager.registerConfigurationFactory("ZeroOnJoinOffsetProvider", new ZeroOnJoinOffsetProvider.ConfigFactory());
 
         // TBD: Allow extensions to register their providers first.
         int providers = providerManager.loadProvidersFromConfig(getConfig());
@@ -83,9 +83,9 @@ public final class CoordinateOffset extends JavaPlugin {
         return luckPermsIntegration;
     }
 
-    static void impulseOffsetChange(@NotNull Player player, @NotNull World world, @NotNull OffsetProvider.ProvideReason reason) {
-        Offset offset = CoordinateOffset.getOffsetProviderManager().provideOffset(player, world, reason);
-        playerOffsetsManager.put(player, world, offset);
+    static void impulseOffsetChange(@NotNull OffsetProviderContext context) {
+        Offset offset = CoordinateOffset.getOffsetProviderManager().provideOffset(context);
+        playerOffsetsManager.put(context.player(), context.world(), offset);
     }
 
     private void registerCommands() {
