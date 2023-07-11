@@ -9,9 +9,15 @@ import org.jetbrains.annotations.NotNull;
  * Offset Providers are an extensible way to determine what offset from real (server) coordinates each player should
  * get in each world.
  */
-public interface OffsetProvider {
-    enum ProvideReason {
+public abstract class OffsetProvider {
+    public enum ProvideReason {
         JOIN, RESPAWN, WORLD_CHANGE, DISTANT_TELEPORT
+    }
+
+    public final String name;
+
+    public OffsetProvider(String name) {
+        this.name = name;
     }
 
     /**
@@ -25,7 +31,7 @@ public interface OffsetProvider {
      * @param reason The reason that this player's Offset has an opportunity to change.
      * @return The desired offset for this player.
      */
-    @NotNull Offset getOffset(@NotNull Player player, @NotNull World world, @NotNull ProvideReason reason);
+    public abstract @NotNull Offset getOffset(@NotNull Player player, @NotNull World world, @NotNull ProvideReason reason);
 
     /**
      * Called on this provider whenever a player leaves. The provider should clean up or write to disk any saved state
@@ -35,14 +41,14 @@ public interface OffsetProvider {
      * this.</p>
      * @param player The player that's leaving.
      */
-    default void onPlayerQuit(@NotNull Player player) {}
+    public void onPlayerQuit(@NotNull Player player) {}
 
     /**
      * An OffsetProvider.ConfigurationFactory encodes how the CoordinateOffset plugin should create providers as defined
      * in config.yml.
      * @param <T> The type of OffsetProvider that this factory will create.
      */
-    interface ConfigurationFactory<T extends OffsetProvider> {
-        @NotNull T createProvider(ConfigurationSection configSection) throws IllegalArgumentException;
+    public interface ConfigurationFactory<T extends OffsetProvider> {
+        @NotNull T createProvider(String name, ConfigurationSection configSection) throws IllegalArgumentException;
     }
 }

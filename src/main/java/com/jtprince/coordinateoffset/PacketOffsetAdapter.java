@@ -93,6 +93,10 @@ public class PacketOffsetAdapter {
         public void onPacketSending(PacketEvent event) {
             var packet = event.getPacket();
 
+            if (packet.getType() == Server.LOGIN) {
+                CoordinateOffset.impulseOffsetChange(event.getPlayer(), event.getPlayer().getWorld(), OffsetProvider.ProvideReason.JOIN);
+            }
+
             Offset offset;
             if (packet.getType() == Server.RESPAWN) {
                 /*

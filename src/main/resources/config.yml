@@ -9,6 +9,8 @@ defaultOffsetProvider: random
 
 # Specify a different offset mode per player here by the player's UUID.
 #   Get your UUID here: https://mcuuid.net/
+# NOTE: It is recommended that you use LuckPerms meta instead to apply offsets
+#   with more control (per-group, per-world, etc.)
 perPlayerOffsetProvider:
   00000000-0000-0000-0000-000000000000: constant  # example
 

@@ -8,18 +8,33 @@ import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.LiteralArgument;
+import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public final class CoordinateOffset extends JavaPlugin {
     private static CoordinateOffset instance;
     private static PlayerOffsetsManager playerOffsetsManager;
     private static OffsetProviderManager providerManager;
+    private static @Nullable LuckPermsIntegration luckPermsIntegration = null;
 
     @Override
     public void onEnable() {
         CommandAPI.onLoad(new CommandAPIBukkitConfig(this).silentLogs(true).verboseOutput(false));
         CommandAPI.onEnable();
+
+        try {
+            RegisteredServiceProvider<LuckPerms> luckPerms = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
+            if (luckPerms != null) {
+                luckPermsIntegration = new LuckPermsIntegration(luckPerms.getProvider());
+                getLogger().info("Enabled LuckPerms integration.");
+            }
+        } catch (NoClassDefFoundError ignored) {}
 
         instance = this;
         saveDefaultConfig();
@@ -62,6 +77,15 @@ public final class CoordinateOffset extends JavaPlugin {
 
     public static OffsetProviderManager getOffsetProviderManager() {
         return providerManager;
+    }
+
+    public static @Nullable LuckPermsIntegration getLuckPermsIntegration() {
+        return luckPermsIntegration;
+    }
+
+    static void impulseOffsetChange(@NotNull Player player, @NotNull World world, @NotNull OffsetProvider.ProvideReason reason) {
+        Offset offset = CoordinateOffset.getOffsetProviderManager().provideOffset(player, world, reason);
+        playerOffsetsManager.put(player, world, offset);
     }
 
     private void registerCommands() {

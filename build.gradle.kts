@@ -43,6 +43,7 @@ dependencies {
     compileOnly(files(localDependencyDir.resolve("ProtocolLib.jar")))
     implementation("dev.jorel:commandapi-bukkit-shade:9.0.3")
     implementation("com.jeff_media:MorePersistentDataTypes:2.4.0")
+    compileOnly("net.luckperms:api:5.4")
 }
 
 java {

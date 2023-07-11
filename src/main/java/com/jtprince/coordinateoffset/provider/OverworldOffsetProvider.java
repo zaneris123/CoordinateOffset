@@ -22,7 +22,11 @@ import org.jetbrains.annotations.NotNull;
  * <p>For more flexibility in controlling the Offsets per-world, consider implementing {@link OffsetProvider}
  * instead.</p>
  */
-public abstract class OverworldOffsetProvider implements OffsetProvider {
+public abstract class OverworldOffsetProvider extends OffsetProvider {
+    public OverworldOffsetProvider(String name) {
+        super(name);
+    }
+
     @Override
     public final @NotNull Offset getOffset(@NotNull Player player, @NotNull World world, @NotNull ProvideReason reason) {
         switch (world.getEnvironment()) {

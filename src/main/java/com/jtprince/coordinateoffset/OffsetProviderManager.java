@@ -16,7 +16,7 @@ public class OffsetProviderManager {
     private Map<String, OffsetProvider> providersFromConfig = new HashMap<>();
 
     private OffsetProvider defaultProvider;
-    private Map<UUID, OffsetProvider> perPlayerProviders = new HashMap<>();
+    private Map<UUID, OffsetProvider> perPlayerYamlProviders = new HashMap<>();
 
     private @NotNull Set<String> getOptionNames() {
         return providersFromConfig.keySet();
@@ -47,7 +47,7 @@ public class OffsetProviderManager {
                 throw new IllegalArgumentException("Offset provider " + providerName + " has an unknown class name " + className + ".");
             }
 
-            OffsetProvider provider = factory.createProvider(section);
+            OffsetProvider provider = factory.createProvider(providerName, section);
             newProviders.put(providerName, provider);
         }
 
@@ -78,17 +78,32 @@ public class OffsetProviderManager {
                 newPerPlayer.put(uuid, provider);
             }
         }
-        perPlayerProviders = newPerPlayer;
+        perPlayerYamlProviders = newPerPlayer;
 
         return newProviders.size();
     }
 
     @NotNull Offset provideOffset(@NotNull Player player, @NotNull World world, @NotNull OffsetProvider.ProvideReason reason) {
-        OffsetProvider provider;
-        if (perPlayerProviders.containsKey(player.getUniqueId())) {
-            provider = perPlayerProviders.get(player.getUniqueId());
+        OffsetProvider provider = defaultProvider;
+        ProviderSource providerSource = ProviderSource.DEFAULT;
+
+        if (perPlayerYamlProviders.containsKey(player.getUniqueId())) {
+            provider = perPlayerYamlProviders.get(player.getUniqueId());
+            providerSource = ProviderSource.CONFIG;
         } else {
-            provider = defaultProvider;
+            LuckPermsIntegration lp = CoordinateOffset.getLuckPermsIntegration();
+            if (lp != null) {
+                String lpMetaStr = lp.getProviderOverride(player, world);
+                if (lpMetaStr != null) {
+                    provider = providersFromConfig.get(lpMetaStr);
+                    if (provider == null) {
+                        CoordinateOffset.getInstance().getLogger().severe("Unknown provider for LuckPerms meta lookup on " + player.getName() + ": " + lpMetaStr + ". Options are " + String.join(", ", getOptionNames()));
+                        provider = defaultProvider;
+                    } else {
+                        providerSource = ProviderSource.LUCK_PERMS_META;
+                    }
+                }
+            }
         }
 
         Offset offset = provider.getOffset(player, world, reason);
@@ -102,9 +117,20 @@ public class OffsetProviderManager {
                 case DISTANT_TELEPORT -> reasonStr = "player teleported";
             }
 
-            CoordinateOffset.getInstance().getLogger().info("Using " + offset + " for " + player.getName() + " in " + world.getName() + (reasonStr == null ? "." : (" (" + reasonStr + ").")));
+            String sourceStr = null;
+            switch (providerSource) {
+                case DEFAULT -> sourceStr = "default provider";
+                case CONFIG -> sourceStr = "config.yml override";
+                case LUCK_PERMS_META -> sourceStr = "LuckPerms meta override";
+            }
+
+            CoordinateOffset.getInstance().getLogger().info("Using " + offset + " from provider \"" + provider.name + "\" (" + sourceStr + ") for player " + player.getName() + " in " + world.getName() + " (" + reasonStr + ").");
         }
         return offset;
+    }
+
+    enum ProviderSource {
+        DEFAULT, CONFIG, LUCK_PERMS_META
     }
 
     void quitPlayer(@NotNull Player player) {

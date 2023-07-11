@@ -1,15 +1,11 @@
 package com.jtprince.coordinateoffset;
 
-import org.bukkit.World;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.jetbrains.annotations.NotNull;
-import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
 import java.util.Objects;
 
@@ -21,20 +17,9 @@ public class BukkitEventListener implements Listener {
         this.players = playerOffsetsManager;
     }
 
-    private void impulseChange(@NotNull Player player, @NotNull World world, @NotNull OffsetProvider.ProvideReason reason) {
-        Offset offset = CoordinateOffset.getOffsetProviderManager().provideOffset(player, world, reason);
-        players.put(player, world, offset);
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onPlayerSpawn(PlayerSpawnLocationEvent event) {
-        /* Despite being named "SpawnLocation", this event is called every time a Player joins. */
-        impulseChange(event.getPlayer(), Objects.requireNonNull(event.getSpawnLocation().getWorld()), OffsetProvider.ProvideReason.JOIN);
-    }
-
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerRespawn(PlayerRespawnEvent event) {
-        impulseChange(event.getPlayer(), Objects.requireNonNull(event.getRespawnLocation().getWorld()), OffsetProvider.ProvideReason.RESPAWN);
+        CoordinateOffset.impulseOffsetChange(event.getPlayer(), Objects.requireNonNull(event.getRespawnLocation().getWorld()), OffsetProvider.ProvideReason.RESPAWN);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -48,7 +33,7 @@ public class BukkitEventListener implements Listener {
 
         if (reason == null) return;
 
-        impulseChange(event.getPlayer(), Objects.requireNonNull(event.getTo().getWorld()), reason);
+        CoordinateOffset.impulseOffsetChange(event.getPlayer(), Objects.requireNonNull(event.getTo().getWorld()), reason);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

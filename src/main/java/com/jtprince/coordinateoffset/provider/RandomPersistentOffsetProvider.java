@@ -9,12 +9,16 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public class RandomPersistentOffsetProvider implements OffsetProvider {
+public class RandomPersistentOffsetProvider extends OffsetProvider {
     private boolean alignOverworldAndNether;
     private boolean applyInEnd;
     private int randomBound;
 
     private NamespacedKey offsetKey;
+
+    public RandomPersistentOffsetProvider(String name) {
+        super(name);
+    }
 
     @Override
     public @NotNull Offset getOffset(@NotNull Player player, @NotNull World world, @NotNull ProvideReason reason) {
@@ -36,12 +40,12 @@ public class RandomPersistentOffsetProvider implements OffsetProvider {
 
     public static class ConfigFactory implements ConfigurationFactory<RandomPersistentOffsetProvider> {
         @Override
-        public @NotNull RandomPersistentOffsetProvider createProvider(ConfigurationSection configSection) throws IllegalArgumentException {
+        public @NotNull RandomPersistentOffsetProvider createProvider(String name, ConfigurationSection configSection) throws IllegalArgumentException {
             if (!configSection.isInt("randomBound")) {
                 throw new IllegalArgumentException("Missing field randomBound for RandomPersistentOffsetProvider.");
             }
 
-            RandomPersistentOffsetProvider p = new RandomPersistentOffsetProvider();
+            RandomPersistentOffsetProvider p = new RandomPersistentOffsetProvider(name);
             p.alignOverworldAndNether = configSection.getBoolean("alignOverworldAndNether", true);
             p.applyInEnd = configSection.getBoolean("applyInEnd", true);
             // TODO: persistenceKey is not in the default yml

@@ -11,13 +11,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class RandomOffsetProvider implements OffsetProvider {
+public class RandomOffsetProvider extends OffsetProvider {
     private boolean persistAcrossRespawns;
     private boolean persistAcrossWorldChanges;
     private boolean persistAcrossDistantTeleports;
     private int randomBound;
 
     private final Map<UUID, Map<UUID, Offset>> playerCache = new HashMap<>();
+
+    public RandomOffsetProvider(String name) {
+        super(name);
+    }
 
     @Override
     public @NotNull Offset getOffset(@NotNull Player player, @NotNull World world, @NotNull ProvideReason reason) {
@@ -52,12 +56,12 @@ public class RandomOffsetProvider implements OffsetProvider {
 
     public static class ConfigFactory implements OffsetProvider.ConfigurationFactory<RandomOffsetProvider> {
         @Override
-        public @NotNull RandomOffsetProvider createProvider(ConfigurationSection configSection) throws IllegalArgumentException {
+        public @NotNull RandomOffsetProvider createProvider(String name, ConfigurationSection configSection) throws IllegalArgumentException {
             if (!configSection.isInt("randomBound")) {
                 throw new IllegalArgumentException("Missing field randomBound for RandomOffsetProvider.");
             }
 
-            RandomOffsetProvider p = new RandomOffsetProvider();
+            RandomOffsetProvider p = new RandomOffsetProvider(name);
             p.persistAcrossRespawns = configSection.getBoolean("persistAcrossRespawns");
             p.persistAcrossWorldChanges = configSection.getBoolean("persistAcrossWorldChanges");
             p.persistAcrossDistantTeleports = configSection.getBoolean("persistAcrossDistantTeleports");
