@@ -29,7 +29,7 @@ public class RandomPersistentOffsetProvider extends OffsetProvider {
         }
 
         if (alignOverworldAndNether && context.world().getEnvironment() == World.Environment.NETHER) {
-            return offset.toNetherOffset();
+            return offset.toNetherFromOverworldOffset();
         }
         if (!applyInEnd && context.world().getEnvironment() == World.Environment.THE_END) {
             return Offset.ZERO;
@@ -40,17 +40,17 @@ public class RandomPersistentOffsetProvider extends OffsetProvider {
 
     public static class ConfigFactory implements ConfigurationFactory<RandomPersistentOffsetProvider> {
         @Override
-        public @NotNull RandomPersistentOffsetProvider createProvider(String name, ConfigurationSection configSection) throws IllegalArgumentException {
-            if (!configSection.isInt("randomBound")) {
+        public @NotNull RandomPersistentOffsetProvider createProvider(String name, CoordinateOffset plugin, ConfigurationSection providerConfig) throws IllegalArgumentException {
+            if (!providerConfig.isInt("randomBound")) {
                 throw new IllegalArgumentException("Missing field randomBound for RandomPersistentOffsetProvider.");
             }
 
             RandomPersistentOffsetProvider p = new RandomPersistentOffsetProvider(name);
-            p.alignOverworldAndNether = configSection.getBoolean("alignOverworldAndNether", true);
-            p.applyInEnd = configSection.getBoolean("applyInEnd", true);
+            p.alignOverworldAndNether = providerConfig.getBoolean("alignOverworldAndNether", true);
+            p.applyInEnd = providerConfig.getBoolean("applyInEnd", true);
             // TODO: persistenceKey is not in the default yml
-            p.offsetKey = new NamespacedKey(CoordinateOffset.getInstance(), "persistentoffset." + configSection.getString("persistenceKey", "default"));
-            p.randomBound = configSection.getInt("randomBound");
+            p.offsetKey = new NamespacedKey(plugin, "persistentoffset." + providerConfig.getString("persistenceKey", "default"));
+            p.randomBound = providerConfig.getInt("randomBound");
             return p;
         }
     }

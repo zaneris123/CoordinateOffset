@@ -11,17 +11,25 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Random;
 
 /**
- * Represents a coordinate offset in block space.
+ * Represents the amount by which a player's clientside X and Z coordinates will appear shifted compared to their real
+ * position in a world.
  *
- * <p>An offset of (16, 16) would result in a player seeing themselves at (0, 0) when they are standing at (16, 16) in
- * the Overworld, and seeing themselves standing at (-16, -16) when they are standing at the real origin.</p>
+ * <p>An offset of <code>(16, 16)</code> would result in a player seeing themselves at <code>(0, 0)</code> when they are
+ * standing at <code>(16, 16)</code> in the Overworld, and seeing themselves standing at <code>(-16, -16)</code> when
+ * they are standing at the real origin.</p>
  *
- * @param x Block X coordinate. Must be a multiple of 16 to align with chunk boundaries.
- * @param z Block Z coordinate. Must be a multiple of 16 to align with chunk boundaries.
+ * @param x Offset amount for the X coordinate. Must be a multiple of 16 to align with chunk boundaries.
+ * @param z Offset amount for the Z coordinate. Must be a multiple of 16 to align with chunk boundaries.
  */
 public record Offset (int x, int z) {
+    /**
+     * The "zero" or identity Offset, which results in no transformation from real-world coordinates.
+     */
     public static final Offset ZERO = new Offset(0, 0);
 
+    /**
+     * Type for storing Offsets in Persistent Data Containers (PDC).
+     */
     public static final PersistentDataType<int[], Offset> PDT_TYPE =
             new GenericDataType<>(DataType.INTEGER_ARRAY.getPrimitiveType(), Offset.class, Offset::fromPdt, Offset::toPdt);
 
@@ -35,9 +43,10 @@ public record Offset (int x, int z) {
     }
 
     /**
-     * Get a random Offset, with x and z in the range <code>(-bound, bound)</code>.
+     * Get a random Offset, with X and Z in the range <code>(-bound, bound)</code>.
+     *
      * @param bound Maximum absolute value of each offset dimension.
-     * @return A new Offset aligned to 128-blocks.
+     * @return A new Offset with values that are multiples of 128 blocks.
      */
     public static @NotNull Offset random(int bound) {
         Random random = new Random();
@@ -51,8 +60,9 @@ public record Offset (int x, int z) {
      * @param x X offset
      * @param z Z offset
      * @param to8Chunks To make Nether translations more predictable, Overworld offsets should also be divisible by 16
-     *                  even after dividing once by 8. If this parameter is true, the result will be aligned to
-     *                  128-blocks; if false, the result will be aligned only to 16-blocks.
+     *                  even after dividing once by 8. If this parameter is true, the resulting components will be
+     *                  multiples of 128 blocks; if false, the components will only necessarily be multiples of 16
+     *                  blocks.
      * @return A new Offset.
      */
     public static @NotNull Offset align(int x, int z, boolean to8Chunks) {
@@ -80,7 +90,7 @@ public record Offset (int x, int z) {
      * @return A new Offset with coordinates divided by 8 and rounded to align with chunk boundaries.
      */
     @Pure
-    public Offset toNetherOffset() {
+    public Offset toNetherFromOverworldOffset() {
         return new Offset(x >> 7 << 4, z >> 7 << 4);
     }
 
@@ -107,7 +117,7 @@ public record Offset (int x, int z) {
      * @return A new Location object that represents the coordinates that the player will see.
      */
     @Pure
-    public Location offsetted(Location realLocation) {
+    public Location apply(Location realLocation) {
         if (realLocation == null) return null;
         return realLocation.clone().subtract(this.x, 0, this.z);
     }
@@ -123,7 +133,7 @@ public record Offset (int x, int z) {
      * @return A new BlockPosition object that represents the coordinates that the player will see.
      */
     @Pure
-    public BlockPosition offsetted(BlockPosition realPosition) {
+    public BlockPosition apply(BlockPosition realPosition) {
         if (realPosition == null) return null;
         return realPosition.subtract(new BlockPosition(this.x, 0, this.z));
     }
@@ -135,7 +145,7 @@ public record Offset (int x, int z) {
      * @return A new Location object that represents the real Location for the server to use.
      */
     @Pure
-    public Location unoffsetted(Location offsettedLocation) {
+    public Location unapply(Location offsettedLocation) {
         if (offsettedLocation == null) return null;
         return offsettedLocation.clone().add(this.x, 0, this.z);
     }
@@ -147,7 +157,7 @@ public record Offset (int x, int z) {
      * @return A new BlockPosition object that represents the real BlockPosition for the server to use.
      */
     @Pure
-    public BlockPosition unoffsetted(BlockPosition offsettedPosition) {
+    public BlockPosition unapply(BlockPosition offsettedPosition) {
         if (offsettedPosition == null) return null;
         return offsettedPosition.add(new BlockPosition(this.x, 0, this.z));
     }

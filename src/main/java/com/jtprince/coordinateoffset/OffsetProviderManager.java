@@ -10,12 +10,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-public class OffsetProviderManager {
+class OffsetProviderManager {
+    private final CoordinateOffset plugin;
     private final Map<String, OffsetProvider.ConfigurationFactory<?>> configFactories = new HashMap<>();
     private Map<String, OffsetProvider> providersFromConfig = new HashMap<>();
 
     private OffsetProvider defaultProvider;
     private Map<UUID, OffsetProvider> perPlayerYamlProviders = new HashMap<>();
+
+    OffsetProviderManager(CoordinateOffset plugin) {
+        this.plugin = plugin;
+    }
 
     private @NotNull Set<String> getOptionNames() {
         return providersFromConfig.keySet();
@@ -46,7 +51,7 @@ public class OffsetProviderManager {
                 throw new IllegalArgumentException("Offset provider " + providerName + " has an unknown class name " + className + ".");
             }
 
-            OffsetProvider provider = factory.createProvider(providerName, section);
+            OffsetProvider provider = factory.createProvider(providerName, plugin, section);
             newProviders.put(providerName, provider);
         }
 
@@ -90,13 +95,13 @@ public class OffsetProviderManager {
             provider = perPlayerYamlProviders.get(context.player().getUniqueId());
             providerSource = ProviderSource.CONFIG;
         } else {
-            LuckPermsIntegration lp = CoordinateOffset.getLuckPermsIntegration();
+            LuckPermsIntegration lp = plugin.getLuckPermsIntegration();
             if (lp != null) {
                 String lpMetaStr = lp.getProviderOverride(context.player(), context.world());
                 if (lpMetaStr != null) {
                     provider = providersFromConfig.get(lpMetaStr);
                     if (provider == null) {
-                        CoordinateOffset.getInstance().getLogger().severe("Unknown provider for LuckPerms meta lookup on " + context.player().getName() + ": " + lpMetaStr + ". Options are " + String.join(", ", getOptionNames()));
+                        plugin.getLogger().severe("Unknown provider for LuckPerms meta lookup on " + context.player().getName() + ": " + lpMetaStr + ". Options are " + String.join(", ", getOptionNames()));
                         provider = defaultProvider;
                     } else {
                         providerSource = ProviderSource.LUCK_PERMS_META;
@@ -107,7 +112,7 @@ public class OffsetProviderManager {
 
         Offset offset = provider.getOffset(context);
 
-        if (CoordinateOffset.getInstance().getConfig().getBoolean("verbose")) {
+        if (plugin.getConfig().getBoolean("verbose")) {
             String reasonStr = null;
             switch (context.reason()) {
                 case JOIN -> reasonStr = "player joined";
@@ -123,7 +128,7 @@ public class OffsetProviderManager {
                 case LUCK_PERMS_META -> sourceStr = "LuckPerms meta override";
             }
 
-            CoordinateOffset.getInstance().getLogger().info(
+            plugin.getLogger().info(
                     "Using " + offset + " from provider \"" + provider.name + "\" (" + sourceStr + ") " +
                             "for player " + context.player().getName() + " in " + context.world().getName() + " (" + reasonStr + ").");
         }

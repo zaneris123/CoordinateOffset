@@ -191,11 +191,11 @@ public class TranslatorClientbound {
 									if (NMS_BLOCK_POSITION_CLASS.isInstance(val)) {
 										wrappedWatchableObject.setValue(Optional.of(offsetPositionMc(logger, offset, val)));
 									} else if (val instanceof BlockPosition blockPosition) {
-										wrappedWatchableObject.setValue(Optional.of(offset.offsetted(blockPosition)));
+										wrappedWatchableObject.setValue(Optional.of(offset.apply(blockPosition)));
 									}
 								}
 							} else if (oldValue instanceof BlockPosition blockPosition) {
-								wrappedWatchableObject.setValue(offset.offsetted(blockPosition));
+								wrappedWatchableObject.setValue(offset.apply(blockPosition));
 							}
 							result.add(wrappedWatchableObject);
 						}
@@ -219,7 +219,7 @@ public class TranslatorClientbound {
 	private static void fixDeathLocation(Logger logger, PacketContainer packet, Offset offset) {
 		if (packet.getOptionalStructures().size() > 0) {
 			packet.getOptionalStructures().modify(0, p -> {
-				p.ifPresent(internalStructure -> internalStructure.getBlockPositionModifier().modify(0, offset::offsetted));
+				p.ifPresent(internalStructure -> internalStructure.getBlockPositionModifier().modify(0, offset::apply));
 				return p;
 			});
 		} else {
@@ -261,7 +261,7 @@ public class TranslatorClientbound {
 				org.bukkit.inventory.meta.CompassMeta compassMeta = (org.bukkit.inventory.meta.CompassMeta) itemMeta;
 				Location lodestoneLocation = compassMeta.getLodestone();
 				if (lodestoneLocation != null) {
-					compassMeta.setLodestone(offset.offsetted(lodestoneLocation));
+					compassMeta.setLodestone(offset.apply(lodestoneLocation));
 					if (!itemStack.setItemMeta(compassMeta)) {
 						logger.severe("Can't apply meta");
 					}
@@ -406,7 +406,7 @@ public class TranslatorClientbound {
 
 	private static void sendBlockPosition(Logger logger, final PacketContainer packet, final Offset offset) {
 		if (packet.getBlockPositionModifier().size() > 0) {
-			packet.getBlockPositionModifier().modify(0, offset::offsetted);
+			packet.getBlockPositionModifier().modify(0, offset::apply);
 		} else {
 			logger.severe("Packet size error");
 		}
@@ -418,7 +418,7 @@ public class TranslatorClientbound {
 			if (outerStructure.getStructures().size() > 0) {
 				InternalStructure innerStructure = outerStructure.getStructures().read(0);
 				if (innerStructure.getBlockPositionModifier().size() > 0) {
-					innerStructure.getBlockPositionModifier().modify(0, offset::offsetted);
+					innerStructure.getBlockPositionModifier().modify(0, offset::apply);
 				}
 			}
 		} else {

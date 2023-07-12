@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Container for relevant information when determining a new Offset.
+ * Container for relevant information when calculating a new {@link Offset}.
  *
  * @param player The Player that will receive this new Offset.
  * @param world The World this Offset will apply to. Note that this may be different from <code>player.getWorld()</code>

@@ -1,5 +1,6 @@
 package com.jtprince.coordinateoffset.provider;
 
+import com.jtprince.coordinateoffset.CoordinateOffset;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.OffsetProvider;
 import com.jtprince.coordinateoffset.OffsetProviderContext;
@@ -57,7 +58,7 @@ public class ZeroOnJoinOffsetProvider extends OffsetProvider {
                     UUID lastOverworldUuid = lastKnownPlayerOverworld.get(context.player().getUniqueId());
                     if (lastOverworldUuid == null) break;
                     offset = thisPlayerCache.get(lastOverworldUuid);
-                    if (offset != null) offset = offset.toNetherOffset();
+                    if (offset != null) offset = offset.toNetherFromOverworldOffset();
                 }
             }
         }
@@ -80,9 +81,9 @@ public class ZeroOnJoinOffsetProvider extends OffsetProvider {
 
     public static class ConfigFactory implements OffsetProvider.ConfigurationFactory<ZeroOnJoinOffsetProvider> {
         @Override
-        public @NotNull ZeroOnJoinOffsetProvider createProvider(String name, ConfigurationSection configSection) throws IllegalArgumentException {
+        public @NotNull ZeroOnJoinOffsetProvider createProvider(String name, CoordinateOffset plugin, ConfigurationSection providerConfig) throws IllegalArgumentException {
             ZeroOnJoinOffsetProvider p = new ZeroOnJoinOffsetProvider(name);
-            p.alignOverworldAndNether = configSection.getBoolean("alignOverworldAndNether");
+            p.alignOverworldAndNether = providerConfig.getBoolean("alignOverworldAndNether");
             return p;
         }
     }

@@ -17,7 +17,7 @@ import org.warp.coordinatesobfuscator.TranslatorServerbound;
 import java.util.Set;
 import java.util.logging.Logger;
 
-public class PacketOffsetAdapter {
+class PacketOffsetAdapter {
     private final CoordinateOffset plugin;
     private final Logger logger;
     private static final Set<PacketType> PACKETS_SERVER = Set.of(
@@ -73,12 +73,12 @@ public class PacketOffsetAdapter {
         Client.UPDATE_SIGN
     );
 
-    public PacketOffsetAdapter(CoordinateOffset plugin) {
+    PacketOffsetAdapter(CoordinateOffset plugin) {
         this.plugin = plugin;
         this.logger = plugin.getLogger();
     }
 
-    public void registerAdapters() {
+    void registerAdapters() {
         final ProtocolManager pm = ProtocolLibrary.getProtocolManager();
         pm.addPacketListener(new AdapterServer());
         pm.addPacketListener(new AdapterClient());
@@ -94,7 +94,7 @@ public class PacketOffsetAdapter {
             var packet = event.getPacket();
 
             if (packet.getType() == Server.LOGIN) {
-                CoordinateOffset.impulseOffsetChange(new OffsetProviderContext(
+                PacketOffsetAdapter.this.plugin.impulseOffsetChange(new OffsetProviderContext(
                         event.getPlayer(), event.getPlayer().getWorld(),
                         event.getPlayer().getLocation(), OffsetProviderContext.ProvideReason.JOIN));
             }
@@ -107,9 +107,9 @@ public class PacketOffsetAdapter {
                  * Player#getWorld function, we'll get the offset for the world the player is coming *from*.
                  * We shouldn't validate that the offset lookup has a matching World in this case only.
                  */
-                offset = CoordinateOffset.getPlayerManager().get(event.getPlayer(), null);
+                offset = PacketOffsetAdapter.this.plugin.getPlayerManager().get(event.getPlayer(), null);
             } else {
-                offset = CoordinateOffset.getPlayerManager().get(event.getPlayer(), event.getPlayer().getWorld());
+                offset = PacketOffsetAdapter.this.plugin.getPlayerManager().get(event.getPlayer(), event.getPlayer().getWorld());
             }
 
             PacketContainer cloned = TranslatorClientbound.outgoing(logger, packet, offset);
@@ -130,7 +130,7 @@ public class PacketOffsetAdapter {
         @Override
         public void onPacketReceiving(PacketEvent event) {
             var packet = event.getPacket();
-            var offset = CoordinateOffset.getPlayerManager().get(event.getPlayer(), event.getPlayer().getWorld());
+            var offset = PacketOffsetAdapter.this.plugin.getPlayerManager().get(event.getPlayer(), event.getPlayer().getWorld());
             TranslatorServerbound.incoming(logger, packet, offset);
         }
     }

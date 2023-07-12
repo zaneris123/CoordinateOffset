@@ -1,5 +1,6 @@
 package com.jtprince.coordinateoffset.provider;
 
+import com.jtprince.coordinateoffset.CoordinateOffset;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.OffsetProvider;
 import com.jtprince.coordinateoffset.OffsetProviderContext;
@@ -56,16 +57,16 @@ public class RandomOffsetProvider extends OffsetProvider {
 
     public static class ConfigFactory implements OffsetProvider.ConfigurationFactory<RandomOffsetProvider> {
         @Override
-        public @NotNull RandomOffsetProvider createProvider(String name, ConfigurationSection configSection) throws IllegalArgumentException {
-            if (!configSection.isInt("randomBound")) {
+        public @NotNull RandomOffsetProvider createProvider(String name, CoordinateOffset plugin, ConfigurationSection providerConfig) throws IllegalArgumentException {
+            if (!providerConfig.isInt("randomBound")) {
                 throw new IllegalArgumentException("Missing field randomBound for RandomOffsetProvider.");
             }
 
             RandomOffsetProvider p = new RandomOffsetProvider(name);
-            p.persistAcrossRespawns = configSection.getBoolean("persistAcrossRespawns");
-            p.persistAcrossWorldChanges = configSection.getBoolean("persistAcrossWorldChanges");
-            p.persistAcrossDistantTeleports = configSection.getBoolean("persistAcrossDistantTeleports");
-            p.randomBound = configSection.getInt("randomBound");
+            p.persistAcrossRespawns = providerConfig.getBoolean("persistAcrossRespawns");
+            p.persistAcrossWorldChanges = providerConfig.getBoolean("persistAcrossWorldChanges");
+            p.persistAcrossDistantTeleports = providerConfig.getBoolean("persistAcrossDistantTeleports");
+            p.randomBound = providerConfig.getInt("randomBound");
             return p;
         }
     }

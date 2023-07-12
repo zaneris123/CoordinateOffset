@@ -13,15 +13,21 @@ import java.util.UUID;
 /**
  * Container for the offset a player currently has.
  */
-public class PlayerOffsetsManager {
+class PlayerOffsetsManager {
+    private final CoordinateOffset plugin;
+
     private final Map<UUID, Offset> playerOffsets = new HashMap<>();
     private final Map<UUID, UUID> playerKnownWorlds = new HashMap<>();
+
+    PlayerOffsetsManager(CoordinateOffset plugin) {
+        this.plugin = plugin;
+    }
 
     /*
      * TODO: The expectedWorld argument can be dropped, as it just provides validation that the caller knows which
      *  world this Offset applies to.
      */
-    public synchronized @NotNull Offset get(@NotNull Player player, @Nullable World expectedWorld) {
+    synchronized @NotNull Offset get(@NotNull Player player, @Nullable World expectedWorld) {
         Offset offset = playerOffsets.get(player.getUniqueId());
         if (offset == null) {
             throw new NoSuchElementException("Unknown player for Offset lookup: " + player.getName());
@@ -30,7 +36,7 @@ public class PlayerOffsetsManager {
         if (expectedWorld != null) {
             UUID knownWorld = playerKnownWorlds.get(player.getUniqueId());
             if (expectedWorld.getUID() != knownWorld) {
-                CoordinateOffset.getInstance().getLogger().severe("Mismatched world for provided offsets! (" + expectedWorld.getName() + ")");
+                plugin.getLogger().severe("Mismatched world for provided offsets! (" + expectedWorld.getName() + ")");
             }
         }
 

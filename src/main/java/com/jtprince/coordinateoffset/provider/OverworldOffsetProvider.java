@@ -31,7 +31,7 @@ public abstract class OverworldOffsetProvider extends OffsetProvider {
     public final @NotNull Offset getOffset(@NotNull OffsetProviderContext context) {
         switch (context.world().getEnvironment()) {
             case NORMAL, CUSTOM -> { return getOverworldOffset(context.player()); }
-            case NETHER -> { return getOverworldOffset(context.player()).toNetherOffset(); }
+            case NETHER -> { return getOverworldOffset(context.player()).toNetherFromOverworldOffset(); }
             case THE_END -> { return Offset.ZERO; }
         }
 

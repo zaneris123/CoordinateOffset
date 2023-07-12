@@ -9,17 +9,20 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 
 import java.util.Objects;
 
-public class BukkitEventListener implements Listener {
+class BukkitEventListener implements Listener {
     private static final double MIN_TELEPORT_DISTANCE_TO_RESET = 2050;  // From upstream TranslatorClientbound#respawn
+
+    private final CoordinateOffset plugin;
     private final PlayerOffsetsManager players;
 
-    public BukkitEventListener(PlayerOffsetsManager playerOffsetsManager) {
+    BukkitEventListener(CoordinateOffset plugin, PlayerOffsetsManager playerOffsetsManager) {
+        this.plugin = plugin;
         this.players = playerOffsetsManager;
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerRespawn(PlayerRespawnEvent event) {
-        CoordinateOffset.impulseOffsetChange(new OffsetProviderContext(
+        plugin.impulseOffsetChange(new OffsetProviderContext(
                 event.getPlayer(), Objects.requireNonNull(event.getRespawnLocation().getWorld()),
                 event.getRespawnLocation(), OffsetProviderContext.ProvideReason.RESPAWN));
     }
@@ -35,7 +38,7 @@ public class BukkitEventListener implements Listener {
 
         if (reason == null) return;
 
-        CoordinateOffset.impulseOffsetChange(new OffsetProviderContext(
+        plugin.impulseOffsetChange(new OffsetProviderContext(
                 event.getPlayer(), Objects.requireNonNull(event.getTo().getWorld()),
                 event.getTo(), OffsetProviderContext.ProvideReason.RESPAWN));
     }
@@ -43,6 +46,6 @@ public class BukkitEventListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(PlayerQuitEvent event) {
         players.remove(event.getPlayer());
-        CoordinateOffset.getOffsetProviderManager().quitPlayer(event.getPlayer());
+        plugin.getOffsetProviderManager().quitPlayer(event.getPlayer());
     }
 }

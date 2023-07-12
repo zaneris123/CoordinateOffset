@@ -11,6 +11,7 @@ import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.LiteralArgument;
 import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -18,9 +19,9 @@ import org.jetbrains.annotations.Nullable;
 
 public final class CoordinateOffset extends JavaPlugin {
     private static CoordinateOffset instance;
-    private static PlayerOffsetsManager playerOffsetsManager;
-    private static OffsetProviderManager providerManager;
-    private static @Nullable LuckPermsIntegration luckPermsIntegration = null;
+    private @Nullable LuckPermsIntegration luckPermsIntegration = null;
+    private PlayerOffsetsManager playerOffsetsManager;
+    private OffsetProviderManager providerManager;
 
     @Override
     public void onEnable() {
@@ -38,10 +39,10 @@ public final class CoordinateOffset extends JavaPlugin {
         instance = this;
         saveDefaultConfig();
 
-        playerOffsetsManager = new PlayerOffsetsManager();
-        Bukkit.getPluginManager().registerEvents(new BukkitEventListener(playerOffsetsManager), this);
+        playerOffsetsManager = new PlayerOffsetsManager(this);
+        providerManager = new OffsetProviderManager(this);
+        Bukkit.getPluginManager().registerEvents(new BukkitEventListener(this, playerOffsetsManager), this);
 
-        providerManager = new OffsetProviderManager();
         providerManager.registerConfigurationFactory("ConstantOffsetProvider", new ConstantOffsetProvider.ConfigFactory());
         providerManager.registerConfigurationFactory("RandomOffsetProvider", new RandomOffsetProvider.ConfigFactory());
         providerManager.registerConfigurationFactory("RandomPersistentOffsetProvider", new RandomPersistentOffsetProvider.ConfigFactory());
@@ -61,30 +62,55 @@ public final class CoordinateOffset extends JavaPlugin {
         // Plugin shutdown logic
     }
 
+    /**
+     * Reload the CoordinateOffset configuration defined in <code>config.yml</code>.
+     */
     public void reload() {
         reloadConfig();
         providerManager.loadProvidersFromConfig(getConfig());
         getLogger().info("Config reloaded.");
     }
 
-    public static CoordinateOffset getInstance() {
+    /**
+     * Get the loaded instance of the CoordinateOffset plugin on the server.
+     * @return The instance of the plugin, or <code>null</code> if the plugin is not loaded.
+     */
+    @SuppressWarnings("unused")
+    public static @Nullable CoordinateOffset getInstance() {
         return instance;
     }
 
-    public static PlayerOffsetsManager getPlayerManager() {
+    /**
+     * Get the currently active coordinate {@link Offset} for a player.
+     *
+     * <p>For example, a player might have a coordinate Offset of <code>(128, 128)</code>. This would mean that the
+     * player's "F3" menu reports that they are standing at <code>(0, 0)</code> when they are really standing at
+     * <code>(128, 128)</code>.</p>
+     *
+     * <p>This Offset is subject to change, for example if the Player changes worlds.</p>
+     *
+     * @param player A player currently logged in to the server.
+     * @return The coordinate Offset this player sees, or <code>Offset.ZERO</code> if the player has no offset.
+     */
+    @SuppressWarnings("unused")
+    public @NotNull Offset getOffset(Player player) {
+        return playerOffsetsManager.get(player, player.getWorld());
+    }
+
+    PlayerOffsetsManager getPlayerManager() {
         return playerOffsetsManager;
     }
 
-    public static OffsetProviderManager getOffsetProviderManager() {
+    OffsetProviderManager getOffsetProviderManager() {
         return providerManager;
     }
 
-    public static @Nullable LuckPermsIntegration getLuckPermsIntegration() {
+    @Nullable LuckPermsIntegration getLuckPermsIntegration() {
         return luckPermsIntegration;
     }
 
-    static void impulseOffsetChange(@NotNull OffsetProviderContext context) {
-        Offset offset = CoordinateOffset.getOffsetProviderManager().provideOffset(context);
+    void impulseOffsetChange(@NotNull OffsetProviderContext context) {
+        Offset offset = providerManager.provideOffset(context);
         playerOffsetsManager.put(context.player(), context.world(), offset);
     }
 
