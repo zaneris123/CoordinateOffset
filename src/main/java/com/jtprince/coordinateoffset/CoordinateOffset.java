@@ -6,9 +6,6 @@ import com.jtprince.coordinateoffset.provider.RandomPersistentOffsetProvider;
 import com.jtprince.coordinateoffset.provider.ZeroOnJoinOffsetProvider;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
-import dev.jorel.commandapi.CommandAPICommand;
-import dev.jorel.commandapi.CommandPermission;
-import dev.jorel.commandapi.arguments.LiteralArgument;
 import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -41,6 +38,7 @@ public final class CoordinateOffset extends JavaPlugin {
 
         playerOffsetsManager = new PlayerOffsetsManager(this);
         providerManager = new OffsetProviderManager(this);
+        new CoordinateOffsetCommands(this).registerCommands();
         Bukkit.getPluginManager().registerEvents(new BukkitEventListener(this, playerOffsetsManager), this);
 
         providerManager.registerConfigurationFactory("ConstantOffsetProvider", new ConstantOffsetProvider.ConfigFactory());
@@ -53,8 +51,6 @@ public final class CoordinateOffset extends JavaPlugin {
         getLogger().info("Loaded " + providers + " offset providers from config.");
 
         new PacketOffsetAdapter(this).registerAdapters();
-
-        registerCommands();
     }
 
     @Override
@@ -112,21 +108,5 @@ public final class CoordinateOffset extends JavaPlugin {
     void impulseOffsetChange(@NotNull OffsetProviderContext context) {
         Offset offset = providerManager.provideOffset(context);
         playerOffsetsManager.put(context.player(), context.world(), offset);
-    }
-
-    private void registerCommands() {
-        new CommandAPICommand("offset")
-            .withPermission(CommandPermission.OP)
-            .withArguments(LiteralArgument.of("reload"))
-            .executes((sender, args) -> {
-                try {
-                    reload();
-                    sender.sendMessage("Reloaded CoordinateOffset config. Players may need to relog to see the changes.");
-                } catch (Exception e) {
-                    sender.sendMessage("Failed to reload the config. Check the console for details.");
-                    e.printStackTrace();
-                }
-            })
-            .register();
     }
 }

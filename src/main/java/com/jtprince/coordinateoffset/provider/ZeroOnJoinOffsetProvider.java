@@ -65,7 +65,8 @@ public class ZeroOnJoinOffsetProvider extends OffsetProvider {
 
         if (offset == null) {
             Location loc = context.playerLocation();
-            offset = Offset.align(loc.getBlockX(), loc.getBlockZ(), context.world().getEnvironment() != World.Environment.NETHER);
+            boolean alignTo8Chunks = alignOverworldAndNether && context.world().getEnvironment() == World.Environment.NORMAL;
+            offset = Offset.align(loc.getBlockX(), loc.getBlockZ(), alignTo8Chunks);
         }
 
         thisPlayerCache.put(context.world().getUID(), offset);
