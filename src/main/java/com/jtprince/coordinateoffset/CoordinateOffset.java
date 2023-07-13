@@ -47,8 +47,7 @@ public final class CoordinateOffset extends JavaPlugin {
         providerManager.registerConfigurationFactory("ZeroOnJoinOffsetProvider", new ZeroOnJoinOffsetProvider.ConfigFactory());
 
         // TBD: Allow extensions to register their providers first.
-        int providers = providerManager.loadProvidersFromConfig(getConfig());
-        getLogger().info("Loaded " + providers + " offset providers from config.");
+        providerManager.loadProvidersFromConfig(getConfig());
 
         new PacketOffsetAdapter(this).registerAdapters();
     }

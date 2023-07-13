@@ -1,14 +1,13 @@
 package com.jtprince.coordinateoffset;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 class OffsetProviderManager {
     private final CoordinateOffset plugin;
@@ -16,7 +15,7 @@ class OffsetProviderManager {
     private Map<String, OffsetProvider> providersFromConfig = new HashMap<>();
 
     private OffsetProvider defaultProvider;
-    private Map<UUID, OffsetProvider> perPlayerYamlProviders = new HashMap<>();
+    private List<ProviderOverride> overrides = Collections.emptyList();
 
     OffsetProviderManager(CoordinateOffset plugin) {
         this.plugin = plugin;
@@ -30,7 +29,7 @@ class OffsetProviderManager {
         configFactories.put(className, factory);
     }
 
-    int loadProvidersFromConfig(@NotNull FileConfiguration config) throws IllegalArgumentException {
+    void loadProvidersFromConfig(@NotNull FileConfiguration config) throws IllegalArgumentException {
         ConfigurationSection providerSection = config.getConfigurationSection("offsetProviders");
         if (providerSection == null) {
             throw new IllegalArgumentException("Missing offsetProviders section from config!");
@@ -40,15 +39,15 @@ class OffsetProviderManager {
         for (String providerName : providerSection.getKeys(false)) {
             ConfigurationSection section = providerSection.getConfigurationSection(providerName);
             if (section == null) {
-                throw new IllegalArgumentException("Offset provider " + providerName + " is not a valid configuration section.");
+                throw new IllegalArgumentException("Offset provider \"" + providerName + "\" is not a valid configuration section.");
             }
             String className = section.getString("class");
             if (className == null) {
-                throw new IllegalArgumentException("Offset provider " + providerName + " is missing a \"class\" field.");
+                throw new IllegalArgumentException("Offset provider \"" + providerName + "\" is missing a \"class\" field.");
             }
             OffsetProvider.ConfigurationFactory<?> factory = configFactories.get(className);
             if (factory == null) {
-                throw new IllegalArgumentException("Offset provider " + providerName + " has an unknown class name " + className + ".");
+                throw new IllegalArgumentException("Offset provider \"" + providerName + "\" has an unknown class name " + className + ".");
             }
 
             OffsetProvider provider = factory.createProvider(providerName, plugin, section);
@@ -65,35 +64,59 @@ class OffsetProviderManager {
 
         defaultProvider = providersFromConfig.get(defaultProviderName);
         if (defaultProvider == null) {
-            throw new IllegalArgumentException("Unknown defaultOffsetProvider " + defaultProviderName + ". Options are " + String.join(", ", getOptionNames()));
+            throw new IllegalArgumentException("Unknown defaultOffsetProvider \"" + defaultProviderName + "\". Options are " + String.join(", ", getOptionNames()));
         }
 
-        // Load per-player overrides
-        Map<UUID, OffsetProvider> newPerPlayer = new HashMap<>();
-        ConfigurationSection perPlayerSection = config.getConfigurationSection("perPlayerOffsetProvider");
-        if (perPlayerSection != null) {
-            for (String uuidStr : perPlayerSection.getKeys(false)) {
-                UUID uuid = UUID.fromString(uuidStr); // throws IllegalArgumentException
-                String value = perPlayerSection.getString(uuidStr);
-                OffsetProvider provider = providersFromConfig.get(value);
-                if (provider == null) {
-                    throw new IllegalArgumentException("Unknown provider " + value + " for UUID " + uuidStr + ". Options are " + String.join(", ", getOptionNames()));
-                }
-                newPerPlayer.put(uuid, provider);
+        // Load overrides
+        List<ProviderOverride> newOverrides = new ArrayList<>();
+        List<Map<?, ?>> overridesSection = config.getMapList("offsetProviderOverrides");
+
+        for (Map<?, ?> map : overridesSection) {
+            Object providerName = map.get("provider");
+            if (providerName == null) {
+                throw new IllegalArgumentException("All overrides in offsetProviderOverrides must specify a \"provider\" key.");
             }
-        }
-        perPlayerYamlProviders = newPerPlayer;
+            OffsetProvider provider = providersFromConfig.get(providerName.toString());
+            if (provider == null) {
+                throw new IllegalArgumentException("Unknown provider \"" + providerName + "\" in offsetProviderOverrides. Options are " + String.join(", ", getOptionNames()));
+            }
 
-        return newProviders.size();
+            UUID playerUuid = null;
+            if (map.containsKey("playerUuid")) {
+                playerUuid = UUID.fromString(map.get("playerUuid").toString()); // throws IllegalArgumentException
+            }
+
+            String worldName = null;
+            if (map.containsKey("world")) {
+                worldName = map.get("world").toString();
+                if (Bukkit.getWorld(worldName) == null) {
+                    plugin.getLogger().warning("Setting a provider override for unloaded world \"" + worldName + "\"!");
+                }
+            }
+
+            newOverrides.add(new ProviderOverride(provider, playerUuid, worldName));
+        }
+
+        overrides = newOverrides;
+
+        plugin.getLogger().info("Loaded " + newProviders.size() + " offset providers from config.");
+        String overrideCountStr;
+        switch (overrides.size()) {
+            case 0 -> overrideCountStr = ".";
+            case 1 -> overrideCountStr = " (+1 override rule).";
+            default -> overrideCountStr = " (+" + overrides.size() + " override rules).";
+        }
+        plugin.getLogger().info("Default offset provider is \"" + defaultProvider.name + "\"" + overrideCountStr);
     }
 
     @NotNull Offset provideOffset(@NotNull OffsetProviderContext context) {
         OffsetProvider provider = defaultProvider;
         ProviderSource providerSource = ProviderSource.DEFAULT;
 
-        if (perPlayerYamlProviders.containsKey(context.player().getUniqueId())) {
-            provider = perPlayerYamlProviders.get(context.player().getUniqueId());
-            providerSource = ProviderSource.CONFIG;
+        Optional<ProviderOverride> appliedOverride = overrides.stream().filter(o -> o.appliesTo(context)).findFirst();
+        if (appliedOverride.isPresent()) {
+            provider = appliedOverride.get().provider;
+            providerSource = ProviderSource.OVERRIDE;
         } else {
             LuckPermsIntegration lp = plugin.getLuckPermsIntegration();
             if (lp != null) {
@@ -101,7 +124,7 @@ class OffsetProviderManager {
                 if (lpMetaStr != null) {
                     provider = providersFromConfig.get(lpMetaStr);
                     if (provider == null) {
-                        plugin.getLogger().severe("Unknown provider for LuckPerms meta lookup on " + context.player().getName() + ": " + lpMetaStr + ". Options are " + String.join(", ", getOptionNames()));
+                        plugin.getLogger().severe("Unknown provider for LuckPerms meta lookup on " + context.player().getName() + ": \"" + lpMetaStr + "\". Options are " + String.join(", ", getOptionNames()));
                         provider = defaultProvider;
                     } else {
                         providerSource = ProviderSource.LUCK_PERMS_META;
@@ -124,19 +147,33 @@ class OffsetProviderManager {
             String sourceStr = null;
             switch (providerSource) {
                 case DEFAULT -> sourceStr = "default provider";
-                case CONFIG -> sourceStr = "config.yml override";
+                case OVERRIDE -> sourceStr = "config.yml override";
                 case LUCK_PERMS_META -> sourceStr = "LuckPerms meta override";
             }
 
             plugin.getLogger().info(
                     "Using " + offset + " from provider \"" + provider.name + "\" (" + sourceStr + ") " +
-                            "for player " + context.player().getName() + " in " + context.world().getName() + " (" + reasonStr + ").");
+                            "for player " + context.player().getName() + " in world \"" + context.world().getName() + "\" (" + reasonStr + ").");
         }
         return offset;
     }
 
     enum ProviderSource {
-        DEFAULT, CONFIG, LUCK_PERMS_META
+        DEFAULT, OVERRIDE, LUCK_PERMS_META
+    }
+
+    record ProviderOverride(
+        @NotNull OffsetProvider provider,
+        @Nullable UUID playerUuid,
+        @Nullable String worldName
+    ) {
+        @SuppressWarnings("RedundantIfStatement")
+        boolean appliesTo(OffsetProviderContext context) {
+            if (playerUuid != null && !playerUuid.equals(context.player().getUniqueId())) return false;
+            if (worldName != null && !worldName.equals(context.world().getName())) return false;
+
+            return true;
+        }
     }
 
     void quitPlayer(@NotNull Player player) {
