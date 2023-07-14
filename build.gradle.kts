@@ -57,7 +57,7 @@ tasks {
             "apiVersion" to pluginYmlApiVersion,
         )
         placeholders.forEach { (k, v) -> inputs.property(k, v) } // ensure cache is invalidated after version bumps
-        filesMatching("plugin.yml") {
+        filesMatching(listOf("plugin.yml", "config.yml")) {
             expand(placeholders)
         }
     }

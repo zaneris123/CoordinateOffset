@@ -18,17 +18,17 @@ import java.util.List;
  * <br><br>
  * Then, any offsets provided in {@code world} would be scaled down by a factor of 8 and reused in {@code world_nether}.
  */
-public class WorldAlignmentContainer {
+public class WorldAlignmentConfig {
     private record Alignment(String greaterWorldName, String lesserWorldName, int scaleShift) {}
     public record QueryResult(String targetWorldName, int rightShiftAmount) {}
 
     private final List<Alignment> alignments;
 
-    private WorldAlignmentContainer(List<Alignment> alignments) {
+    private WorldAlignmentConfig(List<Alignment> alignments) {
         this.alignments = alignments;
     }
 
-    public static WorldAlignmentContainer fromConfig(List<String> configStringList) {
+    public static WorldAlignmentConfig fromConfig(List<String> configStringList) {
         List<Alignment> alignments = new ArrayList<>();
         for (String str : configStringList) {
             String[] tokens = str.split(":");
@@ -47,7 +47,7 @@ public class WorldAlignmentContainer {
             }
             alignments.add(alignment);
         }
-        return new WorldAlignmentContainer(alignments);
+        return new WorldAlignmentConfig(alignments);
     }
 
     /**

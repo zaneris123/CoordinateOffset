@@ -1,4 +1,4 @@
-# CoordinateOffset Configuration
+# CoordinateOffset ${version} Configuration
 
 # Specify the method by which coordinate offsets will be calculated.
 # Options are any key under `offsetProviders` below (e.g. constant, random...)
@@ -38,30 +38,26 @@ offsetProviders:
 
 
   random:
-    # The "random" offset provider class re-rolls the player's offset every
-    #   time they join, respawn, change world, or teleport a long distance.
+    # The "random" offset provider class generates a random offset for each
+    #   player.
     class: RandomOffsetProvider
 
-    # An action will not cause a re-roll if the respective `persist` setting
-    #   is enabled. For persistence across player joins, use
-    #   `RandomPersistentOffsetProvider` instead.
-    persistAcrossRespawns: false
-    persistAcrossWorldChanges: false
-    persistAcrossDistantTeleports: false
+    # These events will trigger the offset to re-roll if enabled.
+    resetOnRespawn: false
+    resetOnWorldChange: false
+    resetOnDistantTeleport: false
 
-    # Maximum possible offset
-    randomBound: 100000
+    # Offsets can be saved to each player's NBT data and reused across joins
+    #   and server restarts. They will be stored in the key
+    #   `BukkitValues:coordinateoffset.random-persistence.<persistenceKey>`
+    persistent: false
+    persistenceKey: default
 
-
-  randomPersistent:
-    # The "random persistent" offset provider class generates an offset once
-    #   per player per world, and reuses that offset every time they join.
-    class: RandomPersistentOffsetProvider
-
-    # Worlds aligned here will use the same offset, optionally with a scale
-    #   factor. For example, `world:world_nether:8` would match Vanilla portal
+    # Aligned worlds will use the same offset, optionally with a scale factor.
+    #   For example, `world:world_nether:8` would match Vanilla portal
     #   scaling, so each player's Nether offset is 1/8th their Overworld
     #   offset and portal linking math still works.
+    # Note: This ONLY works if `resetOnWorldChange` is false!
     worldAlignment:
       - world:world_nether:8
 
@@ -75,17 +71,17 @@ offsetProviders:
     #   (0, 0) every time their offset changes.
     class: ZeroAtLocationOffsetProvider
 
-    # An action will not cause the offset to be zeroed if the respective
-    #   `persist` setting is enabled.
-    persistAcrossRespawns: true
-    persistAcrossWorldChanges: true
-    persistAcrossDistantTeleports: true
+    # These events will set the offset to the player's location (and therefore
+    #   "zero out" the player) if enabled.
+    resetOnRespawn: false
+    resetOnWorldChange: false
+    resetOnDistantTeleport: false
 
-    # Worlds aligned here will use the same offset, optionally with a scale
-    #   factor. For example, `world:world_nether:8` would match Vanilla portal
+    # Aligned worlds will use the same offset, optionally with a scale factor.
+    #   For example, `world:world_nether:8` would match Vanilla portal
     #   scaling, so each player's Nether offset is 1/8th their Overworld
     #   offset and portal linking math still works.
-    # Note: This ONLY works if `persistAcrossWorldChanges` is true!
+    # Note: This ONLY works if `resetOnWorldChange` is false!
     worldAlignment:
       - world:world_nether:8
 

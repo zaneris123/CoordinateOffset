@@ -4,21 +4,19 @@ import com.jtprince.coordinateoffset.CoordinateOffset;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.OffsetProvider;
 import com.jtprince.coordinateoffset.OffsetProviderContext;
-import com.jtprince.coordinateoffset.provider.util.Persistable;
-import com.jtprince.coordinateoffset.provider.util.WorldAlignmentContainer;
+import com.jtprince.coordinateoffset.provider.util.PerWorldOffsetStore;
+import com.jtprince.coordinateoffset.provider.util.ResetConfig;
+import com.jtprince.coordinateoffset.provider.util.WorldAlignmentConfig;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 public class ZeroAtLocationOffsetProvider extends OffsetProvider {
-    private Persistable persistable;
-    private WorldAlignmentContainer worldAlignment;
-    private final Map<UUID, Map<String, Offset>> playerCache = new HashMap<>();
+    private ResetConfig resetConfig;
+    private WorldAlignmentConfig worldAlignment;
+
+    private final PerWorldOffsetStore perWorldOffsetStore = new PerWorldOffsetStore.Cached();
 
     private ZeroAtLocationOffsetProvider(String name) {
         super(name);
@@ -26,25 +24,23 @@ public class ZeroAtLocationOffsetProvider extends OffsetProvider {
 
     @Override
     public @NotNull Offset getOffset(@NotNull OffsetProviderContext context) {
-        if (!playerCache.containsKey(context.player().getUniqueId())) {
-            playerCache.put(context.player().getUniqueId(), new HashMap<>());
+        //noinspection DuplicatedCode (with RandomOffsetProvider)
+        if (resetConfig.resetOn(context.reason())) {
+            perWorldOffsetStore.reset(context.player());
         }
 
-        var thisPlayerCache = playerCache.get(context.player().getUniqueId());
-        if (persistable.canPersist(context.reason()) && thisPlayerCache.containsKey(context.world().getName())) {
-            return thisPlayerCache.get(context.world().getName());
+        // Check if this world already has an offset calculated
+        Offset offset = perWorldOffsetStore.get(context.player(), context.world().getName());
+        if (offset != null) {
+            return offset;
         }
-
-        Offset offset = null;
 
         // Check if we need to align to an offset we already generated for this player in another world
-        if (persistable.canPersist(OffsetProviderContext.ProvideReason.WORLD_CHANGE)) {
-            WorldAlignmentContainer.QueryResult alignment = worldAlignment.findAlignment(context.world().getName());
-            if (alignment != null) {
-                Offset alignedWorldOffset = thisPlayerCache.get(alignment.targetWorldName());
-                if (alignedWorldOffset != null) {
-                    offset = alignedWorldOffset.scale(alignment.rightShiftAmount());
-                }
+        WorldAlignmentConfig.QueryResult alignment = worldAlignment.findAlignment(context.world().getName());
+        if (alignment != null) {
+            Offset alignedWorldOffset = perWorldOffsetStore.get(context.player(), alignment.targetWorldName());
+            if (alignedWorldOffset != null) {
+                offset = alignedWorldOffset.scale(alignment.rightShiftAmount());
             }
         }
 
@@ -55,21 +51,21 @@ public class ZeroAtLocationOffsetProvider extends OffsetProvider {
             offset = Offset.align(loc.getBlockX(), loc.getBlockZ(), alignmentPower);
         }
 
-        thisPlayerCache.put(context.world().getName(), offset);
+        perWorldOffsetStore.put(context.player(), context.world().getName(), offset);
         return offset;
     }
 
     @Override
     public void onPlayerQuit(@NotNull Player player) {
-        playerCache.remove(player.getUniqueId());
+        perWorldOffsetStore.reset(player);
     }
 
     public static class ConfigFactory implements OffsetProvider.ConfigurationFactory<ZeroAtLocationOffsetProvider> {
         @Override
         public @NotNull ZeroAtLocationOffsetProvider createProvider(String name, CoordinateOffset plugin, ConfigurationSection providerConfig) throws IllegalArgumentException {
             ZeroAtLocationOffsetProvider p = new ZeroAtLocationOffsetProvider(name);
-            p.persistable = Persistable.fromConfigSection(providerConfig);
-            p.worldAlignment = WorldAlignmentContainer.fromConfig(providerConfig.getStringList("worldAlignment"));
+            p.resetConfig = ResetConfig.fromConfigSection(providerConfig);
+            p.worldAlignment = WorldAlignmentConfig.fromConfig(providerConfig.getStringList("worldAlignment"));
             return p;
         }
     }
