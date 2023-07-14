@@ -96,7 +96,8 @@ class PacketOffsetAdapter {
             if (packet.getType() == Server.LOGIN) {
                 PacketOffsetAdapter.this.plugin.impulseOffsetChange(new OffsetProviderContext(
                         event.getPlayer(), event.getPlayer().getWorld(),
-                        event.getPlayer().getLocation(), OffsetProviderContext.ProvideReason.JOIN));
+                        event.getPlayer().getLocation(), OffsetProviderContext.ProvideReason.JOIN,
+                        PacketOffsetAdapter.this.plugin));
             }
 
             Offset offset;

@@ -3,21 +3,21 @@ package com.jtprince.coordinateoffset.provider;
 import com.jtprince.coordinateoffset.CoordinateOffset;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.OffsetProvider;
+import com.jtprince.coordinateoffset.OffsetProviderContext;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public class ConstantOffsetProvider extends OverworldOffsetProvider {
-    final Offset overworldOffset;
+public class ConstantOffsetProvider extends OffsetProvider {
+    final Offset offset;
 
-    public ConstantOffsetProvider(String name, Offset overworldOffset) {
+    private ConstantOffsetProvider(String name, Offset offset) {
         super(name);
-        this.overworldOffset = overworldOffset;
+        this.offset = offset;
     }
 
     @Override
-    public @NotNull Offset getOverworldOffset(@NotNull Player player) {
-        return overworldOffset;
+    public @NotNull Offset getOffset(@NotNull OffsetProviderContext context) {
+        return offset;
     }
 
     public static class ConfigFactory implements OffsetProvider.ConfigurationFactory<ConstantOffsetProvider> {

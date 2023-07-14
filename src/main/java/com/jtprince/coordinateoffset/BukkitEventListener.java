@@ -24,7 +24,7 @@ class BukkitEventListener implements Listener {
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         plugin.impulseOffsetChange(new OffsetProviderContext(
                 event.getPlayer(), Objects.requireNonNull(event.getRespawnLocation().getWorld()),
-                event.getRespawnLocation(), OffsetProviderContext.ProvideReason.RESPAWN));
+                event.getRespawnLocation(), OffsetProviderContext.ProvideReason.RESPAWN, plugin));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -40,7 +40,7 @@ class BukkitEventListener implements Listener {
 
         plugin.impulseOffsetChange(new OffsetProviderContext(
                 event.getPlayer(), Objects.requireNonNull(event.getTo().getWorld()),
-                event.getTo(), OffsetProviderContext.ProvideReason.RESPAWN));
+                event.getTo(), reason, plugin));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

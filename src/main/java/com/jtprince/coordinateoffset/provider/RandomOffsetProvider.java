@@ -4,6 +4,7 @@ import com.jtprince.coordinateoffset.CoordinateOffset;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.OffsetProvider;
 import com.jtprince.coordinateoffset.OffsetProviderContext;
+import com.jtprince.coordinateoffset.provider.util.Persistable;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -13,14 +14,12 @@ import java.util.Map;
 import java.util.UUID;
 
 public class RandomOffsetProvider extends OffsetProvider {
-    private boolean persistAcrossRespawns;
-    private boolean persistAcrossWorldChanges;
-    private boolean persistAcrossDistantTeleports;
+    private Persistable persistable;
     private int randomBound;
 
     private final Map<UUID, Map<UUID, Offset>> playerCache = new HashMap<>();
 
-    public RandomOffsetProvider(String name) {
+    private RandomOffsetProvider(String name) {
         super(name);
     }
 
@@ -31,7 +30,7 @@ public class RandomOffsetProvider extends OffsetProvider {
         }
 
         var thisPlayerCache = playerCache.get(context.player().getUniqueId());
-        if (canPersist(context.reason()) && thisPlayerCache.containsKey(context.world().getUID())) {
+        if (persistable.canPersist(context.reason()) && thisPlayerCache.containsKey(context.world().getUID())) {
             return thisPlayerCache.get(context.world().getUID());
         }
 
@@ -46,15 +45,6 @@ public class RandomOffsetProvider extends OffsetProvider {
         playerCache.remove(player.getUniqueId());
     }
 
-    private boolean canPersist(OffsetProviderContext.ProvideReason reason) {
-        switch (reason) {
-            case RESPAWN -> { return persistAcrossRespawns; }
-            case WORLD_CHANGE -> { return persistAcrossWorldChanges; }
-            case DISTANT_TELEPORT -> { return persistAcrossDistantTeleports; }
-            default -> { return false; }
-        }
-    }
-
     public static class ConfigFactory implements OffsetProvider.ConfigurationFactory<RandomOffsetProvider> {
         @Override
         public @NotNull RandomOffsetProvider createProvider(String name, CoordinateOffset plugin, ConfigurationSection providerConfig) throws IllegalArgumentException {
@@ -63,9 +53,7 @@ public class RandomOffsetProvider extends OffsetProvider {
             }
 
             RandomOffsetProvider p = new RandomOffsetProvider(name);
-            p.persistAcrossRespawns = providerConfig.getBoolean("persistAcrossRespawns");
-            p.persistAcrossWorldChanges = providerConfig.getBoolean("persistAcrossWorldChanges");
-            p.persistAcrossDistantTeleports = providerConfig.getBoolean("persistAcrossDistantTeleports");
+            p.persistable = Persistable.fromConfigSection(providerConfig);
             p.randomBound = providerConfig.getInt("randomBound");
             return p;
         }

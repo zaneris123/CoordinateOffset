@@ -33,6 +33,12 @@ public record Offset (int x, int z) {
     public static final PersistentDataType<int[], Offset> PDT_TYPE =
             new GenericDataType<>(DataType.INTEGER_ARRAY.getPrimitiveType(), Offset.class, Offset::fromPdt, Offset::toPdt);
 
+    /**
+     * Argument for the {@code toChunksPower} parameter of {@link #align(int, int, int)} that results in an Overworld
+     * offset that will cleanly translate to a Nether offset.
+     */
+    public static final int ALIGN_OVERWORLD = 3;
+
     public Offset {
         if (x % 16 != 0) {
             throw new IllegalArgumentException("Offset x=" + x + " is not aligned with the chunks! (must be a multiple of 16)");
@@ -45,34 +51,39 @@ public record Offset (int x, int z) {
     /**
      * Get a random Offset, with X and Z in the range <code>(-bound, bound)</code>.
      *
-     * @param bound Maximum absolute value of each offset dimension.
+     * @param bound Maximum absolute value of each offset component.
      * @return A new Offset with values that are multiples of 128 blocks.
      */
     public static @NotNull Offset random(int bound) {
         Random random = new Random();
-        return align(random.nextInt(-bound, bound), random.nextInt(-bound, bound), true);
+        return align(random.nextInt(-bound, bound), random.nextInt(-bound, bound), ALIGN_OVERWORLD);
     }
 
     /**
      * Get a new Offset closest to the specified offset that is aligned to chunk borders.
      *
-     * <p>Offsets MUST be aligned with chunk borders, meaning each dimension is divisible by 16.</p>
+     * <p>Offsets MUST be aligned with chunk borders, meaning each component is divisible by 16.</p>
      * @param x X offset
      * @param z Z offset
-     * @param to8Chunks To make Nether translations more predictable, Overworld offsets should also be divisible by 16
-     *                  even after dividing once by 8. If this parameter is true, the resulting components will be
-     *                  multiples of 128 blocks; if false, the components will only necessarily be multiples of 16
-     *                  blocks.
+     * @param toChunksPower Value used to perform extra alignment with chunks. The input x/z will be rounded to the
+     *                      nearest <code>2^toChunksPower</code> chunks. This is useful for making Nether translations
+     *                      predictable: we want Overworld offsets to still align to chunk boundaries even after
+     *                      dividing them by 8. Therefore, we would use {@value ALIGN_OVERWORLD} as the value here when
+     *                      aligning the Overworld offset (since 2^3 == 8).
      * @return A new Offset.
      */
-    public static @NotNull Offset align(int x, int z, boolean to8Chunks) {
-        int shift = to8Chunks ? 7 : 4;
+    public static @NotNull Offset align(int x, int z, int toChunksPower) {
+        int shift = toChunksPower + 4;
 
         // Add half of the divisor so that the output is rounded instead of just floored
         x += 1 << (shift - 1);
         z += 1 << (shift - 1);
 
         return new Offset(x >> shift << shift, z >> shift << shift);
+    }
+
+    public static @NotNull Offset align(int x, int z) {
+        return Offset.align(x, z, 0);
     }
 
     public int chunkX() {
@@ -84,25 +95,21 @@ public record Offset (int x, int z) {
     }
 
     /**
-     * Get an equivalent offset in the Nether for this Offset, assuming that this is an Overworld Offset, by dividing
-     * the values by 8.
+     * Get a new Offset with the components of this offset scaled by a power of two.
      *
-     * @return A new Offset with coordinates divided by 8 and rounded to align with chunk boundaries.
+     * @param rightShiftAmount The amount to right-shift this Offset's components. A negative value will make the offset
+     *                         larger (e.g. -3 would multiply the components by 8). A positive value will make the
+     *                         offset smaller (e.g. 5 would divide the components by 32).
+     * @return A new Offset aligned to 1 chunk.
      */
     @Pure
-    public Offset toNetherFromOverworldOffset() {
-        return new Offset(x >> 7 << 4, z >> 7 << 4);
-    }
-
-    /**
-     * Get an equivalent offset in the Overworld for this Offset, assuming that this is a Nether Offset, by multiplying
-     * the values by 8.
-     *
-     * @return A new Offset with coordinates multiplied by 8.
-     */
-    @Pure
-    public Offset toOverworldFromNetherOffset() {
-        return new Offset(x << 3, z << 3);
+    public @NotNull Offset scale(int rightShiftAmount) {
+        if (rightShiftAmount <= 0) {
+            return new Offset(x << -rightShiftAmount, z << -rightShiftAmount);
+        } else {
+            // When scaling the offset down, ensure that the new offset is also divisible by 16.
+            return Offset.align(x >> rightShiftAmount, z >> rightShiftAmount);
+        }
     }
 
     /**

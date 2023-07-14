@@ -15,12 +15,14 @@ import org.jetbrains.annotations.NotNull;
  *                       Note that this may be different from <code>player.getLocation()</code> because the Provider is
  *                       called <i>before</i> a teleport completes.
  * @param reason The reason that a new Offset is being requested.
+ * @param plugin Instance of the CoordinateOffset plugin.
  */
 public record OffsetProviderContext(
     @NotNull Player player,
     @NotNull World world,
     @NotNull Location playerLocation,
-    @NotNull ProvideReason reason
+    @NotNull ProvideReason reason,
+    @NotNull CoordinateOffset plugin
 ) {
     public enum ProvideReason {
         JOIN, RESPAWN, WORLD_CHANGE, DISTANT_TELEPORT

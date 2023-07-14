@@ -35,6 +35,11 @@ dependencies {
     implementation("dev.jorel:commandapi-bukkit-shade:9.0.3")
     implementation("com.jeff_media:MorePersistentDataTypes:2.4.0")
     compileOnly("net.luckperms:api:5.4")
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("org.spigotmc:spigot-api:$spigotApiVersion")
+    testImplementation("com.github.dmulloy2:ProtocolLib:master-SNAPSHOT")
 }
 
 java {
@@ -75,5 +80,9 @@ tasks {
     assemble {
         dependsOn(shadowJar)
         dependsOn(copyJarToSnapshot)
+    }
+
+    test {
+        useJUnitPlatform()
     }
 }

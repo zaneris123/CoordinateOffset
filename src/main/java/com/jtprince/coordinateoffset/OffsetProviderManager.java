@@ -135,7 +135,7 @@ class OffsetProviderManager {
 
         Offset offset = provider.getOffset(context);
 
-        if (plugin.getConfig().getBoolean("verbose")) {
+        if (plugin.isVerboseLoggingEnabled()) {
             String reasonStr = null;
             switch (context.reason()) {
                 case JOIN -> reasonStr = "player joined";

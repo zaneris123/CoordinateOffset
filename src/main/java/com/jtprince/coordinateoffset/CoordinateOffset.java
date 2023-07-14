@@ -3,7 +3,7 @@ package com.jtprince.coordinateoffset;
 import com.jtprince.coordinateoffset.provider.ConstantOffsetProvider;
 import com.jtprince.coordinateoffset.provider.RandomOffsetProvider;
 import com.jtprince.coordinateoffset.provider.RandomPersistentOffsetProvider;
-import com.jtprince.coordinateoffset.provider.ZeroOnJoinOffsetProvider;
+import com.jtprince.coordinateoffset.provider.ZeroAtLocationOffsetProvider;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import net.luckperms.api.LuckPerms;
@@ -44,7 +44,7 @@ public final class CoordinateOffset extends JavaPlugin {
         providerManager.registerConfigurationFactory("ConstantOffsetProvider", new ConstantOffsetProvider.ConfigFactory());
         providerManager.registerConfigurationFactory("RandomOffsetProvider", new RandomOffsetProvider.ConfigFactory());
         providerManager.registerConfigurationFactory("RandomPersistentOffsetProvider", new RandomPersistentOffsetProvider.ConfigFactory());
-        providerManager.registerConfigurationFactory("ZeroOnJoinOffsetProvider", new ZeroOnJoinOffsetProvider.ConfigFactory());
+        providerManager.registerConfigurationFactory("ZeroAtLocationOffsetProvider", new ZeroAtLocationOffsetProvider.ConfigFactory());
 
         // TBD: Allow extensions to register their providers first.
         providerManager.loadProvidersFromConfig(getConfig());
@@ -73,6 +73,10 @@ public final class CoordinateOffset extends JavaPlugin {
     @SuppressWarnings("unused")
     public static @Nullable CoordinateOffset getInstance() {
         return instance;
+    }
+
+    public boolean isVerboseLoggingEnabled() {
+        return getConfig().getBoolean("verbose");
     }
 
     /**
