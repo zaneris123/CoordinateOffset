@@ -113,6 +113,14 @@ class OffsetProviderManager {
         OffsetProvider provider = defaultProvider;
         ProviderSource providerSource = ProviderSource.DEFAULT;
 
+        if (plugin.getConfig().getBoolean("bypassByPermission") &&
+                context.player().hasPermission(CoordinateOffsetPermissions.BYPASS)) {
+            if (plugin.isVerboseLoggingEnabled()) {
+                plugin.getLogger().info("Bypassing offset with permission for player " + context.player().getName() + ".");
+            }
+            return Offset.ZERO;
+        }
+
         Optional<ProviderOverride> appliedOverride = overrides.stream().filter(o -> o.appliesTo(context)).findFirst();
         if (appliedOverride.isPresent()) {
             provider = appliedOverride.get().provider;

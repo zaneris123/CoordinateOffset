@@ -1,7 +1,6 @@
 package com.jtprince.coordinateoffset;
 
 import dev.jorel.commandapi.CommandAPICommand;
-import dev.jorel.commandapi.arguments.LiteralArgument;
 import dev.jorel.commandapi.arguments.PlayerArgument;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -38,9 +37,7 @@ class CoordinateOffsetCommands {
                 .register();
 
         new CommandAPICommand("offset")
-                .withPermission(CoordinateOffsetPermissions.QUERY_OTHERS)
-                .withArguments(LiteralArgument.of("query"))
-                .withArguments(new PlayerArgument("player"))
+                .withArguments(new PlayerArgument("player").withPermission(CoordinateOffsetPermissions.QUERY_OTHERS))
                 .executes((sender, args) -> {
                     Player player = (Player) args.get("player");
                     if (player == null) {
@@ -63,9 +60,8 @@ class CoordinateOffsetCommands {
                 })
                 .register();
 
-        new CommandAPICommand("offset")
+        new CommandAPICommand("offsetreload")
                 .withPermission(CoordinateOffsetPermissions.RELOAD)
-                .withArguments(LiteralArgument.of("reload"))
                 .executes((sender, args) -> {
                     try {
                         plugin.reload();
@@ -78,7 +74,7 @@ class CoordinateOffsetCommands {
                 .register();
     }
 
-    private void replyOk(CommandSender to, String message) {
+    private void replyOk(CommandSender to, @SuppressWarnings("SameParameterValue") String message) {
         to.spigot().sendMessage(new ComponentBuilder(prefix).append(message).color(ChatColor.GREEN).create());
     }
 

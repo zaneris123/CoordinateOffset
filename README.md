@@ -1,20 +1,81 @@
-CoordinatesObfuscator
-=====================
+CoordinateOffset
+================
+**A Minecraft Spigot/Paper plugin that obfuscates each player's coordinate system.**
 
-**Hide the real coordinates to the players.**
+Minecraft offers an extremely useful "debug" (F3) menu that allows anyone to easily see their precise coordinates in the
+world. This makes it easy to save points of interest, share locations with friends (or enemies), and even add
+client-side mods that use these coordinates to build maps of the world while exploring.
 
-This plugin helps the owner to make sure that players with modded clients do not take unfair advantage of vanilla
-players when `/gamerule reducedDebugInfo` is set to `true`.
+However, not all multiplayer servers are designed for coordinates to be so readily accessible, and server owners may
+wish to hide them from players. Minecraft offers `/gamerule reducedDebugInfo` to administratively disable coordinate
+display in the F3 menu. But it is trivial for a player to add a mod that re-enables coordinates.
 
-How it works
-------------
-Every time a player changes position, dies, joins a server or changes a world, the **X** and **Z** coordinates will be
-shifted by a random number, making useless every tool that uses absolute coordinates systems.
+**CoordinateOffset** is a plugin for Spigot and Paper servers that **applies an offset to every coordinate in packets
+between the server and client**. The result is that the client still sees the exact same world they would normally see.
+But if they press F3, the coordinates they see will **not** be their real coordinates.
+
+Features
+--------
+* Fully-configurable, flexible methods of determining how to apply offsets
+  * Randomize offset when the player joins, dies, changes world, or teleports
+  * Match offsets to the player's position, so they see themselves near the world's origin
+  * Persist the same offset every time a player joins so that they don't notice an offset changing
+  * Configure different offset settings (or disable the offset) per-player and per-world
+* LuckPerms integration for determining offsets by group or specific context
 
 Requirements
 ------------
-ProtocolLib 5.0.0 Snapshot or higher
+* Spigot or [Paper (recommended)](https://papermc.io/) for Minecraft 1.20.1+
+* [ProtocolLib](https://www.spigotmc.org/resources/protocollib.1997/) 5 **snapshot #657** or higher (you may need 
+  to use a [dev build for 1.20](https://ci.dmulloy2.net/job/ProtocolLib/))
+
+Configuration
+-------------
+The main configuration file is automatically generated after the first run at `plugins/CoordinateOffset/config.yml`.
+
+```yaml
+defaultOffsetProvider: random
+```
+
+The default configuration contains four predefined "offset providers". An "offset" refers to the amount that the
+player's coordinates should appear to be shifted from thei real location. Get started by picking a strategy that matches
+the type of offsetting you're trying to achieve:
+* `constant` - Specify the exact offset you want players to have.
+* `disabled` - A constant offset with components of 0, meaning that players will see their real coordinates.
+* `random` - Randomize each player's offset whenever they join the server.
+* `zeroAtLocation` - Use an offset similar to the player's first location, so they see themselves near (0, 0).
+
+You can customize these providers further, as well as define your own. See (TODO)
+
+Commands
+--------
+```
+/offset [player]
+```
+Gets your own current offset and real coordinates, or someone else's.
+
+```
+/offsetreload
+```
+Reload the configuration from `config.yml`.
 
 Permissions
 -----------
-Set `coordinatesobfuscator.bypass` to disable obfuscation for a group of players or a specific player
+* `coordinateoffset.bypass`
+Players with this permission will never have their coordinates offsetted.
+It's a good idea to give this permission to anyone who needs to use coordinates for commands or administration.
+
+* `coordinateoffset.query`
+Allows you to use the /offset command, which tells you your current offset.
+
+* `coordinateoffset.query.others`
+Allows you to query other players' offsets with /offset <name>.
+
+* `coordinateoffset.reload`
+  Allows you to reload the plugin config with /offsetreload.
+
+Credits
+-------
+Special thanks to [Cavallium](https://github.com/cavallium) for developing
+[CoordinatesObfuscator](https://github.com/cavallium/CoordinatesObfuscator), which CoordinateOffset is a fork of.
+CoordinateOffset uses most of the original code for packet translation.

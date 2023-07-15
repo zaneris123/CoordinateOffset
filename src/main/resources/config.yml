@@ -4,6 +4,10 @@
 # Options are any key under `offsetProviders` below (e.g. constant, random...)
 defaultOffsetProvider: random
 
+# If true, players with the `coordinateoffset.bypass` permission will always
+#   see their unshifted coordinates. You should probably give this to anyone
+#   who might need to run commands with coordinates.
+bypassByPermission: true
 
 # List of overrides to the default offset provider. The first item has the
 #   highest priority. `provider` is a required key; optional keys are
