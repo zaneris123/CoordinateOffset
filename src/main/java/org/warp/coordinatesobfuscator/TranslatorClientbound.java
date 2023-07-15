@@ -2,18 +2,20 @@ package org.warp.coordinatesobfuscator;
 
 import com.comphenix.protocol.events.InternalStructure;
 import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.injector.temporary.TemporaryPlayer;
 import com.comphenix.protocol.reflect.EquivalentConverter;
 import com.comphenix.protocol.reflect.StructureModifier;
 import com.comphenix.protocol.utility.MinecraftReflection;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.comphenix.protocol.wrappers.Converters;
 import com.comphenix.protocol.wrappers.WrappedDataValue;
+import com.comphenix.protocol.wrappers.nbt.NbtBase;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
+import com.jtprince.coordinateoffset.Offset;
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -53,12 +55,28 @@ public class TranslatorClientbound {
 		INTERNAL_STRUCTURE_CONVERTER = internalStructureEquivalentConverter;
 	}
 
-	public static boolean outgoing(Logger logger, final PacketContainer packet, final Player player) {
-		if (player instanceof TemporaryPlayer) {
-			return false;
+	public static @Nullable PacketContainer outgoing(@NotNull Logger logger, @NotNull PacketContainer packet, @NotNull final Offset offset) {
+		if (offset.equals(Offset.ZERO)) {
+			return null;
 		}
-		CoordinateOffset offset = PlayerManager.getOffsetOrJoinPlayer(player, player.getWorld());
-		Objects.requireNonNull(offset);
+
+		// Some packets need a clone before we can manipulate them, or else we'll manipulate NMS-internal structures.
+		boolean cloneNeeded = false;
+		switch (packet.getType().name()) {
+			case "TILE_ENTITY_DATA" -> {
+				packet = cloneTileEntityData(packet);
+				cloneNeeded = true;
+			}
+			case "MAP_CHUNK" -> {
+				packet = cloneMapChunkEntitiesData(packet);
+				cloneNeeded = true;
+			}
+			case "WORLD_PARTICLES", "LOGIN", "RESPAWN" -> {
+				packet = packet.deepClone();
+				cloneNeeded = true;
+			}
+		}
+
 		switch (packet.getType().name()) {
 			case "WINDOW_DATA":
 				break;
@@ -77,9 +95,9 @@ public class TranslatorClientbound {
 			case "OPEN_SIGN_EDITOR":
 				sendBlockPosition(logger, packet, offset);
 				break;
+			case "LOGIN":
 			case "RESPAWN":
-				logger.fine("[out]Respawning player");
-				respawn(logger, offset, player);
+				fixDeathLocation(logger, packet, offset);
 				break;
 			case "POSITION_LOOK":
 			case "POSITION":
@@ -99,18 +117,12 @@ public class TranslatorClientbound {
 				}
 				if (!isRelativeX || !isRelativeZ) {
 					logger.fine("[out]Repositioning player");
-					CoordinateOffset positionOffset;
-					if (!isRelativeX && !isRelativeZ) {
-						positionOffset = respawn(logger, offset, player);
-					} else {
-						positionOffset = offset;
-					}
 					if (packet.getDoubles().size() > 2) {
 						if (!isRelativeX) {
-							packet.getDoubles().modify(0, x -> x == null ? null : x - positionOffset.getX());
+							packet.getDoubles().modify(0, x -> x == null ? null : x - offset.x());
 						}
 						if (!isRelativeZ) {
-							packet.getDoubles().modify(2, z -> z == null ? null : z - positionOffset.getZ());
+							packet.getDoubles().modify(2, z -> z == null ? null : z - offset.z());
 						}
 					} else {
 						logger.severe("Packet size error");
@@ -179,11 +191,11 @@ public class TranslatorClientbound {
 									if (NMS_BLOCK_POSITION_CLASS.isInstance(val)) {
 										wrappedWatchableObject.setValue(Optional.of(offsetPositionMc(logger, offset, val)));
 									} else if (val instanceof BlockPosition blockPosition) {
-										wrappedWatchableObject.setValue(Optional.of(offsetPosition(logger, offset, blockPosition)));
+										wrappedWatchableObject.setValue(Optional.of(offset.apply(blockPosition)));
 									}
 								}
 							} else if (oldValue instanceof BlockPosition blockPosition) {
-								wrappedWatchableObject.setValue(offsetPosition(logger, offset, blockPosition));
+								wrappedWatchableObject.setValue(offset.apply(blockPosition));
 							}
 							result.add(wrappedWatchableObject);
 						}
@@ -200,32 +212,22 @@ public class TranslatorClientbound {
 				logger.fine(packet.getType().name());
 				break;
 		}
-		return false;
+
+		if (cloneNeeded) return packet; else return null;
 	}
 
-	private static CoordinateOffset respawn(Logger logger, CoordinateOffset offset, Player player) {
-		boolean hasSetLastLocation = false;
-		Optional<Location> lastLocationOpt = PlayerManager.getLastPlayerLocation(player);
-		if (lastLocationOpt.isPresent()) {
-			Location lastLocation = lastLocationOpt.get();
-			if (lastLocation.getWorld().getUID().equals(player.getLocation().getWorld().getUID())) {
-				int clientViewDistance = 64; //player.getClientViewDistance();
-				int minTeleportDistance = clientViewDistance * 2 * 16 + 2;
-				minTeleportDistance *= minTeleportDistance; // squared
-				if (lastLocation.distanceSquared(player.getLocation()) > minTeleportDistance) {
-					offset = PlayerManager.teleportPlayer(player, player.getWorld(), true);
-					logger.fine("Teleporting player. Prev[" + lastLocation.getBlockX() + "," + lastLocation.getBlockZ() + "] Next[" + player.getLocation().getX() + "," + player.getLocation().getZ() + "]");
-					hasSetLastLocation = true;
-				}
-			}
+	private static void fixDeathLocation(Logger logger, PacketContainer packet, Offset offset) {
+		if (packet.getOptionalStructures().size() > 0) {
+			packet.getOptionalStructures().modify(0, p -> {
+				p.ifPresent(internalStructure -> internalStructure.getBlockPositionModifier().modify(0, offset::apply));
+				return p;
+			});
+		} else {
+			logger.severe("Packet size error");
 		}
-		if (hasSetLastLocation) {
-			PlayerManager.setLastPlayerLocation(player, player.getLocation());
-		}
-		return offset;
 	}
 
-	private static void fixWindowItems(Logger logger, PacketContainer packet, CoordinateOffset offset) {
+	private static void fixWindowItems(Logger logger, PacketContainer packet, Offset offset) {
 		packet.getItemListModifier().modify(0, itemStacks -> {
 			if (itemStacks == null) return null;
 			List<ItemStack> newItems = new ArrayList<>(itemStacks.size());
@@ -240,7 +242,7 @@ public class TranslatorClientbound {
 		});
 	}
 
-	private static void fixWindowItem(Logger logger, PacketContainer packet, CoordinateOffset offset) {
+	private static void fixWindowItem(Logger logger, PacketContainer packet, Offset offset) {
 		packet.getItemModifier().modify(0, itemStack -> {
 			if (itemStack == null) {
 				return null;
@@ -249,7 +251,7 @@ public class TranslatorClientbound {
 		});
 	}
 
-	private static ItemStack transformItemStack(Logger logger, ItemStack itemStack, CoordinateOffset offset) {
+	private static ItemStack transformItemStack(Logger logger, ItemStack itemStack, Offset offset) {
 		itemStack = itemStack.clone();
 
 		if (itemStack.hasItemMeta()) {
@@ -259,7 +261,7 @@ public class TranslatorClientbound {
 				org.bukkit.inventory.meta.CompassMeta compassMeta = (org.bukkit.inventory.meta.CompassMeta) itemMeta;
 				Location lodestoneLocation = compassMeta.getLodestone();
 				if (lodestoneLocation != null) {
-					compassMeta.setLodestone(lodestoneLocation.subtract(offset.getXInt(), 0, offset.getZInt()));
+					compassMeta.setLodestone(offset.apply(lodestoneLocation));
 					if (!itemStack.setItemMeta(compassMeta)) {
 						logger.severe("Can't apply meta");
 					}
@@ -270,18 +272,18 @@ public class TranslatorClientbound {
 	}
 
 
-	private static void sendChunk(Logger logger, final PacketContainer packet, final CoordinateOffset offset, boolean includesEntities, boolean includeLight) {
+	private static void sendChunk(Logger logger, final PacketContainer packet, final Offset offset, boolean includesEntities, boolean includeLight) {
 		StructureModifier<Integer> integers = packet.getIntegers();
 		integers.modify(0, curr_x -> {
 			if (curr_x != null) {
-				return curr_x - offset.getXChunk();
+				return curr_x - offset.chunkX();
 			} else {
 				return null;
 			}
 		});
 		integers.modify(1, curr_z -> {
 			if (curr_z != null) {
-				return curr_z - offset.getZChunk();
+				return curr_z - offset.chunkZ();
 			} else {
 				return null;
 			}
@@ -303,8 +305,8 @@ public class TranslatorClientbound {
 				for (InternalStructure entity : entities) {
 					// ((blockX & 15) << 4) | (blockZ & 15)
 					entity.getIntegers().modify(0, packedXZ -> {
-						int x = (packedXZ >> 4) - offset.getXInt();
-						int y = (packedXZ & 15) - offset.getZInt();
+						int x = (packedXZ >> 4) - offset.x();
+						int y = (packedXZ & 15) - offset.z();
 						return ((x & 15) << 4) | (y & 15);
 					});
 				}
@@ -313,15 +315,15 @@ public class TranslatorClientbound {
 		}
 	}
 
-	private static void sendChunkBulk(Logger logger, final PacketContainer packet, final CoordinateOffset offset) {
+	private static void sendChunkBulk(Logger logger, final PacketContainer packet, final Offset offset) {
 		if (packet.getIntegerArrays().size() > 1) {
 			final int[] x = packet.getIntegerArrays().read(0).clone();
 			final int[] z = packet.getIntegerArrays().read(1).clone();
 
 			for (int i = 0; i < x.length; i++) {
 
-				x[i] = x[i] - offset.getXChunk();
-				z[i] = z[i] - offset.getZChunk();
+				x[i] = x[i] - offset.chunkX();
+				z[i] = z[i] - offset.chunkZ();
 			}
 
 			packet.getIntegerArrays().write(0, x);
@@ -331,92 +333,92 @@ public class TranslatorClientbound {
 		}
 	}
 
-	private static void sendChunkUpdate(Logger logger, final PacketContainer packet, final CoordinateOffset offset) {
+	private static void sendChunkUpdate(Logger logger, final PacketContainer packet, final Offset offset) {
 		BlockPosition sp = packet.getSectionPositions().read(0);
 		if (sp == null) {
 			return;
 		}
-		packet.getSectionPositions().write(0, sp.subtract(new BlockPosition(offset.getXChunk(), 0, offset.getZChunk())));
+		packet.getSectionPositions().write(0, sp.subtract(new BlockPosition(offset.chunkX(), 0, offset.chunkZ())));
 	}
 
 
-	private static void sendDouble(Logger logger, final PacketContainer packet, final CoordinateOffset offset) {
+	private static void sendDouble(Logger logger, final PacketContainer packet, final Offset offset) {
 		if (packet.getDoubles().size() > 2) {
-			packet.getDoubles().modify(0, x -> x == null ? null : x - offset.getX());
-			packet.getDoubles().modify(2, z -> z == null ? null : z - offset.getZ());
+			packet.getDoubles().modify(0, x -> x == null ? null : x - offset.x());
+			packet.getDoubles().modify(2, z -> z == null ? null : z - offset.z());
 		} else {
 			logger.severe("Packet size error");
 		}
 	}
 
 
-	private static void sendExplosion(Logger logger, final PacketContainer packet, final CoordinateOffset offset) {
+	private static void sendExplosion(Logger logger, final PacketContainer packet, final Offset offset) {
 		sendDouble(logger, packet, offset);
 
 		packet.getBlockPositionCollectionModifier().modify(0, lst -> {
 			if (lst == null) return null;
 			ArrayList<BlockPosition> newLst = new ArrayList<BlockPosition>(lst.size());
 			for (BlockPosition blockPosition : lst) {
-				newLst.add(blockPosition.subtract(new BlockPosition(offset.getXInt(), 0, offset.getZInt())));
+				newLst.add(blockPosition.subtract(new BlockPosition(offset.x(), 0, offset.z())));
 			}
 			return newLst;
 		});
 	}
 
 
-	private static void sendFixedPointNumber(Logger logger, final PacketContainer packet, final CoordinateOffset offset, final int index) {
+	private static void sendFixedPointNumber(Logger logger, final PacketContainer packet, final Offset offset, final int index) {
 		if (packet.getIntegers().size() > 2) {
-			packet.getIntegers().modify(index, curr_x -> curr_x == null ? null : curr_x - (offset.getXInt() << 5));
-			packet.getIntegers().modify(index + 2, curr_z -> curr_z == null ? null : curr_z - (offset.getZInt() << 5));
+			packet.getIntegers().modify(index, curr_x -> curr_x == null ? null : curr_x - (offset.x() << 5));
+			packet.getIntegers().modify(index + 2, curr_z -> curr_z == null ? null : curr_z - (offset.z() << 5));
 		} else {
 			logger.severe("Packet size error");
 		}
 	}
 
 
-	private static void sendFloat(Logger logger, final PacketContainer packet, final CoordinateOffset offset, final int index) {
+	private static void sendFloat(Logger logger, final PacketContainer packet, final Offset offset, final int index) {
 		if (packet.getFloat().size() > 2) {
-			packet.getFloat().modify(index, curr_x -> curr_x == null ? null : (float) (curr_x - offset.getX()));
-			packet.getFloat().modify(index + 2, curr_z -> curr_z == null ? null : (float) (curr_z - offset.getZ()));
+			packet.getFloat().modify(index, curr_x -> curr_x == null ? null : (float) (curr_x - offset.x()));
+			packet.getFloat().modify(index + 2, curr_z -> curr_z == null ? null : (float) (curr_z - offset.z()));
 		} else {
 			logger.severe("Packet size error");
 		}
 	}
 
-	private static void sendInt(Logger logger, final PacketContainer packet, final CoordinateOffset offset, final int index) {
+	private static void sendInt(Logger logger, final PacketContainer packet, final Offset offset, final int index) {
 		if (packet.getIntegers().size() > 2) {
-			packet.getIntegers().modify(index, curr_x -> curr_x == null ? null : curr_x - offset.getXInt());
-			packet.getIntegers().modify(index + 2, curr_z -> curr_z == null ? null : curr_z - offset.getZInt());
+			packet.getIntegers().modify(index, curr_x -> curr_x == null ? null : curr_x - offset.x());
+			packet.getIntegers().modify(index + 2, curr_z -> curr_z == null ? null : curr_z - offset.z());
 		} else {
 			logger.severe("Packet size error");
 		}
 	}
 
-	private static void sendIntChunk(Logger logger, final PacketContainer packet, final CoordinateOffset offset) {
+	private static void sendIntChunk(Logger logger, final PacketContainer packet, final Offset offset) {
 		if (packet.getIntegers().size() > 1) {
-			packet.getIntegers().modify(0, curr_x -> curr_x == null ? null : curr_x - offset.getXChunk());
-			packet.getIntegers().modify(1, curr_z -> curr_z == null ? null : curr_z - offset.getZChunk());
+			packet.getIntegers().modify(0, curr_x -> curr_x == null ? null : curr_x - offset.chunkX());
+			packet.getIntegers().modify(1, curr_z -> curr_z == null ? null : curr_z - offset.chunkZ());
 		} else {
 			logger.severe("Packet size error");
 		}
 	}
 
 
-	private static void sendBlockPosition(Logger logger, final PacketContainer packet, final CoordinateOffset offset) {
+	private static void sendBlockPosition(Logger logger, final PacketContainer packet, final Offset offset) {
 		if (packet.getBlockPositionModifier().size() > 0) {
-			packet.getBlockPositionModifier().modify(0, pos -> offsetPosition(logger, offset, pos));
+			packet.getBlockPositionModifier().modify(0, offset::apply);
 		} else {
 			logger.severe("Packet size error");
 		}
 	}
 
-	private static void fixVibrationParticle(Logger logger, final PacketContainer packet, final CoordinateOffset offset) {
+	private static void fixVibrationParticle(Logger logger, final PacketContainer packet, final Offset offset) {
 		if (packet.getStructures().size() > 0) {
 			InternalStructure outerStructure = packet.getStructures().read(0);
 			if (outerStructure.getStructures().size() > 0) {
 				InternalStructure innerStructure = outerStructure.getStructures().read(0);
 				if (innerStructure.getBlockPositionModifier().size() > 0) {
-					innerStructure.getBlockPositionModifier().modify(0, p -> offsetPosition(logger, offset, p));
+					innerStructure.getBlockPositionModifier().modify(0, offset::apply);
 				}
 			}
 		} else {
@@ -424,32 +426,27 @@ public class TranslatorClientbound {
 		}
 	}
 
-	private static BlockPosition offsetPosition(Logger logger, CoordinateOffset offset, BlockPosition pos) {
-		if (pos == null) return null;
-		return pos.subtract(new BlockPosition(offset.getXInt(), 0, offset.getZInt()));
-	}
-
-	private static Object offsetPositionMc(Logger logger, CoordinateOffset offset, Object pos) {
+	private static Object offsetPositionMc(Logger logger, Offset offset, Object pos) {
 		if (pos == null) return null;
 		try {
-			return NMS_BLOCK_POSITION_ADD_CLASS.invoke(pos, -offset.getXInt(), -0, -offset.getZInt());
+			return NMS_BLOCK_POSITION_ADD_CLASS.invoke(pos, -offset.x(), -0, -offset.z());
 		} catch (IllegalAccessException | InvocationTargetException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 
-	private static void sendInt8(Logger logger, final PacketContainer packet, final CoordinateOffset offset) {
+	private static void sendInt8(Logger logger, final PacketContainer packet, final Offset offset) {
 		if (packet.getIntegers().size() > 2) {
-			packet.getIntegers().modify(0, curr_x -> curr_x == null ? null : curr_x - (offset.getXInt() << 3));
-			packet.getIntegers().modify(2, curr_z -> curr_z == null ? null : curr_z - (offset.getZInt() << 3));
+			packet.getIntegers().modify(0, curr_x -> curr_x == null ? null : curr_x - (offset.x() << 3));
+			packet.getIntegers().modify(2, curr_z -> curr_z == null ? null : curr_z - (offset.z() << 3));
 		} else {
 			logger.severe("Packet size error");
 		}
 	}
 
 
-	private static void sendTileEntityData(Logger logger, final PacketContainer packet, final CoordinateOffset offset) {
+	private static void sendTileEntityData(Logger logger, final PacketContainer packet, final Offset offset) {
 		sendBlockPosition(logger, packet, offset);
 
 		packet.getNbtModifier().modify(0, nbtBase -> {
@@ -457,13 +454,40 @@ public class TranslatorClientbound {
 			if (nbtBase instanceof NbtCompound) {
 				final NbtCompound nbt = (NbtCompound) (((NbtCompound) nbtBase).deepClone());
 				if (nbt.containsKey("x") && nbt.containsKey("z")) {
-					nbt.put("x", nbt.getInteger("x") - offset.getXInt());
-					nbt.put("z", nbt.getInteger("z") - offset.getZInt());
+					nbt.put("x", nbt.getInteger("x") - offset.x());
+					nbt.put("z", nbt.getInteger("z") - offset.z());
 				}
 				return nbt;
 			} else {
 				return nbtBase;
 			}
 		});
+	}
+
+	private static PacketContainer cloneTileEntityData(PacketContainer packet) {
+		packet = packet.shallowClone();
+		int i = 0;
+		for (final NbtBase<?> obj : packet.getNbtModifier().getValues()) {
+			if (obj == null) continue;
+			packet.getNbtModifier().write(i, obj.deepClone());
+			i++;
+		}
+
+		return packet;
+	}
+
+	private static PacketContainer cloneMapChunkEntitiesData(PacketContainer packet) {
+		packet = packet.shallowClone();
+		int i = 0;
+		for (final List<NbtBase<?>> obj : packet.getListNbtModifier().getValues()) {
+			ArrayList<NbtBase<?>> newList = new ArrayList<NbtBase<?>>(obj.size());
+			for (NbtBase<?> nbtBase : obj) {
+				newList.add(nbtBase.deepClone());
+			}
+			packet.getListNbtModifier().write(i, newList);
+			i++;
+		}
+
+		return packet;
 	}
 }

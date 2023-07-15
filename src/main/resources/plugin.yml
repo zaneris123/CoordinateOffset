@@ -1,11 +1,18 @@
-name: ${project.name}
-main: ${project.groupId}.coordinatesobfuscator.CoordinatesObfuscator
-version: ${project.version}
-api-version: 1.20
-author: Cavallium
+name: CoordinateOffset
+version: "${version}"
+main: com.jtprince.coordinateoffset.CoordinateOffset
+api-version: "${apiVersion}"
 depend: [ ProtocolLib ]
-folia-supported: true
+softdepend: [ LuckPerms ]
+authors: [ jtprince, cavallium ]
 permissions:
-  coordinatesobfuscator.bypass:
-    description: "Bypass obfuscation"
-    default: op
+  coordinateoffset.bypass:
+    description: Players with this permission will never have their coordinates offsetted.
+  coordinateoffset.query:
+    description: Allows you to use the /offset command, which tells you your current offset.
+  coordinateoffset.query.others:
+    description: Allows you to query other players' offsets with /offset <name>.
+    children:
+      coordinateoffset.query: true
+  coordinateoffset.reload:
+    description: Allows you to reload the plugin config with /offsetreload.
