@@ -21,7 +21,6 @@ Features
   * Match offsets to the player's position, so they see themselves near the world's origin
   * Persist the same offset every time a player joins so that they don't notice an offset changing
   * Configure different offsets per-player and per-world
-* LuckPerms integration for setting offsets by group or specific context
 
 Requirements
 ------------
@@ -45,7 +44,8 @@ the type of offsetting you're trying to achieve:
 * `random` - Randomize each player's offset whenever they join the server.
 * `zeroAtLocation` - Use an offset similar to the player's first location, so they see themselves near (0, 0).
 
-You can customize these providers further, as well as define your own. See (TODO)
+You can customize these providers further, as well as define your own. See the complete
+[**Configuration Guide**](https://github.com/joshuaprince/CoordinateOffset/wiki/Configuration-Guide).
 
 Commands
 --------

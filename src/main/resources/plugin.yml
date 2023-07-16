@@ -3,7 +3,6 @@ version: "${version}"
 main: com.jtprince.coordinateoffset.CoordinateOffset
 api-version: "${apiVersion}"
 depend: [ ProtocolLib ]
-softdepend: [ LuckPerms ]
 authors: [ jtprince, cavallium ]
 permissions:
   coordinateoffset.bypass:

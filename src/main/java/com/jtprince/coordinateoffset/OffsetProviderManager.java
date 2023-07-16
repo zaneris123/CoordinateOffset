@@ -110,14 +110,15 @@ class OffsetProviderManager {
     }
 
     @NotNull Offset provideOffset(@NotNull OffsetProviderContext context) {
-        OffsetProvider provider = defaultProvider;
-        ProviderSource providerSource = ProviderSource.DEFAULT;
+        OffsetProvider provider = null;
+        ProviderSource providerSource = null;
 
         Offset previousOffset = null;
         try {
             previousOffset = plugin.getOffset(context.player());
         } catch (NoSuchElementException ignored) {}
 
+        // Priority 0: Permission-based bypass
         if (plugin.getConfig().getBoolean("bypassByPermission") &&
                 context.player().hasPermission(CoordinateOffsetPermissions.BYPASS)) {
             if (plugin.isVerboseLoggingEnabled()) {
@@ -126,28 +127,26 @@ class OffsetProviderManager {
             return Offset.ZERO;
         }
 
-        Optional<ProviderOverride> appliedOverride = overrides.stream().filter(o -> o.appliesTo(context)).findFirst();
-        if (appliedOverride.isPresent()) {
-            provider = appliedOverride.get().provider;
-            providerSource = ProviderSource.OVERRIDE;
-        } else {
-            LuckPermsIntegration lp = plugin.getLuckPermsIntegration();
-            if (lp != null) {
-                String lpMetaStr = lp.getProviderOverride(context.player(), context.world());
-                if (lpMetaStr != null) {
-                    provider = providersFromConfig.get(lpMetaStr);
-                    if (provider == null) {
-                        plugin.getLogger().severe("Unknown provider for LuckPerms meta lookup on " + context.player().getName() + ": \"" + lpMetaStr + "\". Options are " + String.join(", ", getOptionNames()));
-                        provider = defaultProvider;
-                    } else {
-                        providerSource = ProviderSource.LUCK_PERMS_META;
-                    }
-                }
+        // Priority 1: LuckPerms meta (TODO)
+
+        // Priority 2: Config override rule
+        //noinspection ConstantValue
+        if (provider == null) {
+            Optional<ProviderOverride> appliedOverride = overrides.stream().filter(o -> o.appliesTo(context)).findFirst();
+            if (appliedOverride.isPresent()) {
+                provider = appliedOverride.get().provider;
+                providerSource = ProviderSource.OVERRIDE;
             }
         }
 
-        Offset offset = provider.getOffset(context);
+        // Priority 3: Default provider
+        if (provider == null) {
+            provider = defaultProvider;
+            providerSource = ProviderSource.DEFAULT;
+        }
 
+        // With provider selected, get the offset.
+        Offset offset = provider.getOffset(context);
         if (plugin.isVerboseLoggingEnabled()) {
             String usingOrReusing;
             if (offset.equals(previousOffset)) {
@@ -168,7 +167,6 @@ class OffsetProviderManager {
             switch (providerSource) {
                 case DEFAULT -> sourceStr = "default provider";
                 case OVERRIDE -> sourceStr = "config.yml override";
-                case LUCK_PERMS_META -> sourceStr = "LuckPerms meta override";
             }
 
             plugin.getLogger().info(
@@ -180,7 +178,7 @@ class OffsetProviderManager {
     }
 
     enum ProviderSource {
-        DEFAULT, OVERRIDE, LUCK_PERMS_META
+        DEFAULT, OVERRIDE
     }
 
     record ProviderOverride(

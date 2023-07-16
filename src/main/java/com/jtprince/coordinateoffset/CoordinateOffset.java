@@ -5,17 +5,14 @@ import com.jtprince.coordinateoffset.provider.RandomOffsetProvider;
 import com.jtprince.coordinateoffset.provider.ZeroAtLocationOffsetProvider;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
-import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public final class CoordinateOffset extends JavaPlugin {
     private static CoordinateOffset instance;
-    private @Nullable LuckPermsIntegration luckPermsIntegration = null;
     private PlayerOffsetsManager playerOffsetsManager;
     private OffsetProviderManager providerManager;
 
@@ -23,14 +20,6 @@ public final class CoordinateOffset extends JavaPlugin {
     public void onEnable() {
         CommandAPI.onLoad(new CommandAPIBukkitConfig(this).silentLogs(true).verboseOutput(false));
         CommandAPI.onEnable();
-
-        try {
-            RegisteredServiceProvider<LuckPerms> luckPerms = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
-            if (luckPerms != null) {
-                luckPermsIntegration = new LuckPermsIntegration(luckPerms.getProvider());
-                getLogger().info("Enabled LuckPerms integration.");
-            }
-        } catch (NoClassDefFoundError ignored) {}
 
         instance = this;
         saveDefaultConfig();
@@ -100,10 +89,6 @@ public final class CoordinateOffset extends JavaPlugin {
 
     OffsetProviderManager getOffsetProviderManager() {
         return providerManager;
-    }
-
-    @Nullable LuckPermsIntegration getLuckPermsIntegration() {
-        return luckPermsIntegration;
     }
 
     void impulseOffsetChange(@NotNull OffsetProviderContext context) {
