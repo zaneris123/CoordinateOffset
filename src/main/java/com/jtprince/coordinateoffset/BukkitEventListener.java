@@ -22,9 +22,19 @@ class BukkitEventListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerRespawn(PlayerRespawnEvent event) {
+        /*
+         * The Respawn event is fired after using an End exit portal, but users probably expect that portal to trigger
+         * a world change, not a death-based respawn.
+         */
+        OffsetProviderContext.ProvideReason reason;
+        if (event.getRespawnReason() == PlayerRespawnEvent.RespawnReason.DEATH) {
+            reason = OffsetProviderContext.ProvideReason.DEATH_RESPAWN;
+        } else {
+            reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
+        }
         plugin.impulseOffsetChange(new OffsetProviderContext(
                 event.getPlayer(), Objects.requireNonNull(event.getRespawnLocation().getWorld()),
-                event.getRespawnLocation(), OffsetProviderContext.ProvideReason.RESPAWN, plugin));
+                event.getRespawnLocation(), reason, plugin));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

@@ -25,6 +25,6 @@ public record OffsetProviderContext(
     @NotNull CoordinateOffset plugin
 ) {
     public enum ProvideReason {
-        JOIN, RESPAWN, WORLD_CHANGE, DISTANT_TELEPORT
+        JOIN, DEATH_RESPAWN, WORLD_CHANGE, DISTANT_TELEPORT
     }
 }

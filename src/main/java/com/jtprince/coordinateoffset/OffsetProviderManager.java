@@ -113,6 +113,11 @@ class OffsetProviderManager {
         OffsetProvider provider = defaultProvider;
         ProviderSource providerSource = ProviderSource.DEFAULT;
 
+        Offset previousOffset = null;
+        try {
+            previousOffset = plugin.getOffset(context.player());
+        } catch (NoSuchElementException ignored) {}
+
         if (plugin.getConfig().getBoolean("bypassByPermission") &&
                 context.player().hasPermission(CoordinateOffsetPermissions.BYPASS)) {
             if (plugin.isVerboseLoggingEnabled()) {
@@ -144,10 +149,17 @@ class OffsetProviderManager {
         Offset offset = provider.getOffset(context);
 
         if (plugin.isVerboseLoggingEnabled()) {
+            String usingOrReusing;
+            if (offset.equals(previousOffset)) {
+                usingOrReusing = "Reusing";
+            } else {
+                usingOrReusing = "Using";
+            }
+
             String reasonStr = null;
             switch (context.reason()) {
                 case JOIN -> reasonStr = "player joined";
-                case RESPAWN -> reasonStr = "player respawned";
+                case DEATH_RESPAWN -> reasonStr = "player respawned";
                 case WORLD_CHANGE -> reasonStr = "player changed worlds";
                 case DISTANT_TELEPORT -> reasonStr = "player teleported";
             }
@@ -160,8 +172,9 @@ class OffsetProviderManager {
             }
 
             plugin.getLogger().info(
-                    "Using " + offset + " from provider \"" + provider.name + "\" (" + sourceStr + ") " +
-                            "for player " + context.player().getName() + " in world \"" + context.world().getName() + "\" (" + reasonStr + ").");
+                    usingOrReusing + " " + offset + " from provider \"" + provider.name + "\" (" + sourceStr + ") " +
+                            "for player " + context.player().getName() + " in world \"" + context.world().getName() +
+                            "\" (" + reasonStr + ").");
         }
         return offset;
     }
