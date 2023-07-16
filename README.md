@@ -1,6 +1,6 @@
 CoordinateOffset
 ================
-**A Minecraft Spigot/Paper plugin that obfuscates each player's coordinate system.**
+**A Minecraft Spigot/Paper plugin that configurably obfuscates player's coordinates.**
 
 Minecraft offers an extremely useful "debug" (F3) menu that allows anyone to easily see their precise coordinates in the
 world. This makes it easy to save points of interest, share locations with friends (or enemies), and even add
@@ -11,8 +11,8 @@ wish to hide them from players. Minecraft offers `/gamerule reducedDebugInfo` to
 display in the F3 menu. But it is trivial for a player to add a mod that re-enables coordinates.
 
 **CoordinateOffset** is a plugin for Spigot and Paper servers that **applies an offset to every coordinate in packets
-between the server and client**. The result is that the client still sees the exact same world they would normally see.
-But if they press F3, the coordinates they see will **not** be their real coordinates.
+between the server and client**. The player still sees the exact same world they would normally see. But no matter which
+mods they install, it is impossible for them to know their real coordinates.
 
 Features
 --------
@@ -20,8 +20,8 @@ Features
   * Randomize offset when the player joins, dies, changes world, or teleports
   * Match offsets to the player's position, so they see themselves near the world's origin
   * Persist the same offset every time a player joins so that they don't notice an offset changing
-  * Configure different offset settings (or disable the offset) per-player and per-world
-* LuckPerms integration for determining offsets by group or specific context
+  * Configure different offsets per-player and per-world
+* LuckPerms integration for setting offsets by group or specific context
 
 Requirements
 ------------
