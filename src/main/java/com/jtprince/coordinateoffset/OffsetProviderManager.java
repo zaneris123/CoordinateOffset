@@ -4,6 +4,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -94,7 +96,22 @@ class OffsetProviderManager {
                 }
             }
 
-            newOverrides.add(new ProviderOverride(provider, playerUuid, worldName));
+            Permission permission = null;
+            if (map.containsKey("permission")) {
+                String node = map.get("permission").toString();
+                permission = Bukkit.getPluginManager().getPermission(node);
+                if (permission == null) {
+                    permission = new Permission(node);
+                    permission.setDefault(PermissionDefault.FALSE);
+                    permission.setDescription("A custom permission defined in CoordinateOffset config.yml.");
+                    // Only register permissions with Bukkit if they are in this plugin's namespace to avoid conflicts.
+                    if (permission.getName().startsWith("coordinateoffset.provider.")) {
+                        Bukkit.getPluginManager().addPermission(permission);
+                    }
+                }
+            }
+
+            newOverrides.add(new ProviderOverride(provider, playerUuid, worldName, permission));
         }
 
         overrides = newOverrides;
@@ -184,12 +201,14 @@ class OffsetProviderManager {
     record ProviderOverride(
         @NotNull OffsetProvider provider,
         @Nullable UUID playerUuid,
-        @Nullable String worldName
+        @Nullable String worldName,
+        @Nullable Permission permission
     ) {
         @SuppressWarnings("RedundantIfStatement")
         boolean appliesTo(OffsetProviderContext context) {
             if (playerUuid != null && !playerUuid.equals(context.player().getUniqueId())) return false;
             if (worldName != null && !worldName.equals(context.world().getName())) return false;
+            if (permission != null && !context.player().hasPermission(permission)) return false;
 
             return true;
         }

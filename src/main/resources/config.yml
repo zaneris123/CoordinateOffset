@@ -5,18 +5,14 @@
 # Options are any key under `offsetProviders` below (e.g. constant, random...)
 defaultOffsetProvider: random
 
-# If true, players with the `coordinateoffset.bypass` permission will always
-#   see their unshifted coordinates. You should probably give this to anyone
-#   who might need to run commands with coordinates.
-bypassByPermission: true
-
 # List of overrides to the default offset provider. The first item has the
 #   highest priority. `provider` is a required key; optional keys are
-#   `world` and `playerUuid` which, if present, must ALL match for the
-#   override to apply.
-#offsetProviderOverrides:
+#   `world`, `playerUuid`, and `permission` which, if present, must ALL match
+#   for the override to apply.
+offsetProviderOverrides:
 #  - provider: constant
 #    world: world
+#    permission: coordinateoffset.provider.my_custom_permission
 #  - provider: zeroAtLocation
 #    playerUuid: 00000000-0000-0000-0000-000000000000
 
@@ -91,6 +87,10 @@ offsetProviders:
   #   offsetX: -16000
   #   offsetZ: 16000
 
+
+# If true, players with the `coordinateoffset.bypass` permission will bypass
+#   all providers and see their real coordinates.
+bypassByPermission: true
 
 # Enable a log message when a player's offset changes.
 verbose: false
