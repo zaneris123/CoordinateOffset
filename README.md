@@ -1,6 +1,6 @@
 CoordinateOffset
 ================
-**A Minecraft Spigot/Paper plugin that configurably obfuscates player's coordinates.**
+**A Minecraft Spigot/Paper plugin that configurably obfuscates players' coordinates.**
 
 ![Icon](.github/img/icon128.png)
 
@@ -86,5 +86,10 @@ Allows you to query other players' offsets with `/offset <name>`.
 Credits
 -------
 Special thanks to [Cavallium](https://github.com/cavallium) for developing
-[CoordinatesObfuscator](https://github.com/cavallium/CoordinatesObfuscator), which CoordinateOffset is a fork of.
+[**CoordinatesObfuscator**](https://github.com/cavallium/CoordinatesObfuscator), which CoordinateOffset is a fork of.
 CoordinateOffset uses most of the original code for packet translation.
+
+Libraries used:
+* [ProtocolLib](https://github.com/dmulloy2/ProtocolLib)
+* [CommandAPI](https://commandapi.jorel.dev/)
+* [MorePersistentDataTypes](https://github.com/JEFF-Media-GbR/MorePersistentDataTypes)
