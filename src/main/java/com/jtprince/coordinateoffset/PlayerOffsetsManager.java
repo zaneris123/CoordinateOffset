@@ -36,7 +36,7 @@ class PlayerOffsetsManager {
         if (expectedWorld != null) {
             UUID knownWorld = playerKnownWorlds.get(player.getUniqueId());
             if (expectedWorld.getUID() != knownWorld) {
-                plugin.getLogger().severe("Mismatched world for provided offsets! (" + expectedWorld.getName() + ")");
+                logRateLimitedError("Mismatched world for provided offsets! (" + expectedWorld.getName() + ")");
             }
         }
 
@@ -51,5 +51,12 @@ class PlayerOffsetsManager {
     synchronized void remove(@NotNull Player player) {
         playerOffsets.remove(player.getUniqueId());
         playerKnownWorlds.remove(player.getUniqueId());
+    }
+
+    private long lastErrorTimestamp = 0;
+    private void logRateLimitedError(String message) {
+        if (System.currentTimeMillis() - lastErrorTimestamp < 2000) return;
+        lastErrorTimestamp = System.currentTimeMillis();
+        plugin.getLogger().severe(message);
     }
 }

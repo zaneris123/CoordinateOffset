@@ -30,6 +30,8 @@ Requirements
 
 Configuration
 -------------
+*Main article: [Configuration Guide](https://github.com/joshuaprince/CoordinateOffset/wiki/Configuration-Guide)*
+
 The main configuration file is automatically generated after the first run at `plugins/CoordinateOffset/config.yml`.
 
 ```yaml
@@ -40,11 +42,12 @@ The default configuration contains four predefined "offset providers". An "offse
 player's coordinates should appear to be shifted from thei real location. Get started by picking a strategy that matches
 the type of offsetting you're trying to achieve:
 * `constant` - Specify the exact offset you want players to have.
-* `disabled` - A constant offset with components of 0, meaning that players will see their real coordinates.
+* `disabled` - Players will see their real coordinates.
 * `random` - Randomize each player's offset whenever they join the server.
-* `zeroAtLocation` - Use an offset similar to the player's first location, so they see themselves near (0, 0).
+* `zeroAtLocation` - Use an offset based on the player's starting location, so they see themselves near (0, 0).
 
-You can customize these providers further, as well as define your own. See the complete
+You can customize these providers further, use different providers for different players/worlds/groups, and define your
+own providers. See the complete
 [**Configuration Guide**](https://github.com/joshuaprince/CoordinateOffset/wiki/Configuration-Guide).
 
 Commands
@@ -66,13 +69,13 @@ Players with this permission will never have their coordinates offsetted.
 It's a good idea to give this permission to anyone who needs to use coordinates for commands or administration.
 
 * `coordinateoffset.query`
-Allows you to use the /offset command, which tells you your current offset.
+Allows you to use the `/offset` command, which tells you your current offset.
 
 * `coordinateoffset.query.others`
-Allows you to query other players' offsets with /offset <name>.
+Allows you to query other players' offsets with `/offset <name>`.
 
 * `coordinateoffset.reload`
-  Allows you to reload the plugin config with /offsetreload.
+  Allows you to reload the plugin config with `/offsetreload`.
 
 Credits
 -------
