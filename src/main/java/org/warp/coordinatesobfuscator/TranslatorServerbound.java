@@ -1,14 +1,30 @@
 package org.warp.coordinatesobfuscator;
 
+import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.jtprince.coordinateoffset.Offset;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Set;
 import java.util.logging.Logger;
 
 public class TranslatorServerbound {
+	public static final Set<PacketType> PACKETS_CLIENT = Set.of(
+			// Client -> Server (Receiving)
+			PacketType.Play.Client.POSITION,
+			PacketType.Play.Client.POSITION_LOOK,
+			PacketType.Play.Client.BLOCK_DIG,
+			PacketType.Play.Client.BLOCK_PLACE,
+			PacketType.Play.Client.USE_ITEM,
+			PacketType.Play.Client.USE_ENTITY,
+			PacketType.Play.Client.VEHICLE_MOVE,
+			PacketType.Play.Client.SET_COMMAND_BLOCK,
+			PacketType.Play.Client.SET_JIGSAW,
+			PacketType.Play.Client.STRUCT,
+			PacketType.Play.Client.UPDATE_SIGN
+	);
 
 	private static final String USE_ITEM = "BLOCK_PLACE";
 	private static final String BLOCK_PLACE = "USE_ITEM";

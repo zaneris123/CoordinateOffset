@@ -22,11 +22,15 @@ Features
   * Persist the same offset every time a player joins so that they don't notice an offset changing
   * Configure different offsets per-player and per-world
 
-Requirements
-------------
+Requirements and Installation
+-----------------------------
 * Spigot or [Paper (recommended)](https://papermc.io/) for Minecraft 1.20.1+
 * [ProtocolLib](https://www.spigotmc.org/resources/protocollib.1997/) 5 **snapshot #657** or higher (you may need 
   to use a [dev build for 1.20](https://ci.dmulloy2.net/job/ProtocolLib/))
+
+After ensuring that you meet the requirements, just grab the latest
+[release](https://github.com/joshuaprince/CoordinateOffset/releases/latest) and drop it in your server's `plugins`
+folder.
 
 Configuration
 -------------

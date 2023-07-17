@@ -1,5 +1,6 @@
 package org.warp.coordinatesobfuscator;
 
+import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.InternalStructure;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.reflect.EquivalentConverter;
@@ -24,6 +25,59 @@ import java.util.*;
 import java.util.logging.Logger;
 
 public class TranslatorClientbound {
+	public static final Set<PacketType> PACKETS_SERVER = Set.of(
+			// Server -> Client (Sending)
+			PacketType.Play.Server.BUNDLE,
+			PacketType.Play.Server.BLOCK_ACTION,
+			PacketType.Play.Server.BLOCK_BREAK_ANIMATION,
+			PacketType.Play.Server.BLOCK_CHANGE,
+			PacketType.Play.Server.MULTI_BLOCK_CHANGE,
+			PacketType.Play.Server.MAP_CHUNK,
+			PacketType.Play.Server.UNLOAD_CHUNK,
+			PacketType.Play.Server.LIGHT_UPDATE,
+			PacketType.Play.Server.EXPLOSION,
+			PacketType.Play.Server.SPAWN_POSITION,
+
+			PacketType.Play.Server.LOGIN,
+			PacketType.Play.Server.RESPAWN,
+			PacketType.Play.Server.POSITION,
+
+			PacketType.Play.Server.WORLD_PARTICLES,
+			PacketType.Play.Server.WORLD_EVENT,
+
+			PacketType.Play.Server.NAMED_SOUND_EFFECT,
+
+			PacketType.Play.Server.NAMED_ENTITY_SPAWN,
+			PacketType.Play.Server.SPAWN_ENTITY,
+			PacketType.Play.Server.SPAWN_ENTITY_EXPERIENCE_ORB,
+			PacketType.Play.Server.ENTITY_TELEPORT,
+
+			PacketType.Play.Server.OPEN_SIGN_EDITOR,
+
+			PacketType.Play.Server.ENTITY_METADATA,
+			PacketType.Play.Server.VIEW_CENTRE,
+			PacketType.Play.Server.WINDOW_ITEMS,
+			PacketType.Play.Server.WINDOW_DATA,
+			PacketType.Play.Server.SET_SLOT,
+
+			PacketType.Play.Server.TILE_ENTITY_DATA,
+
+			PacketType.Play.Server.INITIALIZE_BORDER,
+			PacketType.Play.Server.SET_BORDER_CENTER,
+			PacketType.Play.Server.SET_BORDER_LERP_SIZE,
+			PacketType.Play.Server.SET_BORDER_SIZE,
+			PacketType.Play.Server.SET_BORDER_WARNING_DELAY,
+			PacketType.Play.Server.SET_BORDER_WARNING_DISTANCE
+	);
+
+	public static final Set<PacketType> PACKETS_SERVER_BORDER = Set.of(
+			PacketType.Play.Server.INITIALIZE_BORDER,
+			PacketType.Play.Server.SET_BORDER_CENTER,
+			PacketType.Play.Server.SET_BORDER_LERP_SIZE,
+			PacketType.Play.Server.SET_BORDER_SIZE,
+			PacketType.Play.Server.SET_BORDER_WARNING_DELAY,
+			PacketType.Play.Server.SET_BORDER_WARNING_DISTANCE
+	);
 
 	private static final Class<?> NMS_BLOCK_POSITION_CLASS;
 	private static final Method NMS_BLOCK_POSITION_ADD_CLASS;
@@ -208,6 +262,9 @@ public class TranslatorClientbound {
 				break;
 			case "PLAYER_INFO":
 				break;
+			case "INITIALIZE_BORDER":
+			case "SET_BORDER_CENTER":
+				sendDouble2D(logger, packet, offset);
 			default:
 				logger.fine(packet.getType().name());
 				break;
@@ -351,6 +408,14 @@ public class TranslatorClientbound {
 		}
 	}
 
+	private static void sendDouble2D(Logger logger, final PacketContainer packet, final Offset offset) {
+		if (packet.getDoubles().size() > 1) {
+			packet.getDoubles().modify(0, x -> x == null ? null : x - offset.x());
+			packet.getDoubles().modify(1, z -> z == null ? null : z - offset.z());
+		} else {
+			logger.severe("Packet size error");
+		}
+	}
 
 	private static void sendExplosion(Logger logger, final PacketContainer packet, final Offset offset) {
 		sendDouble(logger, packet, offset);

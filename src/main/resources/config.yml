@@ -92,5 +92,11 @@ offsetProviders:
 #   all providers and see their real coordinates.
 bypassByPermission: true
 
+# Disable sending world border packets to offsetted players. A player could
+#   use the center of the world border (which is always sent) to work out
+#   their real coordinates. Only disable this if you're okay with this
+#   potential offset leak.
+obfuscateWorldBorder: true
+
 # Enable a log message when a player's offset changes.
 verbose: false
