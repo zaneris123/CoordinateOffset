@@ -33,10 +33,10 @@ public final class CoordinateOffset extends JavaPlugin {
         providerManager.registerConfigurationFactory("RandomOffsetProvider", new RandomOffsetProvider.ConfigFactory());
         providerManager.registerConfigurationFactory("ZeroAtLocationOffsetProvider", new ZeroAtLocationOffsetProvider.ConfigFactory());
 
-        // TBD: Allow extensions to register their providers first.
-        providerManager.loadProvidersFromConfig(getConfig());
-
         new PacketOffsetAdapter(this).registerAdapters();
+
+        // Wait to load providers until the first tick in case other plugins register their own providers.
+        Bukkit.getScheduler().runTask(this, () -> providerManager.loadProvidersFromConfig(getConfig()));
     }
 
     @Override

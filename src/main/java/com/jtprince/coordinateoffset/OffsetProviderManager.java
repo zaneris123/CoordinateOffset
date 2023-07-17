@@ -116,14 +116,13 @@ class OffsetProviderManager {
 
         overrides = newOverrides;
 
-        plugin.getLogger().info("Loaded " + newProviders.size() + " offset providers from config.");
         String overrideCountStr;
         switch (overrides.size()) {
             case 0 -> overrideCountStr = ".";
             case 1 -> overrideCountStr = " (+1 override rule).";
             default -> overrideCountStr = " (+" + overrides.size() + " override rules).";
         }
-        plugin.getLogger().info("Default offset provider is \"" + defaultProvider.name + "\"" + overrideCountStr);
+        plugin.getLogger().info("Loaded " + newProviders.size() + " offset providers from config. Default offset provider is \"" + defaultProvider.name + "\"" + overrideCountStr);
     }
 
     @NotNull Offset provideOffset(@NotNull OffsetProviderContext context) {
