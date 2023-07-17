@@ -2,6 +2,8 @@ CoordinateOffset
 ================
 **A Minecraft Spigot/Paper plugin that configurably obfuscates player's coordinates.**
 
+![Icon](.github/img/icon128.png)
+
 Minecraft offers an extremely useful "debug" (F3) menu that allows anyone to easily see their precise coordinates in the
 world. This makes it easy to save points of interest, share locations with friends (or enemies), and even add
 client-side mods that use these coordinates to build maps of the world while exploring.
