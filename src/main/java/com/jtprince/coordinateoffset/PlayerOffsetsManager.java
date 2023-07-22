@@ -36,7 +36,7 @@ class PlayerOffsetsManager {
         if (expectedWorld != null) {
             UUID knownWorld = playerKnownWorlds.get(player.getUniqueId());
             if (expectedWorld.getUID() != knownWorld) {
-                logRateLimitedError("Mismatched world for provided offsets! (" + expectedWorld.getName() + ")");
+                logRateLimitedError("Mismatched world for provided offsets! (" + player.getName() + " is in world " + expectedWorld.getName() + ")");
             }
         }
 

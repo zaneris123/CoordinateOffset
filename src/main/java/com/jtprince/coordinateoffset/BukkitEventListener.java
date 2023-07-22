@@ -6,6 +6,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.server.ServerLoadEvent;
 
 import java.util.Objects;
 
@@ -18,6 +19,11 @@ class BukkitEventListener implements Listener {
     BukkitEventListener(CoordinateOffset plugin, PlayerOffsetsManager playerOffsetsManager) {
         this.plugin = plugin;
         this.players = playerOffsetsManager;
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onServerLoad(ServerLoadEvent event) {
+        plugin.onAllPluginsEnabled();
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

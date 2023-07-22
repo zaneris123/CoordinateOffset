@@ -34,9 +34,11 @@ public final class CoordinateOffset extends JavaPlugin {
         providerManager.registerConfigurationFactory("ZeroAtLocationOffsetProvider", new ZeroAtLocationOffsetProvider.ConfigFactory());
 
         new PacketOffsetAdapter(this).registerAdapters();
+    }
 
-        // Wait to load providers until the first tick in case other plugins register their own providers.
-        Bukkit.getScheduler().runTask(this, () -> providerManager.loadProvidersFromConfig(getConfig()));
+    public void onAllPluginsEnabled() {
+        // Wait to load providers until all plugins are loaded in case other plugins register their own providers.
+        providerManager.loadProvidersFromConfig(getConfig());
     }
 
     @Override
