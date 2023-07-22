@@ -3,7 +3,9 @@ version: "${version}"
 main: com.jtprince.coordinateoffset.CoordinateOffset
 api-version: "${apiVersion}"
 depend: [ ProtocolLib ]
-authors: [ jtprince, cavallium ]
+authors: [ jtprince, Cavallium ]
+website: https://github.com/joshuaprince/CoordinateOffset
+description: Configurably obfuscate players' coordinates.
 permissions:
   coordinateoffset.bypass:
     description: Players with this permission will never have their coordinates offsetted.

@@ -7,6 +7,7 @@ import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.utility.MinecraftVersion;
 import org.warp.coordinatesobfuscator.TranslatorClientbound;
 import org.warp.coordinatesobfuscator.TranslatorServerbound;
 
@@ -25,6 +26,10 @@ class PacketOffsetAdapter {
         final ProtocolManager pm = ProtocolLibrary.getProtocolManager();
         pm.addPacketListener(new AdapterServer());
         pm.addPacketListener(new AdapterClient());
+
+        if (!pm.getMinecraftVersion().isAtLeast(MinecraftVersion.FEATURE_PREVIEW_2)) {
+            logger.severe("This plugin is only tested with Minecraft 1.19.4 and above - proceed at your own risk!");
+        }
     }
 
     private class AdapterServer extends PacketAdapter {
