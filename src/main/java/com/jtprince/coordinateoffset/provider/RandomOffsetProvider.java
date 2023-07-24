@@ -95,6 +95,9 @@ public class RandomOffsetProvider extends OffsetProvider {
             RandomOffsetProvider p = new RandomOffsetProvider(name, persistent ? persistenceKey : null, plugin);
             p.resetConfig = ResetConfig.fromConfigSection(providerConfig);
             p.randomBound = providerConfig.getInt("randomBound");
+            if (p.randomBound > OffsetProvider.OFFSET_MAX) {
+                throw new IllegalArgumentException("Provider \"" + name + "\": randomBound is too large! (Max 30M)");
+            }
             p.worldAlignment = WorldAlignmentConfig.fromConfig(providerConfig.getStringList("worldAlignment"));
             return p;
         }

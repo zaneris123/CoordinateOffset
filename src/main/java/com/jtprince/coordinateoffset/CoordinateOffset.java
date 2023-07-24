@@ -15,6 +15,7 @@ public final class CoordinateOffset extends JavaPlugin {
     private static CoordinateOffset instance;
     private PlayerOffsetsManager playerOffsetsManager;
     private OffsetProviderManager providerManager;
+    private WorldBorderObfuscator worldBorderObfuscator;
 
     @Override
     public void onEnable() {
@@ -27,7 +28,8 @@ public final class CoordinateOffset extends JavaPlugin {
         playerOffsetsManager = new PlayerOffsetsManager(this);
         providerManager = new OffsetProviderManager(this);
         new CoordinateOffsetCommands(this).registerCommands();
-        Bukkit.getPluginManager().registerEvents(new BukkitEventListener(this, playerOffsetsManager), this);
+        worldBorderObfuscator = new WorldBorderObfuscator(this);
+        Bukkit.getPluginManager().registerEvents(new BukkitEventListener(this, playerOffsetsManager, worldBorderObfuscator), this);
 
         providerManager.registerConfigurationFactory("ConstantOffsetProvider", new ConstantOffsetProvider.ConfigFactory());
         providerManager.registerConfigurationFactory("RandomOffsetProvider", new RandomOffsetProvider.ConfigFactory());
@@ -93,8 +95,13 @@ public final class CoordinateOffset extends JavaPlugin {
         return providerManager;
     }
 
+    WorldBorderObfuscator getWorldBorderObfuscator() {
+        return worldBorderObfuscator;
+    }
+
     void impulseOffsetChange(@NotNull OffsetProviderContext context) {
         Offset offset = providerManager.provideOffset(context);
         playerOffsetsManager.put(context.player(), context.world(), offset);
+        worldBorderObfuscator.tryUpdatePlayerBorders(context.player(), context.playerLocation());
     }
 }

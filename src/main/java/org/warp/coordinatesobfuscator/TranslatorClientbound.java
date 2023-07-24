@@ -71,6 +71,7 @@ public class TranslatorClientbound {
 	);
 
 	public static final Set<PacketType> PACKETS_SERVER_BORDER = Set.of(
+			// These packets are translated in WorldBorderObfuscator, not this file.
 			PacketType.Play.Server.INITIALIZE_BORDER,
 			PacketType.Play.Server.SET_BORDER_CENTER,
 			PacketType.Play.Server.SET_BORDER_LERP_SIZE,
@@ -111,6 +112,11 @@ public class TranslatorClientbound {
 
 	public static @Nullable PacketContainer outgoing(@NotNull Logger logger, @NotNull PacketContainer packet, @NotNull final Offset offset) {
 		if (offset.equals(Offset.ZERO)) {
+			return null;
+		}
+
+		if (PACKETS_SERVER_BORDER.contains(packet.getType())) {
+			logger.severe("Programming error! WorldBorder packets must not be translated here, please contact the developer.");
 			return null;
 		}
 

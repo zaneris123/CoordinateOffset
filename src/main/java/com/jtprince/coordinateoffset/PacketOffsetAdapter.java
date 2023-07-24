@@ -14,11 +14,11 @@ import org.warp.coordinatesobfuscator.TranslatorServerbound;
 import java.util.logging.Logger;
 
 class PacketOffsetAdapter {
-    private final CoordinateOffset plugin;
+    private final CoordinateOffset coPlugin;
     private final Logger logger;
 
     PacketOffsetAdapter(CoordinateOffset plugin) {
-        this.plugin = plugin;
+        this.coPlugin = plugin;
         this.logger = plugin.getLogger();
     }
 
@@ -34,7 +34,7 @@ class PacketOffsetAdapter {
 
     private class AdapterServer extends PacketAdapter {
         private AdapterServer() {
-            super(PacketOffsetAdapter.this.plugin, ListenerPriority.HIGHEST, TranslatorClientbound.PACKETS_SERVER);
+            super(coPlugin, ListenerPriority.HIGHEST, TranslatorClientbound.PACKETS_SERVER);
         }
 
         @Override
@@ -42,29 +42,34 @@ class PacketOffsetAdapter {
             var packet = event.getPacket();
 
             if (packet.getType() == Server.LOGIN) {
-                PacketOffsetAdapter.this.plugin.impulseOffsetChange(new OffsetProviderContext(
+                coPlugin.impulseOffsetChange(new OffsetProviderContext(
                         event.getPlayer(), event.getPlayer().getWorld(),
                         event.getPlayer().getLocation(), OffsetProviderContext.ProvideReason.JOIN,
-                        PacketOffsetAdapter.this.plugin));
+                        coPlugin));
             }
 
             Offset offset;
-            if (packet.getType() == Server.RESPAWN) {
+            if (packet.getType() == Server.RESPAWN ||
+                    TranslatorClientbound.PACKETS_SERVER_BORDER.contains(packet.getType())) {
                 /*
                  * The respawn packet has a unique need: it's the packet that causes a world change. However, the packet
                  * itself contains a coordinate for the world the player is going *to*. If we just use the regular
                  * Player#getWorld function, we'll get the offset for the world the player is coming *from*.
-                 * We shouldn't validate that the offset lookup has a matching World in this case only.
+                 * We shouldn't validate that the offset lookup has a matching World in this case.
+                 *
+                 * Likewise, the server sends World Border packets for a new world *before* sending the respawn packet.
+                 * The sequence goes Teleport Event (and offset change) -> Border packets -> Respawn packet.
                  */
-                offset = PacketOffsetAdapter.this.plugin.getPlayerManager().get(event.getPlayer(), null);
+                offset = coPlugin.getPlayerManager().get(event.getPlayer(), null);
             } else {
-                offset = PacketOffsetAdapter.this.plugin.getPlayerManager().get(event.getPlayer(), event.getPlayer().getWorld());
+                offset = coPlugin.getPlayerManager().get(event.getPlayer(), event.getPlayer().getWorld());
             }
 
-            if (PacketOffsetAdapter.this.plugin.getConfig().getBoolean("obfuscateWorldBorder") &&
-                    !offset.equals(Offset.ZERO) &&
-                    TranslatorClientbound.PACKETS_SERVER_BORDER.contains(packet.getType())) {
-                event.setCancelled(true);
+            if (offset.equals(Offset.ZERO)) return;
+
+            if (TranslatorClientbound.PACKETS_SERVER_BORDER.contains(packet.getType())) {
+                // Border packets need special handling, more than just applying an offset with TranslatorClientbound
+                coPlugin.getWorldBorderObfuscator().translate(packet, event.getPlayer());
                 return;
             }
 
@@ -80,13 +85,13 @@ class PacketOffsetAdapter {
 
     private class AdapterClient extends PacketAdapter {
         private AdapterClient() {
-            super(PacketOffsetAdapter.this.plugin, ListenerPriority.LOWEST, TranslatorServerbound.PACKETS_CLIENT);
+            super(coPlugin, ListenerPriority.LOWEST, TranslatorServerbound.PACKETS_CLIENT);
         }
 
         @Override
         public void onPacketReceiving(PacketEvent event) {
             var packet = event.getPacket();
-            var offset = PacketOffsetAdapter.this.plugin.getPlayerManager().get(event.getPlayer(), event.getPlayer().getWorld());
+            var offset = coPlugin.getPlayerManager().get(event.getPlayer(), event.getPlayer().getWorld());
             TranslatorServerbound.incoming(logger, packet, offset);
         }
     }

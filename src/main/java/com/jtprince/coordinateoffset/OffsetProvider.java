@@ -9,6 +9,8 @@ import org.jetbrains.annotations.NotNull;
  * Offset Providers are an extensible way to determine what {@link Offset} each player should have in each world.
  */
 public abstract class OffsetProvider {
+    public static int OFFSET_MAX = 30_000_000;
+
     public final String name;
 
     public OffsetProvider(String name) {

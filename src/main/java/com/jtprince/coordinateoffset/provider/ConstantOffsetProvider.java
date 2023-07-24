@@ -30,7 +30,17 @@ public class ConstantOffsetProvider extends OffsetProvider {
                 throw new IllegalArgumentException("Missing field offsetZ for ConstantOffsetProvider.");
             }
 
-            return new ConstantOffsetProvider(name, new Offset(providerConfig.getInt("offsetX"), providerConfig.getInt("offsetZ")));
+            int offsetX = providerConfig.getInt("offsetX");
+            int offsetZ = providerConfig.getInt("offsetZ");
+
+            if (offsetX > OffsetProvider.OFFSET_MAX) {
+                throw new IllegalArgumentException("Provider \"" + name + "\": offsetX is too large! (Max 30M)");
+            }
+            if (offsetZ > OffsetProvider.OFFSET_MAX) {
+                throw new IllegalArgumentException("Provider \"" + name + "\": offsetZ is too large! (Max 30M)");
+            }
+
+            return new ConstantOffsetProvider(name, new Offset(offsetX, offsetZ));
         }
     }
 }

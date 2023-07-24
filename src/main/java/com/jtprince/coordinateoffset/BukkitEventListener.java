@@ -3,6 +3,7 @@ package com.jtprince.coordinateoffset;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -15,10 +16,12 @@ class BukkitEventListener implements Listener {
 
     private final CoordinateOffset plugin;
     private final PlayerOffsetsManager players;
+    private final WorldBorderObfuscator worldBorderObfuscator;
 
-    BukkitEventListener(CoordinateOffset plugin, PlayerOffsetsManager playerOffsetsManager) {
+    BukkitEventListener(CoordinateOffset plugin, PlayerOffsetsManager playerOffsetsManager, WorldBorderObfuscator worldBorderObfuscator) {
         this.plugin = plugin;
         this.players = playerOffsetsManager;
+        this.worldBorderObfuscator = worldBorderObfuscator;
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -59,9 +62,15 @@ class BukkitEventListener implements Listener {
                 event.getTo(), reason, plugin));
     }
 
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerMove(PlayerMoveEvent event) {
+        worldBorderObfuscator.tryUpdatePlayerBorders(event.getPlayer(), event.getTo());
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(PlayerQuitEvent event) {
         players.remove(event.getPlayer());
         plugin.getOffsetProviderManager().quitPlayer(event.getPlayer());
+        worldBorderObfuscator.onPlayerQuit(event.getPlayer());
     }
 }
