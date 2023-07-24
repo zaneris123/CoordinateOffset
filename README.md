@@ -27,6 +27,7 @@ Features
 * Match offsets to the player's position, so they see themselves near the world's origin
 * Persist the same offset every time a player joins so that they don't notice an offset changing
 * Configure different offsets per-player, per-world, and with permissions
+* Extensible API to flexibly get and set offsets
 
 Requirements and Installation
 -----------------------------
@@ -88,6 +89,11 @@ Allows you to query other players' offsets with `/offset <name>`.
 
 * `coordinateoffset.reload`
   Allows you to reload the plugin config with `/offsetreload`.
+
+API
+---
+You can use or extend CoordinateOffset in your own plugin by using the API. Please see the
+[API Guide](https://github.com/joshuaprince/CoordinateOffset/wiki/API).
 
 Credits
 -------
