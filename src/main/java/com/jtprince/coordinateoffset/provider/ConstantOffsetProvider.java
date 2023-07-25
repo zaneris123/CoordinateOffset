@@ -22,7 +22,9 @@ public class ConstantOffsetProvider extends OffsetProvider {
 
     public static class ConfigFactory implements OffsetProvider.ConfigurationFactory<ConstantOffsetProvider> {
         @Override
-        public @NotNull ConstantOffsetProvider createProvider(String name, CoordinateOffset plugin, ConfigurationSection providerConfig) throws IllegalArgumentException {
+        public @NotNull ConstantOffsetProvider createProvider(
+                @NotNull String name, @NotNull CoordinateOffset plugin, @NotNull ConfigurationSection providerConfig
+        ) throws IllegalArgumentException {
             if (!providerConfig.isInt("offsetX")) {
                 throw new IllegalArgumentException("Missing field offsetX for ConstantOffsetProvider.");
             }

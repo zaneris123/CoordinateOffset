@@ -81,7 +81,9 @@ public class RandomOffsetProvider extends OffsetProvider {
 
     public static class ConfigFactory implements OffsetProvider.ConfigurationFactory<RandomOffsetProvider> {
         @Override
-        public @NotNull RandomOffsetProvider createProvider(String name, CoordinateOffset plugin, ConfigurationSection providerConfig) throws IllegalArgumentException {
+        public @NotNull RandomOffsetProvider createProvider(
+                @NotNull String name, @NotNull CoordinateOffset plugin, @NotNull ConfigurationSection providerConfig
+        ) throws IllegalArgumentException {
             if (!providerConfig.isInt("randomBound")) {
                 throw new IllegalArgumentException("Missing field randomBound for RandomOffsetProvider.");
             }

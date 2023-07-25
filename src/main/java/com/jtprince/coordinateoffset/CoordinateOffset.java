@@ -83,7 +83,7 @@ public final class CoordinateOffset extends JavaPlugin {
      * @return The coordinate Offset this player sees, or <code>Offset.ZERO</code> if the player has no offset.
      */
     @SuppressWarnings("unused")
-    public @NotNull Offset getOffset(Player player) {
+    public @NotNull Offset getOffset(@NotNull Player player) {
         return playerOffsetsManager.get(player, player.getWorld());
     }
 
@@ -99,7 +99,7 @@ public final class CoordinateOffset extends JavaPlugin {
      *                              should return your custom {@link OffsetProvider} with those specifications.
      */
     @SuppressWarnings("unused")
-    public void registerCustomProviderClass(String className, OffsetProvider.ConfigurationFactory<?> providerConfigFactory) {
+    public void registerCustomProviderClass(@NotNull String className, @NotNull OffsetProvider.ConfigurationFactory<?> providerConfigFactory) {
         providerManager.registerConfigurationFactory(className, providerConfigFactory);
     }
 

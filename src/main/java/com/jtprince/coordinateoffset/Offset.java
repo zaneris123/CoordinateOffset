@@ -6,6 +6,7 @@ import com.jeff_media.morepersistentdatatypes.datatypes.GenericDataType;
 import org.bukkit.Location;
 import org.bukkit.persistence.PersistentDataType;
 import org.checkerframework.dataflow.qual.Pure;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
@@ -124,6 +125,7 @@ public record Offset (int x, int z) {
      * @return A new Location object that represents the coordinates that the player will see.
      */
     @Pure
+    @Contract("null -> null; !null -> !null")
     public Location apply(Location realLocation) {
         if (realLocation == null) return null;
         return realLocation.clone().subtract(this.x, 0, this.z);
@@ -140,6 +142,7 @@ public record Offset (int x, int z) {
      * @return A new BlockPosition object that represents the coordinates that the player will see.
      */
     @Pure
+    @Contract("null -> null; !null -> !null")
     public BlockPosition apply(BlockPosition realPosition) {
         if (realPosition == null) return null;
         return realPosition.subtract(new BlockPosition(this.x, 0, this.z));
@@ -152,6 +155,7 @@ public record Offset (int x, int z) {
      * @return A new Location object that represents the real Location for the server to use.
      */
     @Pure
+    @Contract("null -> null; !null -> !null")
     public Location unapply(Location offsettedLocation) {
         if (offsettedLocation == null) return null;
         return offsettedLocation.clone().add(this.x, 0, this.z);
@@ -164,6 +168,7 @@ public record Offset (int x, int z) {
      * @return A new BlockPosition object that represents the real BlockPosition for the server to use.
      */
     @Pure
+    @Contract("null -> null; !null -> !null")
     public BlockPosition unapply(BlockPosition offsettedPosition) {
         if (offsettedPosition == null) return null;
         return offsettedPosition.add(new BlockPosition(this.x, 0, this.z));

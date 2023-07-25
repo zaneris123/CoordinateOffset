@@ -11,9 +11,9 @@ import org.jetbrains.annotations.NotNull;
 public abstract class OffsetProvider {
     public static int OFFSET_MAX = 30_000_000;
 
-    public final String name;
+    public final @NotNull String name;
 
-    public OffsetProvider(String name) {
+    public OffsetProvider(@NotNull String name) {
         this.name = name;
     }
 
@@ -45,6 +45,8 @@ public abstract class OffsetProvider {
      * @param <T> The type of OffsetProvider that this factory will create.
      */
     public interface ConfigurationFactory<T extends OffsetProvider> {
-        @NotNull T createProvider(String name, CoordinateOffset plugin, ConfigurationSection providerConfig) throws IllegalArgumentException;
+        @NotNull T createProvider(
+                @NotNull String name, @NotNull CoordinateOffset plugin, @NotNull ConfigurationSection providerConfig
+        ) throws IllegalArgumentException;
     }
 }

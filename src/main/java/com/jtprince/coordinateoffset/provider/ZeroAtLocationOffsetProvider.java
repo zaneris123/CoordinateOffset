@@ -62,7 +62,9 @@ public class ZeroAtLocationOffsetProvider extends OffsetProvider {
 
     public static class ConfigFactory implements OffsetProvider.ConfigurationFactory<ZeroAtLocationOffsetProvider> {
         @Override
-        public @NotNull ZeroAtLocationOffsetProvider createProvider(String name, CoordinateOffset plugin, ConfigurationSection providerConfig) throws IllegalArgumentException {
+        public @NotNull ZeroAtLocationOffsetProvider createProvider(
+                @NotNull String name, @NotNull CoordinateOffset plugin, @NotNull ConfigurationSection providerConfig
+        ) throws IllegalArgumentException {
             ZeroAtLocationOffsetProvider p = new ZeroAtLocationOffsetProvider(name);
             p.resetConfig = ResetConfig.fromConfigSection(providerConfig);
             p.worldAlignment = WorldAlignmentConfig.fromConfig(providerConfig.getStringList("worldAlignment"));
