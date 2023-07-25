@@ -21,6 +21,17 @@ val pluginYmlApiVersion: String by project
 val spigotApiVersion: String by project
 val javaVersion: JavaLanguageVersion = JavaLanguageVersion.of(17)
 
+val shadeAndRelocate: Configuration = project.configurations.create("shadeAndRelocate")
+
+configurations {
+    compileClasspath {
+        extendsFrom(shadeAndRelocate)
+    }
+    testImplementation {
+        extendsFrom(shadeAndRelocate, configurations["api"], configurations["compileOnly"])
+    }
+}
+
 repositories {
     mavenCentral()
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
@@ -31,16 +42,17 @@ repositories {
 }
 
 dependencies {
-    shadow("org.jetbrains:annotations:24.0.0")
-    shadow("org.spigotmc:spigot-api:$spigotApiVersion")
-    shadow("com.github.dmulloy2:ProtocolLib:master-SNAPSHOT")
-    implementation("dev.jorel:commandapi-bukkit-shade:9.0.3")
-    implementation("com.jeff_media:MorePersistentDataTypes:2.4.0")
+    // API dependencies: Not shaded into plugin, but needed for API consumers
+    api("org.jetbrains:annotations:24.0.0")
+    api("com.github.dmulloy2:ProtocolLib:master-SNAPSHOT")
+    // Compile Only dependencies: Neither shaded nor needed by API consumers (assumed they'll already add it themselves)
+    compileOnly("org.spigotmc:spigot-api:$spigotApiVersion")
+    // Shade and Relocate: Shaded into plugin, exposed to API consumers with relocated names if necessary
+    shadeAndRelocate("dev.jorel:commandapi-bukkit-shade:9.0.3")
+    shadeAndRelocate("com.jeff_media:MorePersistentDataTypes:2.4.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    testImplementation("org.spigotmc:spigot-api:$spigotApiVersion")
-    testImplementation("com.github.dmulloy2:ProtocolLib:master-SNAPSHOT")
 }
 
 java {
@@ -68,10 +80,12 @@ tasks {
     }
 
     shadowJar {
+        configurations = listOf(shadeAndRelocate)
         archiveClassifier.set("")
+        shadeAndRelocate.dependencies.forEach {
+            relocate(it.group, "${project.group}.lib.${it.group}")
+        }
         minimize()
-        relocate("dev.jorel.commandapi", "${project.group}.lib.commandapi")
-        relocate("com.jeff_media.morepersistentdatatypes", "${project.group}.lib.morepersistentdatatypes")
     }
 
     register<Copy>("buildSnapshot") {
