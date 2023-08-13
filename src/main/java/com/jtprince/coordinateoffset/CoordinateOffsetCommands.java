@@ -8,6 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+@SuppressWarnings("deprecation")
 class CoordinateOffsetCommands {
     private final CoordinateOffset plugin;
     private final ComponentBuilder prefix = new ComponentBuilder("[CoordinateOffset] ").color(ChatColor.AQUA);

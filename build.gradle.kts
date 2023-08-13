@@ -18,7 +18,7 @@ group = "com.jtprince"
 version = gitVersion()
 
 val pluginYmlApiVersion: String by project
-val spigotApiVersion: String by project
+val paperApiVersion: String by project
 val javaVersion: JavaLanguageVersion = JavaLanguageVersion.of(17)
 
 val shadeAndRelocate: Configuration = project.configurations.create("shadeAndRelocate")
@@ -34,7 +34,7 @@ configurations {
 
 repositories {
     mavenCentral()
-    maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
+    maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://oss.sonatype.org/content/repositories/snapshots")
     maven("https://repo.codemc.org/repository/maven-public/") // CommandAPI
     maven("https://hub.jeff-media.com/nexus/repository/jeff-media-public/") // MorePDTs
@@ -46,7 +46,7 @@ dependencies {
     api("org.jetbrains:annotations:24.0.0")
     api("com.github.dmulloy2:ProtocolLib:master-SNAPSHOT")
     // Compile Only dependencies: Neither shaded nor needed by API consumers (assumed they'll already add it themselves)
-    compileOnly("org.spigotmc:spigot-api:$spigotApiVersion")
+    compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
     // Shade and Relocate: Shaded into plugin, exposed to API consumers with relocated names if necessary
     shadeAndRelocate("dev.jorel:commandapi-bukkit-shade:9.0.3")
     shadeAndRelocate("com.jeff_media:MorePersistentDataTypes:2.4.0")
