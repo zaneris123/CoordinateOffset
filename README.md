@@ -31,9 +31,8 @@ Features
 
 Requirements and Installation
 -----------------------------
-* Spigot or [Paper (recommended)](https://papermc.io/) for Minecraft 1.19.4, 1.20, 1.20.1
-* [ProtocolLib](https://www.spigotmc.org/resources/protocollib.1997/) 5 **snapshot #657** or higher (you may need 
-  to use a [dev build for 1.20+](https://ci.dmulloy2.net/job/ProtocolLib/))
+* Spigot, [Paper (recommended)](https://papermc.io/), or a fork for Minecraft 1.19.4, 1.20, 1.20.1
+* [ProtocolLib](https://github.com/dmulloy2/ProtocolLib/releases) **5.1.0** or higher
 * An understanding of the [implications of installing this
 plugin](https://github.com/joshuaprince/CoordinateOffset/wiki/Implications-and-Limitations).
 
