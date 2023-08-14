@@ -1,5 +1,7 @@
 package com.jtprince.coordinateoffset;
 
+import io.papermc.paper.entity.TeleportFlag;
+import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -12,8 +14,6 @@ import org.bukkit.event.server.ServerLoadEvent;
 import java.util.Objects;
 
 class BukkitEventListener implements Listener {
-    private static final double MIN_TELEPORT_DISTANCE_TO_RESET = 2050;  // From upstream TranslatorClientbound#respawn
-
     private final CoordinateOffset plugin;
     private final PlayerOffsetsManager players;
     private final WorldBorderObfuscator worldBorderObfuscator;
@@ -51,8 +51,21 @@ class BukkitEventListener implements Listener {
         OffsetProviderContext.ProvideReason reason = null;
         if (event.getFrom().getWorld() != Objects.requireNonNull(event.getTo()).getWorld()) {
             reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
-        } else if (event.getFrom().distanceSquared(event.getTo()) > MIN_TELEPORT_DISTANCE_TO_RESET * MIN_TELEPORT_DISTANCE_TO_RESET) {
-            reason = OffsetProviderContext.ProvideReason.DISTANT_TELEPORT;
+        } else if (event.getFrom().distanceSquared(event.getTo()) > getMinimumTeleportDistanceSquared(event.getTo().getWorld())) {
+            boolean isTeleportDefinitelyRelative = false;
+            try {
+                // Extra Paper-only check - ensure that we're not attempting to offset a relative teleportation packet.
+                var flags = event.getRelativeTeleportationFlags();
+                if (flags.contains(TeleportFlag.Relative.X) || flags.contains(TeleportFlag.Relative.Z)) {
+                    isTeleportDefinitelyRelative = true;
+                }
+            } catch (NoSuchMethodError err) {
+                // Spigot does not support relative teleport flags. This is a Paper-only API.
+            }
+
+            if (!isTeleportDefinitelyRelative) {
+                reason = OffsetProviderContext.ProvideReason.DISTANT_TELEPORT;
+            }
         }
 
         if (reason == null) return;
@@ -72,5 +85,27 @@ class BukkitEventListener implements Listener {
         players.remove(event.getPlayer());
         plugin.getOffsetProviderManager().quitPlayer(event.getPlayer());
         worldBorderObfuscator.onPlayerQuit(event.getPlayer());
+    }
+
+    private int getMinimumTeleportDistanceSquared(World world) {
+        int viewDistance = world.getViewDistance();
+
+        /*
+         * Problem: If the player's offset changes when they teleport a short distance, the server won't re-send the
+         * chunks that the server thinks the player already has. That means that the player will just never get some
+         * chunks in their "new" location.
+         * Easy Solution: Only allow an offset change when the player teleports if there are no overlapping chunks in
+         * view distance before and after the teleport.
+         * Future Solution: Find a way to resend all visible chunks on demand. Paper's Player#setSendViewDistance or
+         * World#refreshChunk might be promising.
+         */
+        int minimumBlocks = ((viewDistance + 1) * 2) * 16;
+
+        if (plugin.getConfig().isInt("distantTeleportMinimumDistance")) {
+            // TODO: Not documented for now. Need to either fix the problem described above or document around it.
+            minimumBlocks = plugin.getConfig().getInt("distantTeleportMinimumDistance");
+        }
+
+        return minimumBlocks * minimumBlocks;
     }
 }

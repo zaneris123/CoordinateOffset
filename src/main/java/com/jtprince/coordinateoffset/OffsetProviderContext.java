@@ -25,6 +25,27 @@ public record OffsetProviderContext(
     @NotNull CoordinateOffset plugin
 ) {
     public enum ProvideReason {
-        JOIN, DEATH_RESPAWN, WORLD_CHANGE, DISTANT_TELEPORT
+        /**
+         * A player's offset is being generated because they are joining the server. They may or may not have played
+         * on the server previously.
+         */
+        JOIN,
+
+        /**
+         * A player's offset is being generated because they died and are about to respawn.
+         */
+        DEATH_RESPAWN,
+
+        /**
+         * A player's offset is being generated because they are changing worlds, either through a Nether portal, End
+         * portal, or any teleport across worlds.
+         */
+        WORLD_CHANGE,
+
+        /**
+         * A player's offset is being generated because they are teleporting within the same world. The teleport must
+         * be far enough such that there are no chunks visible both before and after the teleport.
+         */
+        DISTANT_TELEPORT,
     }
 }
