@@ -121,7 +121,9 @@ public class TranslatorClientbound {
 		}
 
 		// Some packets need a clone before we can manipulate them, or else we'll manipulate NMS-internal structures.
-		boolean cloneNeeded = false;
+		// TODO: Things get glitchy with multiple players online when we don't clone all packets. This could be
+		//  optimized to only clone the packets that need it.
+		boolean cloneNeeded;
 		switch (packet.getType().name()) {
 			case "TILE_ENTITY_DATA" -> {
 				packet = cloneTileEntityData(packet);
@@ -131,7 +133,10 @@ public class TranslatorClientbound {
 				packet = cloneMapChunkEntitiesData(packet);
 				cloneNeeded = true;
 			}
-			case "WORLD_PARTICLES", "LOGIN", "RESPAWN" -> {
+			case "BUNDLE", "UPDATE_ATTRIBUTES" -> {
+				cloneNeeded = false;
+			}
+			default -> {
 				packet = packet.deepClone();
 				cloneNeeded = true;
 			}
