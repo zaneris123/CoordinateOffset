@@ -67,7 +67,11 @@ class WorldBorderObfuscator {
     }
 
     private void updateBorderObfuscation(Player player) {
-        player.setWorldBorder(player.getWorldBorder());
+        // Force-send the player border packets that we will then translate.
+        // Online check is necessary so that we don't send PLAY-phase packets during player login. (GitHub issue #5)
+        if (player.isOnline()) {
+            player.setWorldBorder(player.getWorldBorder());
+        }
     }
 
     void translate(@NotNull PacketContainer packet, @NotNull Player player) {
