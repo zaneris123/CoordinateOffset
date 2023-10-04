@@ -17,6 +17,7 @@ import java.util.function.BiFunction;
  * Translator for versions 1.19.4, 1.20, 1.20.1
  * <a href="https://wiki.vg/index.php?title=Protocol&oldid=18375">Wiki.vg</a>
  */
+@SuppressWarnings({"deprecation", "RedundantSuppression"})
 public class TranslatorClientboundR1_19_4 extends Translator {
     private final Map<PacketType, BiFunction<PacketContainer, Offset, PacketContainer>> translators = getTranslators();
     @Override
@@ -28,6 +29,13 @@ public class TranslatorClientboundR1_19_4 extends Translator {
     public @NotNull PacketContainer translate(@NotNull PacketContainer packet, @NotNull Offset offset) {
         var translatorFunction = translators.get(packet.getType());
         if (translatorFunction != null) {
+            /*
+             * Deep clone: Outbound packets can contain nested objects that are reused when the packet gets sent to
+             * successive players. That means that just editing values in the packet in-place would propagate the
+             * edited values to all players, and cause lots of glitches (those glitches are only apparent with multiple
+             * online players). It would be optimal to only deep-clone the packets that need this, but risky, since it
+             * is not always obvious when a packet type will start reusing nested objects.
+             */
             return translatorFunction.apply(packet.deepClone(), offset);
         } else {
             return packet;
@@ -64,26 +72,6 @@ public class TranslatorClientboundR1_19_4 extends Translator {
         map.put(PacketType.Play.Server.NAMED_SOUND_EFFECT, PacketContainerUtils::sendInt3DTimes8); // 0x62
         map.put(PacketType.Play.Server.ENTITY_TELEPORT, PacketContainerUtils::sendDouble3D); // 0x68
 
-        map.put(PacketType.Play.Server.INITIALIZE_BORDER, PacketContainerUtils::sendDouble2D); // 0x22
-        map.put(PacketType.Play.Server.SET_BORDER_CENTER, PacketContainerUtils::sendDouble2D); // 0x47
-
         return map;
     }
-
-    /**
-     * These packets contain nested objects that are reused when the packet gets sent to successive players.
-     * That means that just editing values in the packet in-place would propagate the edited values to all
-     * players, and cause lots of glitches (those glitches are only apparent with multiple online players).
-     * Right now, this list is incomplete and unused, and instead ALL packets will be deep-cloned to be safe.
-     */
-    @SuppressWarnings("unused")
-    private final Set<PacketType> deepClonePackets = Set.of(
-            PacketType.Play.Server.TILE_ENTITY_DATA,
-            PacketType.Play.Server.BLOCK_ACTION,
-            PacketType.Play.Server.WORLD_PARTICLES,
-            PacketType.Play.Server.MULTI_BLOCK_CHANGE,
-            PacketType.Play.Server.ENTITY_METADATA,
-            PacketType.Play.Server.NAMED_SOUND_EFFECT,
-            PacketType.Play.Server.ENTITY_TELEPORT
-    );
 }

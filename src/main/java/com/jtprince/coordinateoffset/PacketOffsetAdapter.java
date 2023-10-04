@@ -39,9 +39,9 @@ class PacketOffsetAdapter {
     private Pair<Translator, Translator> getTranslatorForRunningVersion() {
         MinecraftVersion latestSupported = MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE;
         if (MinecraftVersion.getCurrentVersion().compareTo(latestSupported) > 0) {
-            logger.warning("This plugin has not been tested for your server version (" +
-                    MinecraftVersion.getCurrentVersion().getVersion() + ") yet. Please update or proceed at your" +
-                    " own risk.");
+            logger.warning("This plugin version has not been tested for your server version (" +
+                    MinecraftVersion.getCurrentVersion().getVersion() + ") yet. Please wait for an update or" +
+                    " proceed at your own risk.");
         }
 
         if (MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE.atOrAbove()) {
