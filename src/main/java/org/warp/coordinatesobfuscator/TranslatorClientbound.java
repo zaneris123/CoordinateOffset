@@ -70,15 +70,6 @@ public class TranslatorClientbound {
 			PacketType.Play.Server.SET_BORDER_WARNING_DISTANCE
 	);
 
-	public static final Set<PacketType> PACKETS_SERVER_BORDER = Set.of(
-			// These packets are translated in WorldBorderObfuscator, not this file.
-			PacketType.Play.Server.INITIALIZE_BORDER,
-			PacketType.Play.Server.SET_BORDER_CENTER,
-			PacketType.Play.Server.SET_BORDER_LERP_SIZE,
-			PacketType.Play.Server.SET_BORDER_SIZE,
-			PacketType.Play.Server.SET_BORDER_WARNING_DELAY,
-			PacketType.Play.Server.SET_BORDER_WARNING_DISTANCE
-	);
 
 	private static final Class<?> NMS_BLOCK_POSITION_CLASS;
 	private static final Method NMS_BLOCK_POSITION_ADD_CLASS;
@@ -115,10 +106,10 @@ public class TranslatorClientbound {
 			return null;
 		}
 
-		if (PACKETS_SERVER_BORDER.contains(packet.getType())) {
-			logger.severe("Programming error! WorldBorder packets must not be translated here, please contact the developer.");
-			return null;
-		}
+//		if (PACKETS_SERVER_BORDER.contains(packet.getType())) {
+//			logger.severe("Programming error! WorldBorder packets must not be translated here, please contact the developer.");
+//			return null;
+//		}
 
 		// Some packets need a clone before we can manipulate them, or else we'll manipulate NMS-internal structures.
 		// TODO: Things get glitchy with multiple players online when we don't clone all packets. This could be
@@ -153,7 +144,7 @@ public class TranslatorClientbound {
 				break;
 			case "SPAWN_POSITION":
 			case "WORLD_EVENT":
-			case "UPDATE_SIGN":
+			case "UPDATE_SIGN": // Deprecated
 			case "BLOCK_BREAK_ANIMATION":
 			case "BLOCK_ACTION":
 			case "BLOCK_CHANGE":
@@ -164,7 +155,7 @@ public class TranslatorClientbound {
 			case "RESPAWN":
 				fixDeathLocation(logger, packet, offset);
 				break;
-			case "POSITION_LOOK":
+			case "POSITION_LOOK": // Actually client
 			case "POSITION":
 				boolean isRelativeX = false;
 				boolean isRelativeZ = false;
@@ -203,7 +194,7 @@ public class TranslatorClientbound {
 				Objects.requireNonNull(offset);
 				sendDouble(logger, packet, offset);
 				break;
-			case "SPAWN_ENTITY_WEATHER":
+			case "SPAWN_ENTITY_WEATHER": // Deprecated
 			case "SPAWN_ENTITY_EXPERIENCE_ORB":
 			case "ENTITY_TELEPORT":
 				sendDouble(logger, packet, offset);
@@ -227,7 +218,7 @@ public class TranslatorClientbound {
 			case "VIEW_CENTRE":
 				sendIntChunk(logger, packet, offset);
 				break;
-			case "MAP_CHUNK_BULK":
+			case "MAP_CHUNK_BULK": // Deprecated
 				sendChunkBulk(logger, packet, offset);
 				break;
 			case "EXPLOSION":
@@ -271,7 +262,7 @@ public class TranslatorClientbound {
 			case "TILE_ENTITY_DATA":
 				sendTileEntityData(logger, packet, offset);
 				break;
-			case "PLAYER_INFO":
+			case "PLAYER_INFO": // Empty
 				break;
 			case "INITIALIZE_BORDER":
 			case "SET_BORDER_CENTER":
@@ -357,6 +348,7 @@ public class TranslatorClientbound {
 			}
 		});
 		if (includeLight) {
+			// TODO removed?
 			StructureModifier<List<byte[]>> byteArrays = packet.getStructures().read(0).getLists(Converters.passthrough(byte[].class));
 			for (int i = 0; i < 2; i++) {
 				byteArrays.modify(i, list -> {
@@ -368,6 +360,7 @@ public class TranslatorClientbound {
 			}
 		}
 		if (includesEntities) {
+			// TODO removed??
 			packet.getStructures().read(0).getLists(INTERNAL_STRUCTURE_CONVERTER).modify(0, entities -> {
 				if (entities == null) return null;
 				for (InternalStructure entity : entities) {

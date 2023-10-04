@@ -43,12 +43,12 @@ repositories {
 
 dependencies {
     // API dependencies: Not shaded into plugin, but needed for API consumers
-    api("org.jetbrains:annotations:24.0.0")
+    api("org.jetbrains:annotations:24.0.1")
     api("com.github.dmulloy2:ProtocolLib:master-SNAPSHOT")
     // Compile Only dependencies: Neither shaded nor needed by API consumers (assumed they'll already add it themselves)
     compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
     // Shade and Relocate: Shaded into plugin, exposed to API consumers with relocated names if necessary
-    shadeAndRelocate("dev.jorel:commandapi-bukkit-shade:9.0.3")
+    shadeAndRelocate("dev.jorel:commandapi-bukkit-shade:9.2.0")
     shadeAndRelocate("com.jeff_media:MorePersistentDataTypes:2.4.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")

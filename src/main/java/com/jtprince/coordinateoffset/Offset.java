@@ -114,6 +114,15 @@ public record Offset (int x, int z) {
     }
 
     /**
+     * Get a new Offset with the inverse components as this one (x -> -x, z -> -z).
+     * @return A new Offset.
+     */
+    @Pure
+    public @NotNull Offset negate() {
+        return new Offset(-x, -z);
+    }
+
+    /**
      * Apply this Offset to a Bukkit Location, resulting in the Location that a player who has this Offset would see
      * if they were at that Location.
      *
