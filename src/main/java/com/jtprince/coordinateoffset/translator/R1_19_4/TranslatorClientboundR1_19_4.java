@@ -14,10 +14,10 @@ import java.util.Set;
 import java.util.function.BiFunction;
 
 /**
- * Translator for versions 1.19.4, 1.20, 1.20.1
+ * Translator for Minecraft 1.19.4, 1.20, 1.20.1 (protocol 762-763)
  * <a href="https://wiki.vg/index.php?title=Protocol&oldid=18375">Wiki.vg</a>
  */
-@SuppressWarnings({"deprecation", "RedundantSuppression"})
+@SuppressWarnings({"DuplicatedCode", "deprecation", "RedundantSuppression"})
 public class TranslatorClientboundR1_19_4 extends Translator {
     private final Map<PacketType, BiFunction<PacketContainer, Offset, PacketContainer>> translators = getTranslators();
     @Override
@@ -59,12 +59,12 @@ public class TranslatorClientboundR1_19_4 extends Translator {
         map.put(PacketType.Play.Server.UNLOAD_CHUNK, PacketContainerUtils::sendChunkCoordinate); // 0x1E
         map.put(PacketType.Play.Server.MAP_CHUNK, PacketContainerUtils::sendChunkCoordinate); // 0x24
         map.put(PacketType.Play.Server.WORLD_EVENT, PacketContainerUtils::sendBlockPosition); // 0x25
-        map.put(PacketType.Play.Server.WORLD_PARTICLES, PacketContainerUtils::sendVibrationParticle); // 0x26
+        map.put(PacketType.Play.Server.WORLD_PARTICLES, PacketContainerUtils::sendParticle); // 0x26
         map.put(PacketType.Play.Server.LIGHT_UPDATE, PacketContainerUtils::sendChunkCoordinate); // 0x27
-        map.put(PacketType.Play.Server.LOGIN, PacketContainerUtils::sendDeathLocation); // 0x28
+        map.put(PacketType.Play.Server.LOGIN, PacketContainerUtils::sendDeathLocation1_19_4); // 0x28
         map.put(PacketType.Play.Server.OPEN_SIGN_EDITOR, PacketContainerUtils::sendBlockPosition); // 0x31
         map.put(PacketType.Play.Server.POSITION, PacketContainerUtils::sendPossiblyRelativePosition); // 0x3C
-        map.put(PacketType.Play.Server.RESPAWN, PacketContainerUtils::sendDeathLocation); // 0x41
+        map.put(PacketType.Play.Server.RESPAWN, PacketContainerUtils::sendDeathLocation1_19_4); // 0x41
         map.put(PacketType.Play.Server.MULTI_BLOCK_CHANGE, PacketContainerUtils::sendSectionPosition); // 0x43
         map.put(PacketType.Play.Server.VIEW_CENTRE, PacketContainerUtils::sendChunkCoordinate); // 0x4E
         map.put(PacketType.Play.Server.SPAWN_POSITION, PacketContainerUtils::sendBlockPosition); // 0x50

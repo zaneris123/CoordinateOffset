@@ -3,6 +3,7 @@ package com.jtprince.coordinateoffset.translator;
 import com.comphenix.protocol.events.InternalStructure;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.BlockPosition;
+import com.comphenix.protocol.wrappers.ChunkCoordIntPair;
 import com.comphenix.protocol.wrappers.Converters;
 import com.comphenix.protocol.wrappers.nbt.NbtCompound;
 import com.jtprince.coordinateoffset.Offset;
@@ -47,6 +48,14 @@ public class PacketContainerUtils {
         assertAtLeast(packet, packet.getIntegers().size(), 2);
         packet.getIntegers().modify(0, curr_x -> curr_x == null ? null : curr_x - offset.chunkX());
         packet.getIntegers().modify(1, curr_z -> curr_z == null ? null : curr_z - offset.chunkZ());
+        return packet;
+    }
+
+    public static PacketContainer sendChunkCoordIntPairs(final PacketContainer packet, final Offset offset) {
+        assertAtLeast(packet, packet.getChunkCoordIntPairs().size(), 1);
+        packet.getChunkCoordIntPairs().modify(0, pair ->
+                new ChunkCoordIntPair(pair.getChunkX() - offset.chunkX(), pair.getChunkZ() - offset.chunkZ())
+        );
         return packet;
     }
 
@@ -148,7 +157,7 @@ public class PacketContainerUtils {
         return itemStack;
     }
 
-    public static PacketContainer sendDeathLocation(PacketContainer packet, final Offset offset) {
+    public static PacketContainer sendDeathLocation1_19_4(PacketContainer packet, final Offset offset) {
         assertAtLeast(packet, packet.getOptionalStructures().size(), 1);
         packet.getOptionalStructures().modify(0, os -> {
             if (os.isEmpty()) return os;
@@ -159,9 +168,24 @@ public class PacketContainerUtils {
         return packet;
     }
 
-    public static PacketContainer sendVibrationParticle(PacketContainer packet, final Offset offset) {
+    public static PacketContainer sendDeathLocation1_20_2(PacketContainer packet, final Offset offset, int outerStructureIndex) {
+        // 1.20.2+ "LOGIN" and "RESPAWN" packets share a packet structure, but at a different offset
+        assertAtLeast(packet, packet.getStructures().size(), outerStructureIndex + 1);
+        packet.getStructures().modify(outerStructureIndex, outer -> {
+            assertAtLeast(packet, outer.getOptionalStructures().size(), 1);
+            outer.getOptionalStructures().modify(0, inner -> {
+                inner.ifPresent(internalStructure -> internalStructure.getBlockPositionModifier().modify(0, offset::apply));
+                return inner;
+            });
+            return outer;
+        });
+        return packet;
+    }
+
+    public static PacketContainer sendParticle(PacketContainer packet, final Offset offset) {
         sendDouble3D(packet, offset);
 
+        // The Sculk sensor vibration particle contains the sensor's location that needs to be offsetted
         assertAtLeast(packet, packet.getStructures().size(), 1);
         InternalStructure outer = packet.getStructures().read(0);
         if (outer.getStructures().size() < 1) return packet;

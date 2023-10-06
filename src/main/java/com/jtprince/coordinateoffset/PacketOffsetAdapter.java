@@ -7,14 +7,11 @@ import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.utility.MinecraftVersion;
-import com.comphenix.protocol.wrappers.Pair;
 import com.google.common.collect.Sets;
-import com.jtprince.coordinateoffset.translator.R1_19_4.TranslatorClientboundR1_19_4;
-import com.jtprince.coordinateoffset.translator.R1_19_4.TranslatorServerboundR1_19_4;
-import com.jtprince.coordinateoffset.translator.R1_20_2.TranslatorClientboundR1_20_2;
-import com.jtprince.coordinateoffset.translator.R1_20_2.TranslatorServerboundR1_20_2;
 import com.jtprince.coordinateoffset.translator.Translator;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -30,32 +27,48 @@ class PacketOffsetAdapter {
     void registerAdapters() {
         final ProtocolManager pm = ProtocolLibrary.getProtocolManager();
 
-        Pair<Translator, Translator> translators = getTranslatorForRunningVersion();
+        Translator.Version translators = getTranslatorForRunningVersion();
 
-        pm.addPacketListener(new AdapterServer(translators.getFirst()));
-        pm.addPacketListener(new AdapterClient(translators.getSecond()));
+        try {
+            pm.addPacketListener(new AdapterServer(translators.clientbound().getDeclaredConstructor().newInstance()));
+            pm.addPacketListener(new AdapterClient(translators.serverbound().getDeclaredConstructor().newInstance()));
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException("Failed to create the packet listener! Please report this as a bug!", e);
+        }
     }
 
-    private Pair<Translator, Translator> getTranslatorForRunningVersion() {
-        MinecraftVersion latestSupported = MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE;
-        if (MinecraftVersion.getCurrentVersion().compareTo(latestSupported) > 0) {
-            logger.warning("This plugin version has not been tested for your server version (" +
-                    MinecraftVersion.getCurrentVersion().getVersion() + ") yet. Please wait for an update or" +
-                    " proceed at your own risk.");
+    private Translator.Version getTranslatorForRunningVersion() {
+        if (MinecraftVersion.getCurrentVersion().compareTo(Translator.LATEST_SUPPORTED) > 0) {
+            String runningVersion = MinecraftVersion.getCurrentVersion().getVersion();
+            logger.warning("This plugin version has not been tested with the protocol version in your server (" + runningVersion + ") yet.");
+            logger.warning("Some packets may not be properly obfuscated, and others may create errors.");
+            logger.warning("Please wait for an update or proceed at your own risk.");
         }
 
-        if (MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE.atOrAbove()) {
-            logger.info("Using protocol version for Minecraft 1.20.2.");
-            return new Pair<>(new TranslatorClientboundR1_20_2(), new TranslatorServerboundR1_20_2());
+        Translator.Version chosen = null;
+        boolean outdatedServer = true;
+        for (Translator.Version v : Translator.VERSIONS) {
+            chosen = v;
+            if (v.minVersion().atOrAbove()) {
+                outdatedServer = false;
+                break;
+            }
         }
 
-        // Fall back on the earliest translator version
-        if (!MinecraftVersion.FEATURE_PREVIEW_2.atOrAbove()) {
-            logger.severe("This plugin only supports Minecraft 1.19.4 and above - it will very likely break!");
+        if (outdatedServer) {
+            String earliest = Objects.requireNonNull(chosen).minVersion().getVersion();
+            logger.severe("This plugin only supports Minecraft " + earliest + " and above - it will very likely break!");
         }
 
-        logger.info("Using protocol version for Minecraft 1.19.4 through 1.20.1.");
-        return new Pair<>(new TranslatorClientboundR1_19_4(), new TranslatorServerboundR1_19_4());
+        StringBuilder s = new StringBuilder("Using protocol version for Minecraft ");
+        s.append(chosen.minVersion().getVersion());
+        if (chosen.maxStatedVersion() != null) {
+            s.append(" through ").append(chosen.maxStatedVersion());
+        }
+        s.append('.');
+        logger.info(s.toString());
+
+        return chosen;
     }
 
     private class AdapterServer extends PacketAdapter {

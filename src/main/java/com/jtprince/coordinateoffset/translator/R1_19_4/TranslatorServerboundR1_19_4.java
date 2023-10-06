@@ -13,10 +13,10 @@ import java.util.Set;
 import java.util.function.BiFunction;
 
 /**
- * Translator for versions 1.19.4, 1.20, 1.20.1
+ * Translator for Minecraft 1.19.4, 1.20, 1.20.1 (protocol 762-763)
  * <a href="https://wiki.vg/index.php?title=Protocol&oldid=18375">Wiki.vg</a>
  */
-@SuppressWarnings({"deprecation", "RedundantSuppression"})
+@SuppressWarnings({"DuplicatedCode", "deprecation", "RedundantSuppression"})
 public class TranslatorServerboundR1_19_4 extends Translator {
     private final Map<PacketType, BiFunction<PacketContainer, Offset, PacketContainer>> translators = getTranslators();
 
@@ -46,7 +46,7 @@ public class TranslatorServerboundR1_19_4 extends Translator {
         map.put(PacketType.Play.Client.SET_JIGSAW, PacketContainerUtils::recvBlockPosition); // 0x2F
         map.put(PacketType.Play.Client.STRUCT, PacketContainerUtils::recvBlockPosition); // 0x30
         map.put(PacketType.Play.Client.UPDATE_SIGN, PacketContainerUtils::recvBlockPosition); // 0x31
-        map.put(PacketType.Play.Client.USE_ITEM, PacketContainerUtils::recvMovingBlockPosition); // 0x31
+        map.put(PacketType.Play.Client.USE_ITEM, PacketContainerUtils::recvMovingBlockPosition); // 0x34
 
         return map;
     }
