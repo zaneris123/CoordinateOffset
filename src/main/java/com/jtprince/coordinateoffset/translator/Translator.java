@@ -2,6 +2,7 @@ package com.jtprince.coordinateoffset.translator;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.utility.MinecraftVersion;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.translator.R1_19_4.TranslatorClientboundR1_19_4;
@@ -52,8 +53,15 @@ public abstract class Translator {
                     TranslatorClientboundR1_19_4.class, TranslatorServerboundR1_19_4.class)
     );
 
+    /**
+     * Get a list of all packet types that this translator needs to be able to translate.
+     */
     @NotNull
     public abstract Set<PacketType> getPacketTypes();
 
-    public abstract @NotNull PacketContainer translate(@NotNull PacketContainer packet, @NotNull final Offset offset);
+    /**
+     * Perform translation on a specific packet, applying the provided offset.
+     * @return The packet modified with the given offset, or null if this packet should not be sent at all.
+     */
+    public abstract @Nullable PacketContainer translate(@NotNull PacketEvent packetEvent, @NotNull final Offset offset);
 }

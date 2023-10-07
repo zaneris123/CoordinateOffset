@@ -5,6 +5,7 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.utility.MinecraftVersion;
 import com.google.common.collect.Sets;
@@ -89,7 +90,7 @@ class PacketOffsetAdapter {
         );
 
         public void onPacketSending(PacketEvent event) {
-            var packet = event.getPacket();
+            PacketContainer packet = event.getPacket();
 
             if (packet.getType() == PacketType.Play.Server.LOGIN) {
                 coPlugin.impulseOffsetChange(new OffsetProviderContext(
@@ -122,7 +123,12 @@ class PacketOffsetAdapter {
                 return;
             }
 
-            event.setPacket(translator.translate(packet, offset));
+            packet = translator.translate(event, offset);
+            if (packet != null) {
+                event.setPacket(packet);
+            } else {
+                event.setCancelled(true);
+            }
         }
     }
 
@@ -135,10 +141,15 @@ class PacketOffsetAdapter {
 
         @Override
         public void onPacketReceiving(PacketEvent event) {
-            var packet = event.getPacket();
             var offset = coPlugin.getPlayerManager().get(event.getPlayer(), event.getPlayer().getWorld());
             if (offset.equals(Offset.ZERO)) return;
-            event.setPacket(translator.translate(packet, offset));
+
+            PacketContainer packet = translator.translate(event, offset);
+            if (packet != null) {
+                event.setPacket(packet);
+            } else {
+                event.setCancelled(true);
+            }
         }
     }
 }

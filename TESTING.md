@@ -7,6 +7,7 @@ so that they can hit the majority of possible issues before release. General gui
 * There should be no errors or warnings printed in the console from any of the tests.
 * At all times, the coordinates shown for a player with an offset should properly reflect that offset.
 * Enable "verbose" mode and disable "bypassByPermission" in the plugin configuration YAML.
+* Validate at least a few cases on at least Spigot and Paper servers.
 * If possible, use a packet sniffer like [SniffCraft](https://github.com/adepierre/SniffCraft),
   [Pakkit](https://github.com/Heath123/pakkit), or another one using
   [node-minecraft-protocol](https://github.com/PrismarineJS/node-minecraft-protocol) to make sure that no packets are

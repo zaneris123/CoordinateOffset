@@ -23,10 +23,6 @@ class PlayerOffsetsManager {
         this.plugin = plugin;
     }
 
-    /*
-     * TODO: The expectedWorld argument can be dropped, as it just provides validation that the caller knows which
-     *  world this Offset applies to.
-     */
     synchronized @NotNull Offset get(@NotNull Player player, @Nullable World expectedWorld) {
         Offset offset = playerOffsets.get(player.getUniqueId());
         if (offset == null) {

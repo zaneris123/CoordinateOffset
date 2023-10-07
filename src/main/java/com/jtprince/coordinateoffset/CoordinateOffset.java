@@ -3,6 +3,7 @@ package com.jtprince.coordinateoffset;
 import com.jtprince.coordinateoffset.provider.ConstantOffsetProvider;
 import com.jtprince.coordinateoffset.provider.RandomOffsetProvider;
 import com.jtprince.coordinateoffset.provider.ZeroAtLocationOffsetProvider;
+import com.jtprince.util.PacketDebugger;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import org.bukkit.Bukkit;
@@ -36,6 +37,10 @@ public final class CoordinateOffset extends JavaPlugin {
         providerManager.registerConfigurationFactory("ZeroAtLocationOffsetProvider", new ZeroAtLocationOffsetProvider.ConfigFactory());
 
         new PacketOffsetAdapter(this).registerAdapters();
+
+        if (isDebugEnabled()) {
+            new PacketDebugger(this).registerAdapters();
+        }
     }
 
     void onAllPluginsEnabled() {
@@ -68,6 +73,10 @@ public final class CoordinateOffset extends JavaPlugin {
 
     public boolean isVerboseLoggingEnabled() {
         return getConfig().getBoolean("verbose");
+    }
+
+    public boolean isDebugEnabled() {
+        return getConfig().getBoolean("debug");
     }
 
     /**

@@ -41,6 +41,9 @@ class BukkitEventListener implements Listener {
         } else {
             reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
         }
+        if (plugin.isDebugEnabled()) {
+            plugin.getLogger().info("EVENT: Respawn " + reason.name());
+        }
         plugin.impulseOffsetChange(new OffsetProviderContext(
                 event.getPlayer(), Objects.requireNonNull(event.getRespawnLocation().getWorld()),
                 event.getRespawnLocation(), reason, plugin));
@@ -48,6 +51,11 @@ class BukkitEventListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerTeleport(PlayerTeleportEvent event) {
+        /*
+         * FIXME: Death compass location only updates in the client when a player gets a RESPAWN or LOGIN packet.
+         *  That means that teleports can't actually change the coordinates that the death compass points, and it won't
+         *  point to the right location after a teleport (until they relog or die)
+         */
         OffsetProviderContext.ProvideReason reason = null;
         if (event.getFrom().getWorld() != Objects.requireNonNull(event.getTo()).getWorld()) {
             reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;

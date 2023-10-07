@@ -2,11 +2,13 @@ package com.jtprince.coordinateoffset.translator.R1_19_4;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.events.PacketEvent;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.translator.EntityMetadataUtils;
 import com.jtprince.coordinateoffset.translator.PacketContainerUtils;
 import com.jtprince.coordinateoffset.translator.Translator;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +28,8 @@ public class TranslatorClientboundR1_19_4 extends Translator {
     }
 
     @Override
-    public @NotNull PacketContainer translate(@NotNull PacketContainer packet, @NotNull Offset offset) {
+    public @Nullable PacketContainer translate(@NotNull PacketEvent packetEvent, @NotNull Offset offset) {
+        PacketContainer packet = packetEvent.getPacket();
         var translatorFunction = translators.get(packet.getType());
         if (translatorFunction != null) {
             /*
