@@ -67,7 +67,7 @@ java {
 tasks {
     processResources {
         val placeholders = mapOf(
-            "version" to version,
+            "version" to version.toString().trimStart('v'),
             "apiVersion" to pluginYmlApiVersion,
         )
         placeholders.forEach { (k, v) -> inputs.property(k, v) } // ensure cache is invalidated after version bumps
