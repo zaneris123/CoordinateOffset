@@ -12,11 +12,11 @@ repositories {
 }
 
 dependencies {
-    compileOnly("org.spigotmc:spigot-api:1.20.1-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.20.2-R0.1-SNAPSHOT")
 
     compileOnly("com.jtprince:CoordinateOffset:master-SNAPSHOT")
     // Also an option, use the latest version: https://github.com/joshuaprince/CoordinateOffset/releases
-    // compileOnly("com.jtprince:CoordinateOffset:v2.1.0")
+    // compileOnly("com.jtprince:CoordinateOffset:v2.2.0")
 }
 
 java {
