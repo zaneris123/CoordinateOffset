@@ -135,7 +135,7 @@ class OffsetProviderManager {
 
         Offset previousOffset = null;
         try {
-            previousOffset = plugin.getPlayerManager().get(context.player(), context.world());
+            previousOffset = plugin.getPlayerManager().getOffset(context.player(), context.world());
         } catch (NoSuchElementException ignored) {}
 
         // Priority 0: Permission-based bypass

@@ -46,7 +46,6 @@ class BukkitEventListener implements Listener {
                 event.getPlayer(), Objects.requireNonNull(event.getRespawnLocation().getWorld()),
                 event.getRespawnLocation(), reason, plugin);
         plugin.getPlayerManager().regenerateOffset(context);
-        plugin.getPlayerManager().setRespawningWorld(context.player(), context.world());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -82,7 +81,6 @@ class BukkitEventListener implements Listener {
                 event.getPlayer(), Objects.requireNonNull(event.getTo().getWorld()),
                 event.getTo(), reason, plugin);
         plugin.getPlayerManager().regenerateOffset(context);
-        plugin.getPlayerManager().setRespawningWorld(context.player(), context.world());
 
         worldBorderObfuscator.tryUpdatePlayerBorders(event.getPlayer(), event.getTo());
     }

@@ -3,6 +3,7 @@ package com.jtprince.coordinateoffset;
 import com.jtprince.coordinateoffset.provider.ConstantOffsetProvider;
 import com.jtprince.coordinateoffset.provider.RandomOffsetProvider;
 import com.jtprince.coordinateoffset.provider.ZeroAtLocationOffsetProvider;
+import com.jtprince.coordinateoffset.provider.util.ResetConfig;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.DrilldownPie;
 import org.bstats.charts.SimplePie;
@@ -23,34 +24,25 @@ public class MetricsWrapper {
             if (defaultProvider instanceof ConstantOffsetProvider) {
                 result.put("ConstantOffsetProvider", Map.of("ConstantOffsetProvider", 1));
             } else if (defaultProvider instanceof RandomOffsetProvider randomOffsetProvider) {
-                Map<String, Integer> inner = new HashMap<>();
-                if (randomOffsetProvider.isPersistent()) {
-                    inner.put("Persistent", 1);
-                } else {
-                    inner.put("Not Persistent", 1);
-                }
-                if (randomOffsetProvider.getResetConfig().resetOn(OffsetProviderContext.ProvideReason.DEATH_RESPAWN)) {
-                    inner.put("Reset on Death", 1);
-                }
-                if (randomOffsetProvider.getResetConfig().resetOn(OffsetProviderContext.ProvideReason.WORLD_CHANGE)) {
-                    inner.put("Reset on World Change", 1);
-                }
-                if (randomOffsetProvider.getResetConfig().resetOn(OffsetProviderContext.ProvideReason.DISTANT_TELEPORT)) {
-                    inner.put("Reset on Teleport", 1);
-                }
-                result.put("RandomOffsetProvider", inner);
+                StringBuilder sb = new StringBuilder();
+                sb.append(randomOffsetProvider.isPersistent() ? "Persistent" : "Not Persistent");
+
+                sb.append(" | Reset ");
+                ResetConfig rc = randomOffsetProvider.getResetConfig();
+                sb.append(rc.resetOn(OffsetProviderContext.ProvideReason.DEATH_RESPAWN) ? "D" : "x");
+                sb.append(rc.resetOn(OffsetProviderContext.ProvideReason.WORLD_CHANGE) ? "W" : "x");
+                sb.append(rc.resetOn(OffsetProviderContext.ProvideReason.DISTANT_TELEPORT) ? "T" : "x");
+
+                result.put("RandomOffsetProvider", Map.of(sb.toString(), 1));
             } else if (defaultProvider instanceof ZeroAtLocationOffsetProvider zeroAtLocationOffsetProvider) {
-                Map<String, Integer> inner = new HashMap<>();
-                if (zeroAtLocationOffsetProvider.getResetConfig().resetOn(OffsetProviderContext.ProvideReason.DEATH_RESPAWN)) {
-                    inner.put("Zero on Death", 1);
-                }
-                if (zeroAtLocationOffsetProvider.getResetConfig().resetOn(OffsetProviderContext.ProvideReason.WORLD_CHANGE)) {
-                    inner.put("Zero on World Change", 1);
-                }
-                if (zeroAtLocationOffsetProvider.getResetConfig().resetOn(OffsetProviderContext.ProvideReason.DISTANT_TELEPORT)) {
-                    inner.put("Zero on Teleport", 1);
-                }
-                result.put("ZeroAtLocationOffsetProvider", inner);
+                StringBuilder sb = new StringBuilder();
+                sb.append("Reset ");
+                ResetConfig rc = zeroAtLocationOffsetProvider.getResetConfig();
+                sb.append(rc.resetOn(OffsetProviderContext.ProvideReason.DEATH_RESPAWN) ? "D" : "x");
+                sb.append(rc.resetOn(OffsetProviderContext.ProvideReason.WORLD_CHANGE) ? "W" : "x");
+                sb.append(rc.resetOn(OffsetProviderContext.ProvideReason.DISTANT_TELEPORT) ? "T" : "x");
+
+                result.put("ZeroAtLocationOffsetProvider", Map.of(sb.toString(), 1));
             } else {
                 // Intentionally obfuscate the name of any extensions made to CoordinateOffset.
                 result.put("Custom Provider", Map.of("Unknown Offset Provider", 1));

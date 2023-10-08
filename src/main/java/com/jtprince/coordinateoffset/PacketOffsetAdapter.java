@@ -109,9 +109,14 @@ class PacketOffsetAdapter {
 
             Offset offset;
             if (packet.getType() == PacketType.Play.Server.RESPAWN) {
-                offset = coPlugin.getPlayerManager().getRespawning(event.getPlayer());
+                /*
+                 * Respawn packets need to apply a new world's offsets ahead of actually moving the player to that new
+                 * world.
+                 * See `docs/OffsetChangeHandling.md`
+                 */
+                offset = coPlugin.getPlayerManager().getOffsetLookahead(event.getPlayer());
             } else {
-                offset = coPlugin.getPlayerManager().get(event.getPlayer());
+                offset = coPlugin.getPlayerManager().getOffset(event.getPlayer());
             }
 
             if (offset.equals(Offset.ZERO)) return;
@@ -140,7 +145,7 @@ class PacketOffsetAdapter {
 
         @Override
         public void onPacketReceiving(PacketEvent event) {
-            var offset = coPlugin.getPlayerManager().get(event.getPlayer(), event.getPlayer().getWorld());
+            var offset = coPlugin.getPlayerManager().getOffset(event.getPlayer(), event.getPlayer().getWorld());
             if (offset.equals(Offset.ZERO)) return;
 
             PacketContainer packet = translator.translate(event, offset);

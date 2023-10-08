@@ -96,7 +96,7 @@ public final class CoordinateOffset extends JavaPlugin {
      */
     @SuppressWarnings("unused")
     public @NotNull Offset getOffset(@NotNull Player player) {
-        return playerOffsetsManager.get(player, player.getWorld());
+        return playerOffsetsManager.getOffset(player);
     }
 
     /**

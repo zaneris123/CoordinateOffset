@@ -99,7 +99,7 @@ Credits
 -------
 Special thanks to [Cavallium](https://github.com/cavallium) for developing
 [**CoordinatesObfuscator**](https://github.com/cavallium/CoordinatesObfuscator), which CoordinateOffset is a fork of.
-CoordinateOffset uses most of the original code for packet translation.
+CoordinateOffset uses most of the original logic for packet translation.
 
 Libraries used:
 * [bStats](https://bstats.org/) ([Statistics for this plugin](https://bstats.org/plugin/bukkit/CoordinateOffset/19988))

@@ -30,12 +30,6 @@ public class TranslatorClientboundR1_20_2 extends Translator.Clientbound {
     @Override
     public @Nullable PacketContainer translate(@NotNull PacketEvent packetEvent, @NotNull Offset offset) {
         PacketContainer packet = packetEvent.getPacket();
-        /*
-         * TODO: As of 1.20.2, the game (or Spigot, or Paper) appears to send chunk unload packets every time the player
-         *  changes world. But it sends the respawn packet to bring them to their new world first, so offsets get
-         *  applied wrong. For now, a simple workaround that may or may not have implications is to just not send the
-         *  unload packets in these situations.
-         */
         var translatorFunction = translators.get(packet.getType());
         if (translatorFunction != null) {
             /*

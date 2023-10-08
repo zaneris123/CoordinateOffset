@@ -21,7 +21,7 @@ class CoordinateOffsetCommands {
         new CommandAPICommand("offset")
                 .withPermission(CoordinateOffsetPermissions.QUERY_SELF)
                 .executesPlayer((player, args) -> {
-                    Offset offset = plugin.getPlayerManager().get(player, player.getWorld());
+                    Offset offset = plugin.getPlayerManager().getOffset(player);
                     player.spigot().sendMessage(new ComponentBuilder(prefix)
                             .append("[x=" + offset.x() + ", z=" + offset.z() + "]").color(ChatColor.GOLD)
                             .append(" is your current offset.").color(ChatColor.GREEN)
@@ -45,7 +45,7 @@ class CoordinateOffsetCommands {
                         replyError(sender, "Unknown player.");
                         return;
                     }
-                    Offset offset = plugin.getPlayerManager().get(player, player.getWorld());
+                    Offset offset = plugin.getPlayerManager().getOffset(player);
                     sender.spigot().sendMessage(new ComponentBuilder(prefix)
                             .append("[x=" + offset.x() + ", z=" + offset.z() + "]").color(ChatColor.GOLD)
                             .append(" is " + player.getName() + "'s current offset.").color(ChatColor.GREEN)
