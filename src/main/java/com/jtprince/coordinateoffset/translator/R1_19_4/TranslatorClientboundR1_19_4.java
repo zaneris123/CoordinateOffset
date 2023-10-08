@@ -20,7 +20,7 @@ import java.util.function.BiFunction;
  * <a href="https://wiki.vg/index.php?title=Protocol&oldid=18375">Wiki.vg</a>
  */
 @SuppressWarnings({"DuplicatedCode", "deprecation", "RedundantSuppression"})
-public class TranslatorClientboundR1_19_4 extends Translator {
+public class TranslatorClientboundR1_19_4 extends Translator.Clientbound {
     private final Map<PacketType, BiFunction<PacketContainer, Offset, PacketContainer>> translators = getTranslators();
     @Override
     public @NotNull Set<PacketType> getPacketTypes() {

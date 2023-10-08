@@ -40,6 +40,10 @@ class WorldBorderObfuscator {
         knownSeenWalls.remove(player.getUniqueId());
     }
 
+    private boolean enableObfuscation() {
+        return plugin.getConfig().getBoolean("obfuscateWorldBorder");
+    }
+
     private EnumSet<Wall> visibleBorders(Location location) {
         double viewDistanceBlocks = Objects.requireNonNull(location.getWorld()).getViewDistance() * 16;
 
@@ -69,13 +73,13 @@ class WorldBorderObfuscator {
     private void updateBorderObfuscation(Player player) {
         // Force-send the player border packets that we will then translate.
         // Online check is necessary so that we don't send PLAY-phase packets during player login. (GitHub issue #5)
-        if (player.isOnline()) {
+        if (player.isOnline() && enableObfuscation()) {
             player.setWorldBorder(player.getWorldBorder());
         }
     }
 
     void translate(@NotNull PacketContainer packet, @NotNull Player player) {
-        Offset offset = plugin.getPlayerManager().get(player, null);
+        Offset offset = plugin.getPlayerManager().get(player);
 
         /*
          * For reasons I cannot fathom, the Minecraft protocol applies the world's coordinate scaling to the world
@@ -94,7 +98,7 @@ class WorldBorderObfuscator {
         }
 
         EnumSet<Wall> seenWalls = knownSeenWalls.getOrDefault(player.getUniqueId(), EnumSet.noneOf(Wall.class));
-        if (!plugin.getConfig().getBoolean("obfuscateWorldBorder") ||
+        if (!enableObfuscation() ||
                 (seenWalls.contains(Wall.X_POSITIVE) && seenWalls.contains(Wall.X_NEGATIVE)) ||
                 (seenWalls.contains(Wall.Z_POSITIVE) && seenWalls.contains(Wall.Z_NEGATIVE))) {
             // If the player can see opposing walls, or obfuscation is disabled, we should just send the complete

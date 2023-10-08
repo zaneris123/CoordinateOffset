@@ -41,12 +41,12 @@ class BukkitEventListener implements Listener {
         } else {
             reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
         }
-        if (plugin.isDebugEnabled()) {
-            plugin.getLogger().info("EVENT: Respawn " + reason.name());
-        }
-        plugin.impulseOffsetChange(new OffsetProviderContext(
+
+        var context = new OffsetProviderContext(
                 event.getPlayer(), Objects.requireNonNull(event.getRespawnLocation().getWorld()),
-                event.getRespawnLocation(), reason, plugin));
+                event.getRespawnLocation(), reason, plugin);
+        plugin.getPlayerManager().regenerateOffset(context);
+        plugin.getPlayerManager().setRespawningWorld(context.player(), context.world());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -78,9 +78,13 @@ class BukkitEventListener implements Listener {
 
         if (reason == null) return;
 
-        plugin.impulseOffsetChange(new OffsetProviderContext(
+        var context = new OffsetProviderContext(
                 event.getPlayer(), Objects.requireNonNull(event.getTo().getWorld()),
-                event.getTo(), reason, plugin));
+                event.getTo(), reason, plugin);
+        plugin.getPlayerManager().regenerateOffset(context);
+        plugin.getPlayerManager().setRespawningWorld(context.player(), context.world());
+
+        worldBorderObfuscator.tryUpdatePlayerBorders(event.getPlayer(), event.getTo());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

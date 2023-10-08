@@ -10,6 +10,7 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.utility.MinecraftVersion;
 import com.google.common.collect.Sets;
 import com.jtprince.coordinateoffset.translator.Translator;
+import org.bukkit.entity.Player;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
@@ -73,13 +74,13 @@ class PacketOffsetAdapter {
     }
 
     private class AdapterServer extends PacketAdapter {
-        private final Translator translator;
-        private AdapterServer(Translator translator) {
-            super(coPlugin, ListenerPriority.HIGHEST, Sets.union(translator.getPacketTypes(), PACKETS_SERVER_BORDER));
+        private final Translator.Clientbound translator;
+        private AdapterServer(Translator.Clientbound translator) {
+            super(coPlugin, ListenerPriority.HIGHEST, Sets.union(translator.getPacketTypes(), PACKETS_WORLD_BORDER));
             this.translator = translator;
         }
 
-        private static final Set<PacketType> PACKETS_SERVER_BORDER = Set.of(
+        private static final Set<PacketType> PACKETS_WORLD_BORDER = Set.of(
                 // These packets are translated in WorldBorderObfuscator, not this file.
                 PacketType.Play.Server.INITIALIZE_BORDER,
                 PacketType.Play.Server.SET_BORDER_CENTER,
@@ -91,33 +92,31 @@ class PacketOffsetAdapter {
 
         public void onPacketSending(PacketEvent event) {
             PacketContainer packet = event.getPacket();
+            Player player = event.getPlayer();
 
             if (packet.getType() == PacketType.Play.Server.LOGIN) {
-                coPlugin.impulseOffsetChange(new OffsetProviderContext(
-                        event.getPlayer(), event.getPlayer().getWorld(),
-                        event.getPlayer().getLocation(), OffsetProviderContext.ProvideReason.JOIN,
-                        coPlugin));
+                OffsetProviderContext context = new OffsetProviderContext(
+                        player, player.getWorld(), player.getLocation(),
+                        OffsetProviderContext.ProvideReason.JOIN, coPlugin
+                );
+                coPlugin.getPlayerManager().regenerateOffset(context);
+                coPlugin.getPlayerManager().setPositionedWorld(context.player(), context.world());
+            }
+
+            if (packet.getType() == PacketType.Play.Server.POSITION) {
+                coPlugin.getPlayerManager().setPositionedWorld(player, player.getWorld());
             }
 
             Offset offset;
-            if (packet.getType() == PacketType.Play.Server.RESPAWN || PACKETS_SERVER_BORDER.contains(packet.getType())) {
-                /*
-                 * The respawn packet has a unique need: it's the packet that causes a world change. However, the packet
-                 * itself contains a coordinate for the world the player is going *to*. If we just use the regular
-                 * Player#getWorld function, we'll get the offset for the world the player is coming *from*.
-                 * We shouldn't validate that the offset lookup has a matching World in this case.
-                 *
-                 * Likewise, the server sends World Border packets for a new world *before* sending the respawn packet.
-                 * The sequence goes Teleport Event (and offset change) -> Border packets -> Respawn packet.
-                 */
-                offset = coPlugin.getPlayerManager().get(event.getPlayer(), null);
+            if (packet.getType() == PacketType.Play.Server.RESPAWN) {
+                offset = coPlugin.getPlayerManager().getRespawning(event.getPlayer());
             } else {
-                offset = coPlugin.getPlayerManager().get(event.getPlayer(), event.getPlayer().getWorld());
+                offset = coPlugin.getPlayerManager().get(event.getPlayer());
             }
 
             if (offset.equals(Offset.ZERO)) return;
 
-            if (PACKETS_SERVER_BORDER.contains(packet.getType())) {
+            if (PACKETS_WORLD_BORDER.contains(packet.getType())) {
                 // Border packets need special handling, more than just applying an offset with TranslatorClientbound
                 coPlugin.getWorldBorderObfuscator().translate(packet, event.getPlayer());
                 return;
@@ -133,8 +132,8 @@ class PacketOffsetAdapter {
     }
 
     private class AdapterClient extends PacketAdapter {
-        private final Translator translator;
-        private AdapterClient(Translator translator) {
+        private final Translator.Serverbound translator;
+        private AdapterClient(Translator.Serverbound translator) {
             super(coPlugin, ListenerPriority.LOWEST, translator.getPacketTypes());
             this.translator = translator;
         }

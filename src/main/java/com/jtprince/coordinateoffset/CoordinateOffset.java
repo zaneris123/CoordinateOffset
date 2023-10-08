@@ -123,10 +123,4 @@ public final class CoordinateOffset extends JavaPlugin {
     WorldBorderObfuscator getWorldBorderObfuscator() {
         return worldBorderObfuscator;
     }
-
-    void impulseOffsetChange(@NotNull OffsetProviderContext context) {
-        Offset offset = providerManager.provideOffset(context);
-        playerOffsetsManager.put(context.player(), context.world(), offset);
-        worldBorderObfuscator.tryUpdatePlayerBorders(context.player(), context.playerLocation());
-    }
 }

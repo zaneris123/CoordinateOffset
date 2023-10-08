@@ -32,8 +32,8 @@ public abstract class Translator {
     public record Version(
             MinecraftVersion minVersion,
             @Nullable String maxStatedVersion,
-            Class<? extends Translator> clientbound,
-            Class<? extends Translator> serverbound
+            Class<? extends Translator.Clientbound> clientbound,
+            Class<? extends Translator.Serverbound> serverbound
     ) {}
 
     /*
@@ -56,12 +56,15 @@ public abstract class Translator {
     /**
      * Get a list of all packet types that this translator needs to be able to translate.
      */
-    @NotNull
-    public abstract Set<PacketType> getPacketTypes();
+    public abstract @NotNull Set<PacketType> getPacketTypes();
 
     /**
      * Perform translation on a specific packet, applying the provided offset.
      * @return The packet modified with the given offset, or null if this packet should not be sent at all.
      */
     public abstract @Nullable PacketContainer translate(@NotNull PacketEvent packetEvent, @NotNull final Offset offset);
+
+    public static abstract class Clientbound extends Translator {}
+
+    public static abstract class Serverbound extends Translator {}
 }

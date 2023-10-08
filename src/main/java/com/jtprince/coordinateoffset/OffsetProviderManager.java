@@ -131,7 +131,7 @@ class OffsetProviderManager {
 
         Offset previousOffset = null;
         try {
-            previousOffset = plugin.getOffset(context.player());
+            previousOffset = plugin.getPlayerManager().get(context.player(), context.world());
         } catch (NoSuchElementException ignored) {}
 
         // Priority 0: Permission-based bypass
@@ -143,9 +143,7 @@ class OffsetProviderManager {
             return Offset.ZERO;
         }
 
-        // Priority 1: LuckPerms meta (TODO)
-
-        // Priority 2: Config override rule
+        // Priority 1: Config override rule
         //noinspection ConstantValue
         if (provider == null) {
             Optional<ProviderOverride> appliedOverride = overrides.stream().filter(o -> o.appliesTo(context)).findFirst();
@@ -155,7 +153,7 @@ class OffsetProviderManager {
             }
         }
 
-        // Priority 3: Default provider
+        // Priority 2: Default provider
         if (provider == null) {
             provider = defaultProvider;
             providerSource = ProviderSource.DEFAULT;
