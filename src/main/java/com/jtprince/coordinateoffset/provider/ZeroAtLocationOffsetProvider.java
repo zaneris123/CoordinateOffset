@@ -71,4 +71,8 @@ public class ZeroAtLocationOffsetProvider extends OffsetProvider {
             return p;
         }
     }
+
+    public ResetConfig getResetConfig() {
+        return resetConfig;
+    }
 }

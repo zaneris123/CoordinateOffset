@@ -46,6 +46,9 @@ public final class CoordinateOffset extends JavaPlugin {
     void onAllPluginsEnabled() {
         // Wait to load providers until all plugins are loaded in case other plugins register their own providers.
         providerManager.loadProvidersFromConfig(getConfig());
+
+        // bStats Metrics
+        MetricsWrapper.reportMetrics(this);
     }
 
     @Override

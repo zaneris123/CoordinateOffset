@@ -48,6 +48,7 @@ dependencies {
     // Compile Only dependencies: Neither shaded nor needed by API consumers (assumed they'll already add it themselves)
     compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
     // Shade and Relocate: Shaded into plugin, exposed to API consumers with relocated names if necessary
+    shadeAndRelocate("org.bstats:bstats-bukkit:3.0.2")
     shadeAndRelocate("dev.jorel:commandapi-bukkit-shade:9.2.0")
     shadeAndRelocate("com.jeff_media:MorePersistentDataTypes:2.4.0")
 

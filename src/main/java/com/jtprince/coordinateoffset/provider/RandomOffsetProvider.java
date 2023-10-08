@@ -104,4 +104,12 @@ public class RandomOffsetProvider extends OffsetProvider {
             return p;
         }
     }
+
+    public boolean isPersistent() {
+        return perWorldOffsetStore instanceof PerWorldOffsetStore.Persistent;
+    }
+
+    public ResetConfig getResetConfig() {
+        return resetConfig;
+    }
 }

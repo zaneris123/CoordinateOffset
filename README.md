@@ -7,7 +7,8 @@ CoordinateOffset
 [Spigot](https://www.spigotmc.org/resources/coordinateoffset.111292/) |
 [Modrinth](https://modrinth.com/plugin/coordinateoffset) |
 [Hangar](https://hangar.papermc.io/jtchips/CoordinateOffset) |
-[CurseForge](https://legacy.curseforge.com/minecraft/bukkit-plugins/coordinateoffset)
+[CurseForge](https://legacy.curseforge.com/minecraft/bukkit-plugins/coordinateoffset) |
+[bStats](https://bstats.org/plugin/bukkit/CoordinateOffset/19988)
 
 Minecraft offers a useful "debug" (F3) menu that allows anyone to easily see their precise coordinates in the world.
 This makes it easy to save points of interest and share locations with friends (or enemies).
@@ -101,6 +102,7 @@ Special thanks to [Cavallium](https://github.com/cavallium) for developing
 CoordinateOffset uses most of the original code for packet translation.
 
 Libraries used:
+* [bStats](https://bstats.org/) ([Statistics for this plugin](https://bstats.org/plugin/bukkit/CoordinateOffset/19988))
 * [ProtocolLib](https://github.com/dmulloy2/ProtocolLib)
 * [CommandAPI](https://commandapi.jorel.dev/)
 * [MorePersistentDataTypes](https://github.com/JEFF-Media-GbR/MorePersistentDataTypes)

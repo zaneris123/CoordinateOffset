@@ -40,7 +40,7 @@ class WorldBorderObfuscator {
         knownSeenWalls.remove(player.getUniqueId());
     }
 
-    private boolean enableObfuscation() {
+    boolean enableObfuscation() {
         return plugin.getConfig().getBoolean("obfuscateWorldBorder");
     }
 
