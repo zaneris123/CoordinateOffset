@@ -122,12 +122,12 @@ class PacketOffsetAdapter {
             if (offset.equals(Offset.ZERO)) return;
 
             if (PACKETS_WORLD_BORDER.contains(packet.getType())) {
-                // Border packets need special handling, more than just applying an offset with TranslatorClientbound
-                coPlugin.getWorldBorderObfuscator().translate(packet, event.getPlayer());
-                return;
+                // Border packets need special handling, more than just applying an offset with the versioned Translator
+                packet = coPlugin.getWorldBorderObfuscator().translate(packet, event.getPlayer());
+            } else {
+                packet = translator.translate(event, offset);
             }
 
-            packet = translator.translate(event, offset);
             if (packet != null) {
                 event.setPacket(packet);
             } else {

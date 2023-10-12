@@ -6,6 +6,7 @@ import org.bukkit.World;
 import org.bukkit.WorldBorder;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -32,7 +33,16 @@ class WorldBorderObfuscator {
         if (!currentlyVisible.equals(knownSeenWalls.get(player.getUniqueId()))) {
             plugin.getLogger().fine("Seen walls update for " + player.getName() + ": " + currentlyVisible);
             knownSeenWalls.put(player.getUniqueId(), currentlyVisible);
-            updateBorderObfuscation(player);
+
+            // Force-send the player border packets that we will then translate.
+            // Online check is necessary so that we don't send PLAY-phase packets during player login. (GitHub issue #5)
+            if (player.isOnline() && enableObfuscation()) {
+                try {
+                    player.setWorldBorder(player.getWorldBorder());
+                } catch (NoSuchMethodError e) {
+
+                }
+            }
         }
     }
 
@@ -70,15 +80,7 @@ class WorldBorderObfuscator {
         return seen;
     }
 
-    private void updateBorderObfuscation(Player player) {
-        // Force-send the player border packets that we will then translate.
-        // Online check is necessary so that we don't send PLAY-phase packets during player login. (GitHub issue #5)
-        if (player.isOnline() && enableObfuscation()) {
-            player.setWorldBorder(player.getWorldBorder());
-        }
-    }
-
-    void translate(@NotNull PacketContainer packet, @NotNull Player player) {
+    @Nullable PacketContainer translate(@NotNull PacketContainer packet, @NotNull Player player) {
         Offset offset = plugin.getPlayerManager().getOffset(player);
 
         /*
@@ -109,10 +111,21 @@ class WorldBorderObfuscator {
                     packet.getDoubles().modify(1, z -> z - (offset.z() * scaleFactor));
                 }
             }
-            return;
+            return packet;
         }
 
-        WorldBorder border = player.getWorldBorder();
+        WorldBorder border;
+        try {
+            border = player.getWorldBorder();
+        } catch (NoSuchMethodError e) {
+            /*
+             * Spigot API added per-player world border interface in 1.18. Previous versions will not support proper
+             * obfuscation, and instead we obfuscate by blocking all world border packets for players on those versions.
+             */
+            return null;
+        }
+
+        // Player may not have a world border override, fall back on global world border
         if (border == null) border = player.getWorld().getWorldBorder();
 
         double centerX = 0.0, centerZ = 0.0;
@@ -163,6 +176,8 @@ class WorldBorderObfuscator {
             }
             case "SET_BORDER_SIZE" -> packet.getDoubles().write(0, diameter);
         }
+
+        return packet;
     }
 
     enum Wall {

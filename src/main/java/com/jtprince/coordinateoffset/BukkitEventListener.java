@@ -35,11 +35,13 @@ class BukkitEventListener implements Listener {
          * The Respawn event is fired after using an End exit portal, but users probably expect that portal to trigger
          * a world change, not a death-based respawn.
          */
-        OffsetProviderContext.ProvideReason reason;
-        if (event.getRespawnReason() == PlayerRespawnEvent.RespawnReason.DEATH) {
-            reason = OffsetProviderContext.ProvideReason.DEATH_RESPAWN;
-        } else {
-            reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
+        OffsetProviderContext.ProvideReason reason = OffsetProviderContext.ProvideReason.DEATH_RESPAWN;
+        try {
+            if (event.getRespawnReason() != PlayerRespawnEvent.RespawnReason.DEATH) {
+                reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
+            }
+        } catch (NoSuchMethodError e) {
+            // TODO Not supported before 1.19.4
         }
 
         var context = new OffsetProviderContext(
@@ -48,6 +50,7 @@ class BukkitEventListener implements Listener {
         plugin.getPlayerManager().regenerateOffset(context);
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerTeleport(PlayerTeleportEvent event) {
         /*
