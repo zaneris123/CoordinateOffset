@@ -70,6 +70,7 @@ public class TranslatorClientboundR1_18 extends Translator.Clientbound {
         map.put(PacketType.Play.Server.LIGHT_UPDATE, PacketContainerUtils::sendChunkCoordinate); // 0x25
         map.put(PacketType.Play.Server.VEHICLE_MOVE, PacketContainerUtils::sendDouble3D); // 0x2C
         map.put(PacketType.Play.Server.OPEN_SIGN_EDITOR, PacketContainerUtils::sendBlockPosition); // 0x2F
+        map.put(PacketType.Play.Server.LOOK_AT, PacketContainerUtils::sendDouble3D); // 0x37
         map.put(PacketType.Play.Server.POSITION, PacketContainerUtils::sendPossiblyRelativePosition); // 0x38
         map.put(PacketType.Play.Server.MULTI_BLOCK_CHANGE, PacketContainerUtils::sendSectionPosition); // 0x3F
         map.put(PacketType.Play.Server.VIEW_CENTRE, PacketContainerUtils::sendChunkCoordinate); // 0x49
