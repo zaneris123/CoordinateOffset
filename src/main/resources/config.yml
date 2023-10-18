@@ -1,4 +1,4 @@
-# CoordinateOffset ${version} Configuration
+# CoordinateOffset v${version} Configuration
 # See https://github.com/joshuaprince/CoordinateOffset/wiki/Configuration-Guide
 
 # Specify the method by which coordinate offsets will be calculated.
@@ -42,7 +42,6 @@ offsetProviders:
     # These events will trigger the offset to re-roll if enabled.
     resetOnDeath: false
     resetOnWorldChange: false
-    resetOnDistantTeleport: false
 
     # Offsets can be saved to each player's NBT data and reused across joins
     #   and server restarts.
@@ -71,7 +70,6 @@ offsetProviders:
     #   "zero out" the player) if enabled.
     resetOnDeath: false
     resetOnWorldChange: false
-    resetOnDistantTeleport: false
 
     # Aligned worlds will use the same offset, optionally with a scale factor.
     #   For example, `world:world_nether:8` would match Vanilla portal

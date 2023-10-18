@@ -55,28 +55,29 @@ class BukkitEventListener implements Listener {
     @SuppressWarnings("UnstableApiUsage")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerTeleport(PlayerTeleportEvent event) {
-        /*
-         * FIXME: Death compass location only updates in the client when a player gets a RESPAWN or LOGIN packet.
-         *  That means that teleports can't actually change the coordinates that the death compass points, and it won't
-         *  point to the right location after a teleport (until they relog or die)
-         */
         OffsetProviderContext.ProvideReason reason = null;
         if (event.getFrom().getWorld() != Objects.requireNonNull(event.getTo()).getWorld()) {
             reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
         } else if (event.getFrom().distanceSquared(event.getTo()) > getMinimumTeleportDistanceSquared(event.getTo().getWorld())) {
-            boolean isTeleportDefinitelyRelative = false;
-            try {
-                // Extra Paper-only check - ensure that we're not attempting to offset a relative teleportation packet.
-                var flags = event.getRelativeTeleportationFlags();
-                if (flags.contains(TeleportFlag.Relative.X) || flags.contains(TeleportFlag.Relative.Z)) {
-                    isTeleportDefinitelyRelative = true;
+            if (plugin.isUnsafeResetOnTeleportEnabled()) {
+                /*
+                 * DISTANT_TELEPORT activation requires opt-in
+                 * https://github.com/joshuaprince/CoordinateOffset/wiki/resetOnDistantTeleport
+                 */
+                boolean isTeleportDefinitelyRelative = false;
+                try {
+                    // Extra Paper-only check - ensure that we're not attempting to offset a relative teleportation packet.
+                    var flags = event.getRelativeTeleportationFlags();
+                    if (flags.contains(TeleportFlag.Relative.X) || flags.contains(TeleportFlag.Relative.Z)) {
+                        isTeleportDefinitelyRelative = true;
+                    }
+                } catch (NoClassDefFoundError | NoSuchMethodError err) {
+                    // Spigot does not support relative teleport flags. This is a Paper-only API.
                 }
-            } catch (NoClassDefFoundError | NoSuchMethodError err) {
-                // Spigot does not support relative teleport flags. This is a Paper-only API.
-            }
 
-            if (!isTeleportDefinitelyRelative) {
-                reason = OffsetProviderContext.ProvideReason.DISTANT_TELEPORT;
+                if (!isTeleportDefinitelyRelative) {
+                    reason = OffsetProviderContext.ProvideReason.DISTANT_TELEPORT;
+                }
             }
         }
 

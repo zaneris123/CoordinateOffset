@@ -82,6 +82,10 @@ public final class CoordinateOffset extends JavaPlugin {
         return getConfig().getBoolean("debug");
     }
 
+    boolean isUnsafeResetOnTeleportEnabled() {
+        return getConfig().getBoolean("allowUnsafeResetOnDistantTeleport");
+    }
+
     /**
      * Get the currently active coordinate {@link Offset} for a player.
      *

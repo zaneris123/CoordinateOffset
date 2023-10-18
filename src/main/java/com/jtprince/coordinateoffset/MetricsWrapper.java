@@ -57,5 +57,13 @@ public class MetricsWrapper {
                 return "disabled";
             }
         }));
+
+        metrics.addCustomChart(new SimplePie("unsafe_reset_on_teleport", () -> {
+            if (plugin.isUnsafeResetOnTeleportEnabled()) {
+                return "enabled";
+            } else {
+                return "disabled";
+            }
+        }));
     }
 }
