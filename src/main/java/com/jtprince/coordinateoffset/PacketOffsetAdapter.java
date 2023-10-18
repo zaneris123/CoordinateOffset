@@ -76,9 +76,15 @@ class PacketOffsetAdapter {
     private class AdapterServer extends PacketAdapter {
         private final Translator.Clientbound translator;
         private AdapterServer(Translator.Clientbound translator) {
-            super(coPlugin, ListenerPriority.HIGHEST, Sets.union(translator.getPacketTypes(), PACKETS_WORLD_BORDER));
+            super(coPlugin, ListenerPriority.HIGHEST, Sets.union(translator.getPacketTypes(), Sets.union(PACKETS_ALWAYS_LISTEN, PACKETS_WORLD_BORDER)));
             this.translator = translator;
         }
+
+        private static final Set<PacketType> PACKETS_ALWAYS_LISTEN = Set.of(
+                PacketType.Play.Server.LOGIN,
+                PacketType.Play.Server.POSITION,
+                PacketType.Play.Server.RESPAWN
+        );
 
         private static final Set<PacketType> PACKETS_WORLD_BORDER = Set.of(
                 // These packets are translated in WorldBorderObfuscator, not this file.

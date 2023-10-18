@@ -68,6 +68,16 @@ These items and blocks have some kind of interactions that use packets that need
   * Verify that you can activate it by moving around, it visibly gives off a redstone signal, and you can see the
     particle fly from yourself to the sensor.
   * Verify that you can trigger it more than once.
+* Painting
+  * Verify that you can place and break a painting.
+* Minecarts/Boats
+  * Verify that you can place, enter, and move these vehicles.
+  * Verify that a second passenger in a boat moves along with the boat properly.
+  * Verify that "vehicle moved too quickly" messages do not cause the player to be kicked.
+    * Enter a boat
+    * Cause the server to freeze (with a debugger breakpoint)
+    * Move the boat ~100 blocks
+    * Unfreeze the server and ensure the boat moves back to near where you started without getting kicked
 
 Entity Tests
 ------------
@@ -86,6 +96,11 @@ These tests require 2 accounts or offline mode. They all expect that each player
 * Verify that players can see and hear each other placing blocks.
 * Verify that in Survival mode, block-breaking particles (cracks) appear for both players.
 * Verify that players can see each other enter beds.
+
+Command Tests
+-------------
+* Verify that you can properly face an entity with `/tp @p ~ ~ ~ facing entity <UUID>`.
+* Verify that you can properly face a coordinate with `/tp @p ~ ~ ~ facing <x> <y> <z>`.
 
 World Border Tests
 ------------------

@@ -1,4 +1,4 @@
-package com.jtprince.coordinateoffset.translator.R1_19_4;
+package com.jtprince.coordinateoffset.translator.R1_18;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
@@ -15,11 +15,11 @@ import java.util.Set;
 import java.util.function.BiFunction;
 
 /**
- * Translator for Minecraft 1.19.4, 1.20, 1.20.1 (protocol 762-763)
- * <a href="https://wiki.vg/index.php?title=Protocol&oldid=18375">Wiki.vg</a>
+ * Translator for Minecraft 1.18, 1.18.1, 1.18.2 (protocol 757-758)
+ * <a href="https://wiki.vg/index.php?title=Protocol&oldid=17499">Wiki.vg</a>
  */
 @SuppressWarnings({"DuplicatedCode", "deprecation", "RedundantSuppression"})
-public class TranslatorServerboundR1_19_4 extends Translator.Serverbound {
+public class TranslatorServerboundR1_18 extends Translator.Serverbound {
     private final Map<PacketType, BiFunction<PacketContainer, Offset, PacketContainer>> translators = getTranslators();
 
     @Override
@@ -41,15 +41,15 @@ public class TranslatorServerboundR1_19_4 extends Translator.Serverbound {
     private Map<PacketType, BiFunction<PacketContainer, Offset, PacketContainer>> getTranslators() {
         Map<PacketType, BiFunction<PacketContainer, Offset, PacketContainer>> map = new HashMap<>();
 
-        map.put(PacketType.Play.Client.POSITION, PacketContainerUtils::recvDouble3D); // 0x16
-        map.put(PacketType.Play.Client.POSITION_LOOK, PacketContainerUtils::recvDouble3D); // 0x17
-        map.put(PacketType.Play.Client.VEHICLE_MOVE, PacketContainerUtils::recvDouble3D); // 0x1A
-        map.put(PacketType.Play.Client.BLOCK_DIG, PacketContainerUtils::recvBlockPosition); // 0x20
-        map.put(PacketType.Play.Client.SET_COMMAND_BLOCK, PacketContainerUtils::recvBlockPosition); // 0x2C
-        map.put(PacketType.Play.Client.SET_JIGSAW, PacketContainerUtils::recvBlockPosition); // 0x2F
-        map.put(PacketType.Play.Client.STRUCT, PacketContainerUtils::recvBlockPosition); // 0x30
-        map.put(PacketType.Play.Client.UPDATE_SIGN, PacketContainerUtils::recvBlockPosition); // 0x31
-        map.put(PacketType.Play.Client.USE_ITEM, PacketContainerUtils::recvMovingBlockPosition); // 0x34
+        map.put(PacketType.Play.Client.POSITION, PacketContainerUtils::recvDouble3D); // 0x11
+        map.put(PacketType.Play.Client.POSITION_LOOK, PacketContainerUtils::recvDouble3D); // 0x12
+        map.put(PacketType.Play.Client.VEHICLE_MOVE, PacketContainerUtils::recvDouble3D); // 0x15
+        map.put(PacketType.Play.Client.BLOCK_DIG, PacketContainerUtils::recvBlockPosition); // 0x1A
+        map.put(PacketType.Play.Client.SET_COMMAND_BLOCK, PacketContainerUtils::recvBlockPosition); // 0x26
+        map.put(PacketType.Play.Client.SET_JIGSAW, PacketContainerUtils::recvBlockPosition); // 0x29
+        map.put(PacketType.Play.Client.STRUCT, PacketContainerUtils::recvBlockPosition); // 0x2A
+        map.put(PacketType.Play.Client.UPDATE_SIGN, PacketContainerUtils::recvBlockPosition); // 0x2B
+        map.put(PacketType.Play.Client.USE_ITEM, PacketContainerUtils::recvMovingBlockPosition); // 0x2E
 
         return map;
     }

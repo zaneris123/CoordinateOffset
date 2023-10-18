@@ -1,4 +1,4 @@
-package com.jtprince.coordinateoffset.translator.R1_19_4;
+package com.jtprince.coordinateoffset.translator.R1_19_3;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
@@ -16,11 +16,11 @@ import java.util.Set;
 import java.util.function.BiFunction;
 
 /**
- * Translator for Minecraft 1.19.4, 1.20, 1.20.1 (protocol 762-763)
+ * Translator for Minecraft 1.19.3, 1.19.4, 1.20, 1.20.1 (protocol 761-763)
  * <a href="https://wiki.vg/index.php?title=Protocol&oldid=18375">Wiki.vg</a>
  */
 @SuppressWarnings({"DuplicatedCode", "deprecation", "RedundantSuppression"})
-public class TranslatorClientboundR1_19_4 extends Translator.Clientbound {
+public class TranslatorClientboundR1_19_3 extends Translator.Clientbound {
     private final Map<PacketType, BiFunction<PacketContainer, Offset, PacketContainer>> translators = getTranslators();
     @Override
     public @NotNull Set<PacketType> getPacketTypes() {
@@ -64,14 +64,15 @@ public class TranslatorClientboundR1_19_4 extends Translator.Clientbound {
         map.put(PacketType.Play.Server.WORLD_EVENT, PacketContainerUtils::sendBlockPosition); // 0x25
         map.put(PacketType.Play.Server.WORLD_PARTICLES, PacketContainerUtils::sendParticle); // 0x26
         map.put(PacketType.Play.Server.LIGHT_UPDATE, PacketContainerUtils::sendChunkCoordinate); // 0x27
-        map.put(PacketType.Play.Server.LOGIN, PacketContainerUtils::sendDeathLocation1_19_4); // 0x28
+        map.put(PacketType.Play.Server.LOGIN, PacketContainerUtils::sendDeathLocation1_19); // 0x28
+        map.put(PacketType.Play.Server.VEHICLE_MOVE, PacketContainerUtils::sendDouble3D); // 0x2F
         map.put(PacketType.Play.Server.OPEN_SIGN_EDITOR, PacketContainerUtils::sendBlockPosition); // 0x31
         map.put(PacketType.Play.Server.POSITION, PacketContainerUtils::sendPossiblyRelativePosition); // 0x3C
-        map.put(PacketType.Play.Server.RESPAWN, PacketContainerUtils::sendDeathLocation1_19_4); // 0x41
+        map.put(PacketType.Play.Server.RESPAWN, PacketContainerUtils::sendDeathLocation1_19); // 0x41
         map.put(PacketType.Play.Server.MULTI_BLOCK_CHANGE, PacketContainerUtils::sendSectionPosition); // 0x43
         map.put(PacketType.Play.Server.VIEW_CENTRE, PacketContainerUtils::sendChunkCoordinate); // 0x4E
         map.put(PacketType.Play.Server.SPAWN_POSITION, PacketContainerUtils::sendBlockPosition); // 0x50
-        map.put(PacketType.Play.Server.ENTITY_METADATA, EntityMetadataUtils::sendEntityMetadata); // 0x52
+        map.put(PacketType.Play.Server.ENTITY_METADATA, EntityMetadataUtils::sendEntityMetadata1_19_3); // 0x52
         map.put(PacketType.Play.Server.NAMED_SOUND_EFFECT, PacketContainerUtils::sendInt3DTimes8); // 0x62
         map.put(PacketType.Play.Server.ENTITY_TELEPORT, PacketContainerUtils::sendDouble3D); // 0x68
 

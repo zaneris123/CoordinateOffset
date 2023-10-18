@@ -66,6 +66,7 @@ public class TranslatorClientboundR1_20_2 extends Translator.Clientbound {
         map.put(PacketType.Play.Server.LOGIN, (pkt, offset) -> // 0x29
                 PacketContainerUtils.sendDeathLocation1_20_2(pkt, offset, 1)
         );
+        map.put(PacketType.Play.Server.VEHICLE_MOVE, PacketContainerUtils::sendDouble3D); // 0x2F
         map.put(PacketType.Play.Server.OPEN_SIGN_EDITOR, PacketContainerUtils::sendBlockPosition); // 0x32
         map.put(PacketType.Play.Server.POSITION, PacketContainerUtils::sendPossiblyRelativePosition); // 0x3E
         map.put(PacketType.Play.Server.RESPAWN, (pkt, offset) -> // 0x43
@@ -74,7 +75,7 @@ public class TranslatorClientboundR1_20_2 extends Translator.Clientbound {
         map.put(PacketType.Play.Server.MULTI_BLOCK_CHANGE, PacketContainerUtils::sendSectionPosition); // 0x45
         map.put(PacketType.Play.Server.VIEW_CENTRE, PacketContainerUtils::sendChunkCoordinate); // 0x50
         map.put(PacketType.Play.Server.SPAWN_POSITION, PacketContainerUtils::sendBlockPosition); // 0x52
-        map.put(PacketType.Play.Server.ENTITY_METADATA, EntityMetadataUtils::sendEntityMetadata); // 0x54
+        map.put(PacketType.Play.Server.ENTITY_METADATA, EntityMetadataUtils::sendEntityMetadata1_19_3); // 0x54
         map.put(PacketType.Play.Server.NAMED_SOUND_EFFECT, PacketContainerUtils::sendInt3DTimes8); // 0x64
         map.put(PacketType.Play.Server.ENTITY_TELEPORT, PacketContainerUtils::sendDouble3D); // 0x6B
 

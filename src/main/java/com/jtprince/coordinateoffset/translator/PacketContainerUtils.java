@@ -157,7 +157,7 @@ public class PacketContainerUtils {
         return itemStack;
     }
 
-    public static PacketContainer sendDeathLocation1_19_4(PacketContainer packet, final Offset offset) {
+    public static PacketContainer sendDeathLocation1_19(PacketContainer packet, final Offset offset) {
         assertAtLeast(packet, packet.getOptionalStructures().size(), 1);
         packet.getOptionalStructures().modify(0, os -> {
             if (os.isEmpty()) return os;

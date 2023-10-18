@@ -40,8 +40,10 @@ class BukkitEventListener implements Listener {
             if (event.getRespawnReason() != PlayerRespawnEvent.RespawnReason.DEATH) {
                 reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
             }
-        } catch (NoSuchMethodError e) {
-            // TODO Not supported before 1.19.4
+        } catch (NoClassDefFoundError | NoSuchMethodError e) {
+            if (event.getRespawnFlags().contains(PlayerRespawnEvent.RespawnFlag.END_PORTAL)) {
+                reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
+            }
         }
 
         var context = new OffsetProviderContext(
@@ -69,7 +71,7 @@ class BukkitEventListener implements Listener {
                 if (flags.contains(TeleportFlag.Relative.X) || flags.contains(TeleportFlag.Relative.Z)) {
                     isTeleportDefinitelyRelative = true;
                 }
-            } catch (NoSuchMethodError err) {
+            } catch (NoClassDefFoundError | NoSuchMethodError err) {
                 // Spigot does not support relative teleport flags. This is a Paper-only API.
             }
 

@@ -30,11 +30,29 @@ public class EntityMetadataUtils {
         NMS_BLOCK_POSITION_ADD_METHOD = blockPositionAddMethod;
     }
 
-    public static PacketContainer sendEntityMetadata(PacketContainer packet, final Offset offset) {
+    public static PacketContainer sendEntityMetadata1_19_3(PacketContainer packet, final Offset offset) {
         assertAtLeast(packet, packet.getDataValueCollectionModifier().size(), 1);
         packet.getDataValueCollectionModifier().modify(0, wrappedDataValues -> {
             if (wrappedDataValues == null) return null;
             return wrappedDataValues.stream().map(wrap -> {
+                if (wrap == null) return null;
+                Object data = wrap.getValue();
+                if (data instanceof Optional<?> optional) {
+                    wrap.setValue(optional.map(object -> applyOffsetToEntityMeta(object, offset)));
+                } else {
+                    wrap.setValue(applyOffsetToEntityMeta(data, offset));
+                }
+                return wrap;
+            }).toList();
+        });
+        return packet;
+    }
+
+    public static PacketContainer sendEntityMetadata1_18(PacketContainer packet, final Offset offset) {
+        assertAtLeast(packet, packet.getWatchableCollectionModifier().size(), 1);
+        packet.getWatchableCollectionModifier().modify(0, wrappedWatchableObject -> {
+            if (wrappedWatchableObject == null) return null;
+            return wrappedWatchableObject.stream().map(wrap -> {
                 if (wrap == null) return null;
                 Object data = wrap.getValue();
                 if (data instanceof Optional<?> optional) {

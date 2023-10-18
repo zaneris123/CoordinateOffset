@@ -5,8 +5,12 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.utility.MinecraftVersion;
 import com.jtprince.coordinateoffset.Offset;
-import com.jtprince.coordinateoffset.translator.R1_19_4.TranslatorClientboundR1_19_4;
-import com.jtprince.coordinateoffset.translator.R1_19_4.TranslatorServerboundR1_19_4;
+import com.jtprince.coordinateoffset.translator.R1_18.TranslatorClientboundR1_18;
+import com.jtprince.coordinateoffset.translator.R1_18.TranslatorServerboundR1_18;
+import com.jtprince.coordinateoffset.translator.R1_19.TranslatorClientboundR1_19;
+import com.jtprince.coordinateoffset.translator.R1_19.TranslatorServerboundR1_19;
+import com.jtprince.coordinateoffset.translator.R1_19_3.TranslatorClientboundR1_19_3;
+import com.jtprince.coordinateoffset.translator.R1_19_3.TranslatorServerboundR1_19_3;
 import com.jtprince.coordinateoffset.translator.R1_20_2.TranslatorClientboundR1_20_2;
 import com.jtprince.coordinateoffset.translator.R1_20_2.TranslatorServerboundR1_20_2;
 import org.jetbrains.annotations.NotNull;
@@ -49,8 +53,12 @@ public abstract class Translator {
     public static final List<Version> VERSIONS = List.of(
             new Translator.Version(MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE, null,
                     TranslatorClientboundR1_20_2.class, TranslatorServerboundR1_20_2.class),
-            new Translator.Version(MinecraftVersion.FEATURE_PREVIEW_2, "1.20.1",
-                    TranslatorClientboundR1_19_4.class, TranslatorServerboundR1_19_4.class)
+            new Translator.Version(MinecraftVersion.FEATURE_PREVIEW_UPDATE, "1.20.1",
+                    TranslatorClientboundR1_19_3.class, TranslatorServerboundR1_19_3.class),
+            new Translator.Version(MinecraftVersion.WILD_UPDATE, "1.19.2",
+                    TranslatorClientboundR1_19.class, TranslatorServerboundR1_19.class),
+            new Translator.Version(MinecraftVersion.CAVES_CLIFFS_2, "1.18.2",
+                    TranslatorClientboundR1_18.class, TranslatorServerboundR1_18.class)
     );
 
     /**
