@@ -1,4 +1,4 @@
-package com.jtprince.coordinateoffset.translator.R1_18;
+package com.jtprince.coordinateoffset.translator.R1_17;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
@@ -16,11 +16,11 @@ import java.util.Set;
 import java.util.function.BiFunction;
 
 /**
- * Translator for Minecraft 1.18, 1.18.1, 1.18.2 (protocol 757-758)
- * <a href="https://wiki.vg/index.php?title=Protocol&oldid=17499">Wiki.vg</a>
+ * Translator for Minecraft 1.17, 1.17.1 (protocol 755-756)
+ * <a href="https://wiki.vg/index.php?title=Protocol&oldid=17159">Wiki.vg</a>
  */
 @SuppressWarnings({"DuplicatedCode", "deprecation", "RedundantSuppression"})
-public class TranslatorClientboundR1_18 extends Translator.Clientbound {
+public class TranslatorClientboundR1_17 extends Translator.Clientbound {
     private final Map<PacketType, BiFunction<PacketContainer, Offset, PacketContainer>> translators = getTranslators();
     @Override
     public @NotNull Set<PacketType> getPacketTypes() {
@@ -61,10 +61,11 @@ public class TranslatorClientboundR1_18 extends Translator.Clientbound {
         map.put(PacketType.Play.Server.BLOCK_CHANGE, PacketContainerUtils::sendBlockPosition); // 0x0C
         map.put(PacketType.Play.Server.WINDOW_ITEMS, PacketContainerUtils::sendItemStackList); // 0x14
         map.put(PacketType.Play.Server.SET_SLOT, PacketContainerUtils::sendItemStack); // 0x16
+        map.put(PacketType.Play.Server.NAMED_SOUND_EFFECT, PacketContainerUtils::sendInt3DTimes8); // 0x19
         map.put(PacketType.Play.Server.EXPLOSION, (pkt, offset) ->  // 0x1C
             PacketContainerUtils.sendBlockPositionCollection(PacketContainerUtils.sendDouble3D(pkt, offset), offset));
         map.put(PacketType.Play.Server.UNLOAD_CHUNK, PacketContainerUtils::sendChunkCoordinate); // 0x1D
-        map.put(PacketType.Play.Server.MAP_CHUNK, PacketContainerUtils::sendChunkCoordinate); // 0x22
+        map.put(PacketType.Play.Server.MAP_CHUNK, PacketContainerUtils::sendTileEntityNbtList_UpTo1_17_1); // 0x22
         map.put(PacketType.Play.Server.WORLD_EVENT, PacketContainerUtils::sendBlockPosition); // 0x23
         map.put(PacketType.Play.Server.WORLD_PARTICLES, PacketContainerUtils::sendParticle); // 0x24
         map.put(PacketType.Play.Server.LIGHT_UPDATE, PacketContainerUtils::sendChunkCoordinate); // 0x25
@@ -75,9 +76,8 @@ public class TranslatorClientboundR1_18 extends Translator.Clientbound {
         map.put(PacketType.Play.Server.VIEW_CENTRE, PacketContainerUtils::sendChunkCoordinate); // 0x49
         map.put(PacketType.Play.Server.SPAWN_POSITION, PacketContainerUtils::sendBlockPosition); // 0x4B
         map.put(PacketType.Play.Server.ENTITY_METADATA, EntityMetadataUtils::sendEntityMetadata1_18); // 0x4D
-        map.put(PacketType.Play.Server.CUSTOM_SOUND_EFFECT, PacketContainerUtils::sendInt3DTimes8); // 0x5D
-        map.put(PacketType.Play.Server.NAMED_SOUND_EFFECT, PacketContainerUtils::sendInt3DTimes8); // 0x5D
-        map.put(PacketType.Play.Server.ENTITY_TELEPORT, PacketContainerUtils::sendDouble3D); // 0x62
+        map.put(PacketType.Play.Server.CUSTOM_SOUND_EFFECT, PacketContainerUtils::sendInt3DTimes8); // 0x5C
+        map.put(PacketType.Play.Server.ENTITY_TELEPORT, PacketContainerUtils::sendDouble3D); // 0x61
 
         return map;
     }

@@ -195,23 +195,55 @@ public class PacketContainerUtils {
         return packet;
     }
 
+    public static PacketContainer sendVibrationParticlePosition_UpTo1_18_2(PacketContainer packet, final Offset offset) {
+        // ADD_VIBRATION_SIGNAL packet was replaced by the standard WORLD_PARTICLES packet in 1.19
+        assertAtLeast(packet, packet.getStructures().size(), 1);
+        packet.getStructures().modify(0, internalStructure -> {
+            assertAtLeast(packet, internalStructure.getBlockPositionModifier().size(), 0);
+            internalStructure.getBlockPositionModifier().modify(0, offset::apply);
+            return internalStructure;
+        });
+        return packet;
+    }
+
     public static PacketContainer sendTileEntityNbt(PacketContainer packet, final Offset offset) {
         sendBlockPosition(packet, offset);
 
         assertAtLeast(packet, packet.getNbtModifier().size(), 1);
         packet.getNbtModifier().modify(0, nbtBase -> {
-            if (nbtBase instanceof NbtCompound) {
-                final NbtCompound nbt = (NbtCompound) (((NbtCompound) nbtBase).deepClone());
-                if (nbt.containsKey("x") && nbt.containsKey("z")) {
-                    nbt.put("x", nbt.getInteger("x") - offset.x());
-                    nbt.put("z", nbt.getInteger("z") - offset.z());
-                }
-                return nbt;
+            if (nbtBase instanceof NbtCompound compound) {
+                return transformNbtCompound(compound, offset);
             } else {
                 return nbtBase;
             }
         });
         return packet;
+    }
+
+    public static PacketContainer sendTileEntityNbtList_UpTo1_17_1(PacketContainer packet, final Offset offset) {
+        sendChunkCoordinate(packet, offset);
+
+        assertAtLeast(packet, packet.getListNbtModifier().size(), 1);
+        packet.getListNbtModifier().modify(0, list ->
+            list.stream().map(nbtBase -> {
+                if (nbtBase instanceof NbtCompound compound) {
+                    return transformNbtCompound(compound, offset);
+                } else {
+                    return nbtBase;
+                }
+            }
+        ).toList());
+        return packet;
+    }
+
+    private static @Nullable NbtCompound transformNbtCompound(@Nullable NbtCompound nbt, final Offset offset) {
+        if (nbt == null) return null;
+        nbt = (NbtCompound) (nbt.deepClone());
+        if (nbt.containsKey("x") && nbt.containsKey("z")) {
+            nbt.put("x", nbt.getInteger("x") - offset.x());
+            nbt.put("z", nbt.getInteger("z") - offset.z());
+        }
+        return nbt;
     }
 
     static void assertAtLeast(final PacketContainer packet, int value, int expected) {

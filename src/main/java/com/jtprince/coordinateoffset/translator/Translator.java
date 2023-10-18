@@ -5,6 +5,8 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.utility.MinecraftVersion;
 import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.translator.R1_17.TranslatorClientboundR1_17;
+import com.jtprince.coordinateoffset.translator.R1_17.TranslatorServerboundR1_17;
 import com.jtprince.coordinateoffset.translator.R1_18.TranslatorClientboundR1_18;
 import com.jtprince.coordinateoffset.translator.R1_18.TranslatorServerboundR1_18;
 import com.jtprince.coordinateoffset.translator.R1_19.TranslatorClientboundR1_19;
@@ -58,7 +60,9 @@ public abstract class Translator {
             new Translator.Version(MinecraftVersion.WILD_UPDATE, "1.19.2",
                     TranslatorClientboundR1_19.class, TranslatorServerboundR1_19.class),
             new Translator.Version(MinecraftVersion.CAVES_CLIFFS_2, "1.18.2",
-                    TranslatorClientboundR1_18.class, TranslatorServerboundR1_18.class)
+                    TranslatorClientboundR1_18.class, TranslatorServerboundR1_18.class),
+            new Translator.Version(MinecraftVersion.CAVES_CLIFFS_1, "1.17.1",
+                    TranslatorClientboundR1_17.class, TranslatorServerboundR1_17.class)
     );
 
     /**
