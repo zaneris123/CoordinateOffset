@@ -30,14 +30,14 @@ public abstract class Translator {
     /**
      * A container for Translators that support a specific range of supported Minecraft versions.
      * @param minVersion The earliest ProtocolLib Minecraft version that these Translators support.
-     * @param maxStatedVersion Highest Minecraft version this Translator works with, or null if the minimum version is
-     *                         equal to the maximum version. (This should ONLY be used for informational purposes)
+     * @param statedVersionRange Description of the Minecraft versions this Translator works with. (This should ONLY be
+     *                           used for informational purposes)
      * @param clientbound A Translator for clientbound ("Server") packets.
      * @param serverbound A Translator for serverbound ("Client") packets.
      */
     public record Version(
             MinecraftVersion minVersion,
-            @Nullable String maxStatedVersion,
+            @NotNull String statedVersionRange,
             Class<? extends Translator.Clientbound> clientbound,
             Class<? extends Translator.Serverbound> serverbound
     ) {}
@@ -53,15 +53,15 @@ public abstract class Translator {
      * If a translator works for multiple Minecraft versions, set its upper bound as the second argument.
      */
     public static final List<Version> VERSIONS = List.of(
-            new Translator.Version(MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE, null,
+            new Translator.Version(MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE, "1.20.2",
                     TranslatorClientboundR1_20_2.class, TranslatorServerboundR1_20_2.class),
-            new Translator.Version(MinecraftVersion.FEATURE_PREVIEW_UPDATE, "1.20.1",
+            new Translator.Version(MinecraftVersion.FEATURE_PREVIEW_UPDATE, "1.19.3 through 1.20.1",
                     TranslatorClientboundR1_19_3.class, TranslatorServerboundR1_19_3.class),
-            new Translator.Version(MinecraftVersion.WILD_UPDATE, "1.19.2",
+            new Translator.Version(MinecraftVersion.WILD_UPDATE, "1.19 through 1.19.2",
                     TranslatorClientboundR1_19.class, TranslatorServerboundR1_19.class),
-            new Translator.Version(MinecraftVersion.CAVES_CLIFFS_2, "1.18.2",
+            new Translator.Version(MinecraftVersion.CAVES_CLIFFS_2, "1.18.x",
                     TranslatorClientboundR1_18.class, TranslatorServerboundR1_18.class),
-            new Translator.Version(MinecraftVersion.CAVES_CLIFFS_1, "1.17.1",
+            new Translator.Version(MinecraftVersion.CAVES_CLIFFS_1, "1.17.x",
                     TranslatorClientboundR1_17.class, TranslatorServerboundR1_17.class)
     );
 

@@ -62,13 +62,7 @@ class PacketOffsetAdapter {
             logger.severe("This plugin only supports Minecraft " + earliest + " and above - it will very likely break!");
         }
 
-        StringBuilder s = new StringBuilder("Using protocol version for Minecraft ");
-        s.append(chosen.minVersion().getVersion());
-        if (chosen.maxStatedVersion() != null) {
-            s.append(" through ").append(chosen.maxStatedVersion());
-        }
-        s.append('.');
-        logger.info(s.toString());
+        logger.info("Using protocol translator for Minecraft " + chosen.statedVersionRange() + ".");
 
         return chosen;
     }
