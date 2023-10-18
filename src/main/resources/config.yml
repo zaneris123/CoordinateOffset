@@ -25,6 +25,12 @@ offsetProviders:
     offsetX: 1024
     offsetZ: 1024
 
+    # The constant offset can be multiplied by a constant factor in specific
+    #   worlds so that portal travel lines up. Make sure that the constant
+    #   offsets multiplied by these values still result in a multiple of 16.
+    worldScaling:
+      world_nether: 0.125
+
 
   disabled:
     # A constant offset of 0 will disable coordinate obfuscation and allow

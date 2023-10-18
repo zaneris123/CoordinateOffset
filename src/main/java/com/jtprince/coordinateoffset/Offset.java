@@ -114,6 +114,17 @@ public record Offset (int x, int z) {
     }
 
     /**
+     * Get a new Offset with the components of this offset multiplied by an arbitrary number and rounded.
+     *
+     * @param scaleFactor The factor to multiply this offset by.
+     * @return A new Offset aligned to 1 chunk.
+     */
+    @Pure
+    public @NotNull Offset scaleByDouble(double scaleFactor) {
+        return Offset.align((int) Math.round(x * scaleFactor), (int) Math.round(z * scaleFactor));
+    }
+
+    /**
      * Get a new Offset with the inverse components as this one (x -> -x, z -> -z).
      * @return A new Offset.
      */
