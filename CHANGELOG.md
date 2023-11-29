@@ -1,3 +1,6 @@
+# v2.3.1
+- Remove broken shortened links in config.yml comment
+
 # v2.3.0
 - Backport plugin support to Spigot/Paper 1.17.1, 1.18.2, and 1.19 through 1.19.3 (plugin now supports all versions from 1.17.1 through 1.20.2)
 - Mark `resetOnDistantTeleport` as unsafe and require opt-in ([more details](https://github.com/joshuaprince/CoordinateOffset/wiki/resetOnDistantTeleport))
