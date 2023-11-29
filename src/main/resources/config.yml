@@ -96,8 +96,9 @@ offsetProviders:
 #   all providers and see their real coordinates.
 bypassByPermission: true
 
-# Only send accurate world border packets to players that are near the border.
-#   Disabling this may leak coordinates - see http://gg.gg/coworldborder
+# Wait for players to be near the world border to send border packets.
+#   Disabling this fixes moving borders, but may leak coordinates - see
+#   https://github.com/joshuaprince/CoordinateOffset/wiki/Implications-and-Limitations#world-border
 obfuscateWorldBorder: true
 
 # Enable a log message when a player's offset changes.

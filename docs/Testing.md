@@ -104,7 +104,8 @@ Command Tests
 
 World Border Tests
 ------------------
-See http://gg.gg/coworldborder - World border obfuscation is complex.
+See https://github.com/joshuaprince/CoordinateOffset/wiki/Implications-and-Limitations#world-border - World border
+obfuscation is complex.
 NOTE: On Minecraft versions before 1.18, CoordinateOffset hides the border instead of obfuscating it.
 * Run the following commands:
   * `/worldborder center 1000 1000`
