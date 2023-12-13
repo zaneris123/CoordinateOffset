@@ -49,7 +49,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
     // Shade and Relocate: Shaded into plugin, exposed to API consumers with relocated names if necessary
     shadeAndRelocate("org.bstats:bstats-bukkit:3.0.2")
-    shadeAndRelocate("dev.jorel:commandapi-bukkit-shade:9.2.0")
+    shadeAndRelocate("dev.jorel:commandapi-bukkit-shade:9.3.0")
     shadeAndRelocate("com.jeff_media:MorePersistentDataTypes:2.4.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")

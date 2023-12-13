@@ -8,7 +8,9 @@ Step 0: Wait
 Wait for the dependencies to be updated. That typically means ProtocolLib and CommandAPI. Dev builds for ProtocolLib
 have worked well for testing, get them [here](https://ci.dmulloy2.net/job/ProtocolLib/).
 
-When they are fully updated, bump any dependency versions in `build.gradle.kts` at the root of the project.
+When they are fully updated, bump any dependency versions in `build.gradle.kts` at the root of the project. You should
+not need to bump the API version or Paper version in `gradle.properties`, and if you do, be sure to maintain backwards
+compatibility with previous server versions.
 
 Step 1: New Translator
 ----------------------
@@ -17,8 +19,8 @@ Mojang makes even a small change to the protocol. CoordinateOffset is written to
 versions with its "Translator" interface. These translators aggregate all functionality that can be described as
 "offsetting coordinates within every packet that contains coordinates".
 
-Translators are located at `com.jtprince.coordinateoffset.translator`. The first step for supporting a new version is to
-create a new one.
+Translators are located at `com.jtprince.coordinateoffset.translator`. Translators are named for the **first** version
+of Minecraft the translator supports. The first step for supporting a new version is to create a new one.
 1. Copy the existing translator directory with the closest version to the one you're trying to support.
 2. Rename all references in that translator directory to the new version.
 3. Navigate to `com.jtprince.coordinateoffset.translator.Translator` and locate the translator version registry, named

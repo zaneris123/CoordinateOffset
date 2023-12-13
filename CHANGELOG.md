@@ -1,3 +1,6 @@
+# v2.3.2
+- Support 1.20.4 (requires ProtocolLib dev build #676+)
+
 # v2.3.1
 - Remove broken shortened links in config.yml comment
 

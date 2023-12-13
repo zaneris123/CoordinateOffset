@@ -55,6 +55,7 @@ These items and blocks have some kind of interactions that use packets that need
 * Compass
   * Verify that it points to the world spawn point.
   * Verify that it spins in the Nether.
+  * Verify that it still points to the world spawn point after returning from the Nether.
 * Recovery Compass
   * Die and verify that it properly points to the place you died.
   * Change worlds and verify that it spins when in a different world from where you died.

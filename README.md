@@ -10,32 +10,32 @@ CoordinateOffset
 [CurseForge](https://legacy.curseforge.com/minecraft/bukkit-plugins/coordinateoffset) |
 [bStats](https://bstats.org/plugin/bukkit/CoordinateOffset/19988)
 
-Minecraft offers a useful "debug" (F3) menu that allows anyone to easily see their precise coordinates in the world.
+Minecraft offers a useful debug menu (F3) that allows anyone to easily see their coordinates in the world.
 This makes it easy to save points of interest and share locations with friends (or enemies).
 
 However, not all multiplayer servers want coordinates to be so easily accessible. `/gamerule reducedDebugInfo` can
 administratively hide coordinates from the F3 menu, but it is trivial for a player to add a client-side mod that
 shows them.
 
-**CoordinateOffset** is a plugin for Spigot and Paper servers that **applies an offset to every coordinate in packets
-between the server and client**. The player still sees the exact same world they would normally see. But no matter which
-mods they install, it is impossible for them to know their real coordinates.
+**CoordinateOffset** is a plugin for Spigot and Paper servers that applies an offset to every coordinate in packets
+between the server and client. The player still sees the exact same world they would normally see. But no matter which
+mods they install, **it is impossible for them to know their real coordinates**.
 
 Features
 --------
 * Fully-configurable, flexible methods of determining how to apply offsets
-* Randomize offset when the player joins, dies, changes world, or teleports
+* Randomize offset when the player joins, dies, or changes world
 * Match offsets to the player's position, so they see themselves near the world's origin
-* Persist the same offset every time a player joins so that they don't notice an offset changing
+* Persist the same offset every time a player joins so that they don't notice coordinates changing
 * Configure different offsets per-player, per-world, and with permissions
 * Extensible API to flexibly get and set offsets
 
 Requirements and Installation
 -----------------------------
 * Spigot, [Paper (recommended)](https://papermc.io/), or a fork for Minecraft
-  1.17.x, 1.18.x, 1.19.x, 1.20, 1.20.1, 1.20.2
+  1.17.x, 1.18.x, 1.19.x, 1.20, 1.20.1, 1.20.2, 1.20.3, 1.20.4
 * [ProtocolLib](https://github.com/dmulloy2/ProtocolLib/releases) **5.1.0** or higher
-  (1.20.2: [Dev build](https://ci.dmulloy2.net/job/ProtocolLib/) #669+)
+  (1.20.2: [Dev build](https://ci.dmulloy2.net/job/ProtocolLib/) #669+, 1.20.4: Dev build #676+)
 * An understanding of the [implications of installing this
 plugin](https://github.com/joshuaprince/CoordinateOffset/wiki/Implications-and-Limitations).
 
@@ -58,7 +58,7 @@ player's coordinates should appear to be shifted from their real location. Get s
 matches the type of offsetting you're trying to achieve:
 * `constant` - Specify the exact offset you want players to have.
 * `disabled` - Players will see their real coordinates.
-* `random` - Randomize each player's offset whenever they join the server.
+* `random` - Individually randomize each player's offset every time they join the server.
 * `zeroAtLocation` - Use an offset based on the player's starting location, so they see themselves near (0, 0).
 
 You can customize these providers further, use different providers for different players/worlds/groups, and define your
@@ -70,7 +70,7 @@ Commands
 ```
 /offset [player]
 ```
-Gets your own current offset and real coordinates, or someone else's.
+Gets your or someone else's current offset and real coordinates.
 
 ```
 /offsetreload
@@ -90,7 +90,7 @@ Allows you to use the `/offset` command, which tells you your current offset.
 Allows you to query other players' offsets with `/offset <name>`.
 
 * `coordinateoffset.reload`
-  Allows you to reload the plugin config with `/offsetreload`.
+Allows you to reload the plugin config with `/offsetreload`.
 
 API
 ---

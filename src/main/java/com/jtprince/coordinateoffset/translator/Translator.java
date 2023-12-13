@@ -15,6 +15,8 @@ import com.jtprince.coordinateoffset.translator.R1_19_3.TranslatorClientboundR1_
 import com.jtprince.coordinateoffset.translator.R1_19_3.TranslatorServerboundR1_19_3;
 import com.jtprince.coordinateoffset.translator.R1_20_2.TranslatorClientboundR1_20_2;
 import com.jtprince.coordinateoffset.translator.R1_20_2.TranslatorServerboundR1_20_2;
+import com.jtprince.coordinateoffset.translator.R1_20_3.TranslatorClientboundR1_20_3;
+import com.jtprince.coordinateoffset.translator.R1_20_3.TranslatorServerboundR1_20_3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -47,12 +49,14 @@ public abstract class Translator {
      * Minecraft Version when it does. The plugin may be used on a version past this and work in many circumstances, but
      * it will print a warning that the protocol may have changed.
      */
-    public static final MinecraftVersion LATEST_SUPPORTED = MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE;
+    public static final MinecraftVersion LATEST_SUPPORTED = MinecraftVersion.v1_20_4;
     /*
      * Add new translator versions here, most recently released Minecraft versions first.
      * If a translator works for multiple Minecraft versions, set its upper bound as the second argument.
      */
     public static final List<Version> VERSIONS = List.of(
+            new Translator.Version(MinecraftVersion.v1_20_4, "1.20.3 through 1.20.4",
+                    TranslatorClientboundR1_20_3.class, TranslatorServerboundR1_20_3.class),
             new Translator.Version(MinecraftVersion.CONFIG_PHASE_PROTOCOL_UPDATE, "1.20.2",
                     TranslatorClientboundR1_20_2.class, TranslatorServerboundR1_20_2.class),
             new Translator.Version(MinecraftVersion.FEATURE_PREVIEW_UPDATE, "1.19.3 through 1.20.1",
