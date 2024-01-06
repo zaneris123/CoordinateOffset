@@ -10,6 +10,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.server.ServerLoadEvent;
+import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
 import java.util.Objects;
 
@@ -30,6 +31,17 @@ class BukkitEventListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
+    public void onSpawnLocation(PlayerSpawnLocationEvent event) {
+        plugin.getPlayerManager().setPositionedWorld(event.getPlayer(), event.getSpawnLocation().getWorld());
+
+        OffsetProviderContext context = new OffsetProviderContext(
+                event.getPlayer(), event.getSpawnLocation().getWorld(), event.getSpawnLocation(),
+                OffsetProviderContext.ProvideReason.JOIN, plugin
+        );
+        plugin.getPlayerManager().regenerateOffset(context);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         /*
          * The Respawn event is fired after using an End exit portal, but users probably expect that portal to trigger
@@ -41,8 +53,12 @@ class BukkitEventListener implements Listener {
                 reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
             }
         } catch (NoClassDefFoundError | NoSuchMethodError e) {
-            if (event.getRespawnFlags().contains(PlayerRespawnEvent.RespawnFlag.END_PORTAL)) {
-                reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
+            try {
+                if (event.getRespawnFlags().contains(PlayerRespawnEvent.RespawnFlag.END_PORTAL)) {
+                    reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
+                }
+            } catch (NoClassDefFoundError | NoSuchMethodError e2) {
+                plugin.getLogger().fine("No supported method for determining respawn reason.");
             }
         }
 
