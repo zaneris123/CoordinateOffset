@@ -98,4 +98,8 @@ public abstract class PacketOffsetter<T extends PacketWrapper<T>> {
 
         return item;
     }
+
+    protected static ItemStack unapplyItemStack(ItemStack item, Offset offset) {
+        return applyItemStack(item, offset.negate());
+    }
 }
