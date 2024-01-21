@@ -1,3 +1,6 @@
+# v3.0.1
+- Fix players being kicked when making sounds near a Warden
+
 # v3.0.0 (beta)
 - Plugin is now compatible with: (in beta; please report issues)
     - ViaVersion
