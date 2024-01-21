@@ -90,6 +90,8 @@ Entity Tests
 * Villager
   * Verify that trading works as expected and Villagers display particles after a successful trade.
   * Verify that villagers appear to enter beds properly at night.
+* Warden
+  * Verify in survival mode that a sound/vibration particle visibly moves towards the Warden's head.
 
 Multiplayer Tests
 -----------------
