@@ -1,6 +1,7 @@
 package com.jtprince.coordinateoffset.offsetter.server;
 
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
+import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.util.Vector3i;
@@ -34,6 +35,9 @@ public class OffsetterServerEntityMetadata extends PacketOffsetter<WrapperPlaySe
         if (object instanceof Vector3i blockPosition) {
             // TBD: subtract instead of adding negative https://github.com/retrooper/packetevents/issues/646
             return blockPosition.add(-offset.x(), 0, -offset.z());
+        }
+        if (object instanceof ItemStack) {
+            return applyItemStack((ItemStack) object, offset);
         }
         return object;
     }

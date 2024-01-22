@@ -18,6 +18,7 @@ public class OffsetterRegistry {
     private static final Map<PacketTypeCommon, PacketOffsetter> byPacketType;
 
     private static final List<PacketOffsetter> offsetters = List.of(
+            new OffsetterClientClickWindow(),
             new OffsetterClientCreativeInventoryAction(),
             new OffsetterClientGenerateStructure(),
             new OffsetterClientPlayerBlockPlacement(),
@@ -35,6 +36,7 @@ public class OffsetterRegistry {
             new OffsetterServerBlockEntityData(),
             new OffsetterServerChunkData(),
             new OffsetterServerEffect(),
+            new OffsetterServerEntityEquipment(),
             new OffsetterServerEntityMetadata(),
             new OffsetterServerEntityTeleport(),
             new OffsetterServerExplosion(),

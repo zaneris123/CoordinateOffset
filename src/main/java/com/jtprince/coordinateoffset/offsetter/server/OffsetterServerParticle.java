@@ -1,6 +1,7 @@
 package com.jtprince.coordinateoffset.offsetter.server;
 
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.particle.data.ParticleItemStackData;
 import com.github.retrooper.packetevents.protocol.particle.type.ParticleTypes;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.util.Vector3i;
@@ -33,6 +34,10 @@ public class OffsetterServerParticle extends PacketOffsetter<WrapperPlayServerPa
             if (vibrationData.getBlockPosition().isPresent()) {
                 vibrationData.setBlockPosition(apply(vibrationData.getBlockPosition().get(), offset));
             }
+        }
+
+        if (packet.getParticle().getData() instanceof ParticleItemStackData itemStackData) {
+            itemStackData.setItemStack(applyItemStack(itemStackData.getItemStack(), offset));
         }
     }
 }

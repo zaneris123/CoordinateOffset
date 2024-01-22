@@ -14,5 +14,8 @@ public class OffsetterServerWindowItems extends PacketOffsetter<WrapperPlayServe
     @Override
     public void offset(WrapperPlayServerWindowItems packet, Offset offset, User user) {
         packet.setItems(packet.getItems().stream().map(it -> applyItemStack(it, offset)).toList());
+        if (packet.getCarriedItem().isPresent()) {
+            packet.setCarriedItem(applyItemStack(packet.getCarriedItem().get(), offset));
+        }
     }
 }

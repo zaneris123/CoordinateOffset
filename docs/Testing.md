@@ -62,10 +62,14 @@ These items and blocks have some kind of interactions that use packets that need
   * Log out and back in in the world you died, and verify that it still points to the place you died.
   * Log in on an empty profile (that has never played or died before) and verify that the compass spins.
 * Lodestone/Lodestone Compass
-  * NOTE: These act strangely in Creative mode, so do these tests in Survival.
+  * NOTE: These behave differently in Creative mode and Survival mode. Do these tests once in both modes.
   * Verify that an attuned compass points to the Lodestone.
   * Log out and back in in the world with the Lodestone, and verify that it still points to the Lodestone.
   * Change worlds and verify that it spins when in a different world from the Lodestone.
+  * In Creative mode, move the compass around in your inventory and ensure it keeps pointing to the Lodestone.
+  * Throw the attuned compass on the ground. Verify that while it rotates, the needle on one face of the compass always
+    points towards the lodestone. (The other face is mirrored horizontally, so it will face the lodestone but flipped.)
+    Do this from a few different sides of the lodestone.
 * Sculk Sensor
   * Verify that you can activate it by moving around, it visibly gives off a redstone signal, and you can see the
     particle fly from yourself to the sensor.
@@ -100,6 +104,8 @@ These tests require 2 accounts or offline mode. They all expect that each player
 * Verify that players can see and hear each other placing blocks.
 * Verify that in Survival mode, block-breaking particles (cracks) appear for both players.
 * Verify that players can see each other enter beds.
+* Give a second player an attuned lodestone compass. Ensure that when P2 is holding the compass, it visibly points to
+  the lodestone from the perspective of P1, moving P2 at various angles around the lodestone.
 
 Command Tests
 -------------
