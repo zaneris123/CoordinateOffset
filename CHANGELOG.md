@@ -1,3 +1,8 @@
+# v3.0.2
+- Fixes for lodestone compasses
+    - Fix Creative players seeing lodestone compasses pointing the wrong direction
+    - Fix lodestone compasses on the ground or in other players' hands pointing the wrong direction
+
 # v3.0.1
 - Fix players being kicked when making sounds near a Warden
 
