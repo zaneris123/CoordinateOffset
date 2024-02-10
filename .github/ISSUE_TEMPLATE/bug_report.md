@@ -13,13 +13,14 @@ A clear and concise description of what the bug is.
 **Environment details**
 Output of `/version`: 
 CoordinateOffset version: 
-PacketEvents/ProtocolLib version: 
+PacketEvents version: 
 Output of `/plugins`: 
 Link to pastebin of `config.yml` (if modified): 
 
 **Log errors**
+```
 Include any stack traces, exceptions, or error messages printed when the bug occurs.
-
+```
 **Steps to reproduce**
 Please give any additional details that might help us to recreate the bug in a test server.
 
