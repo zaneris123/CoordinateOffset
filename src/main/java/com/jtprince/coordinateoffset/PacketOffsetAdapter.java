@@ -1,12 +1,10 @@
 package com.jtprince.coordinateoffset;
 
 import com.github.retrooper.packetevents.PacketEvents;
-import com.github.retrooper.packetevents.event.PacketListenerAbstract;
-import com.github.retrooper.packetevents.event.PacketListenerPriority;
-import com.github.retrooper.packetevents.event.PacketReceiveEvent;
-import com.github.retrooper.packetevents.event.PacketSendEvent;
+import com.github.retrooper.packetevents.event.*;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.jtprince.coordinateoffset.offsetter.OffsetterRegistry;
+import com.jtprince.util.PartialStacktraceLogger;
 import org.bukkit.entity.Player;
 
 import java.util.Set;
@@ -15,10 +13,12 @@ import java.util.logging.Logger;
 class PacketOffsetAdapter {
     private final CoordinateOffset coPlugin;
     private final Logger logger;
+    private final PacketDebugger packetHistory;
 
     PacketOffsetAdapter(CoordinateOffset plugin) {
         this.coPlugin = plugin;
         this.logger = plugin.getLogger();
+        this.packetHistory = new PacketDebugger(plugin);
     }
 
     void registerAdapters() {
@@ -43,51 +43,83 @@ class PacketOffsetAdapter {
 
         @Override
         public void onPacketSend(PacketSendEvent event) {
-            if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK
-                    || event.getPacketType() == PacketType.Play.Server.UPDATE_VIEW_POSITION) {
-                Player player = (Player) event.getPlayer();
-                if (player != null) {
-                    coPlugin.getPlayerManager().setPositionedWorld(player, player.getWorld());
+            if (coPlugin.isDebugEnabled()) {
+                packetHistory.logPacket(event.getUser(), event.getPacketType());
+            }
+
+            try {
+                if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK
+                        || event.getPacketType() == PacketType.Play.Server.UPDATE_VIEW_POSITION) {
+                    Player player = (Player) event.getPlayer();
+                    if (player != null) {
+                        coPlugin.getPlayerManager().setPositionedWorld(player, player.getWorld());
+                    }
+                }
+
+                Offset offset;
+                if (event.getPacketType() == PacketType.Play.Server.JOIN_GAME
+                        || event.getPacketType() == PacketType.Play.Server.RESPAWN) {
+                    /*
+                     * Join packets happen before the Player object exists.
+                     * Respawn packets need to apply a new world's offsets ahead of actually moving the player to that
+                     * new world.
+                     * See `docs/OffsetChangeHandling.md`
+                     */
+                    offset = coPlugin.getPlayerManager().getOffsetLookahead(event.getUser().getUUID());
+                } else {
+                    if (event.getPlayer() == null) return;
+
+                    offset = coPlugin.getPlayerManager().getOffset((Player) event.getPlayer());
+                }
+
+                // Short-circuit when no offset is applied
+                if (offset.equals(Offset.ZERO)) return;
+
+                // World border packets must only be manipulated by the World Border Obfuscator
+                //noinspection SuspiciousMethodCalls
+                if (PACKETS_WORLD_BORDER.contains(event.getPacketType())) {
+                    coPlugin.getWorldBorderObfuscator().translate(event, (Player) event.getPlayer());
+                    return;
+                }
+
+                OffsetterRegistry.attemptToOffset(event, offset);
+            } catch (Exception e) {
+                PartialStacktraceLogger.logStacktrace(logger, "Failed to apply offset for outgoing packet " +
+                        event.getPacketType().getName() + " to " + event.getUser().getName(), e);
+                if (coPlugin.isDebugEnabled()) {
+                    logger.warning("Packet history for above stacktrace: " + packetHistory.getHistory(event.getUser()));
                 }
             }
-
-            Offset offset;
-            if (event.getPacketType() == PacketType.Play.Server.JOIN_GAME
-                    || event.getPacketType() == PacketType.Play.Server.RESPAWN) {
-                /*
-                 * Join packets happen before the Player object exists.
-                 * Respawn packets need to apply a new world's offsets ahead of actually moving the player to that new
-                 * world.
-                 * See `docs/OffsetChangeHandling.md`
-                 */
-                offset = coPlugin.getPlayerManager().getOffsetLookahead(event.getUser().getUUID());
-            } else {
-                if (event.getPlayer() == null) return;
-
-                offset = coPlugin.getPlayerManager().getOffset((Player) event.getPlayer());
-            }
-
-            // Short-circuit when no offset is applied
-            if (offset.equals(Offset.ZERO)) return;
-
-            // World border packets must only be manipulated by the World Border Obfuscator
-            if (PACKETS_WORLD_BORDER.contains(event.getPacketType())) {
-                coPlugin.getWorldBorderObfuscator().translate(event, (Player) event.getPlayer());
-                return;
-            }
-
-            OffsetterRegistry.attemptToOffset(event, offset);
         }
 
         @Override
         public void onPacketReceive(PacketReceiveEvent event) {
-            Player player = (Player) event.getPlayer();
-            if (player == null) return;
+            if (coPlugin.isDebugEnabled()) {
+                packetHistory.logPacket(event.getUser(), event.getPacketType());
+            }
 
-            Offset offset = coPlugin.getPlayerManager().getOffset(player, player.getWorld());
-            if (offset.equals(Offset.ZERO)) return;
+            try {
+                Player player = (Player) event.getPlayer();
+                if (player == null) return;
 
-            OffsetterRegistry.attemptToUnOffset(event, offset);
+                Offset offset = coPlugin.getPlayerManager().getOffset(player, player.getWorld());
+                if (offset.equals(Offset.ZERO)) return;
+
+                OffsetterRegistry.attemptToUnOffset(event, offset);
+            } catch (Exception e) {
+                PartialStacktraceLogger.logStacktrace(logger, "Failed to reverse offset for incoming packet " +
+                        event.getPacketType().getName() + " from " + event.getUser().getName(), e);
+                if (coPlugin.isDebugEnabled()) {
+                    logger.warning("Packet history for above stacktrace: " + packetHistory.getHistory(event.getUser()));
+                }
+            }
+        }
+
+        @Override
+        public void onUserDisconnect(UserDisconnectEvent event) {
+            if (coPlugin.isDebugEnabled()) {
+                packetHistory.forget(event.getUser());
+            }
         }
     }
 }

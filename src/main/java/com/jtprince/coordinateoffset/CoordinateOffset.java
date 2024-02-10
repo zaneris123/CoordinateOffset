@@ -4,7 +4,6 @@ import com.github.retrooper.packetevents.PacketEvents;
 import com.jtprince.coordinateoffset.provider.ConstantOffsetProvider;
 import com.jtprince.coordinateoffset.provider.RandomOffsetProvider;
 import com.jtprince.coordinateoffset.provider.ZeroAtLocationOffsetProvider;
-import com.jtprince.util.PacketDebugger;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
@@ -45,10 +44,6 @@ public final class CoordinateOffset extends JavaPlugin {
         providerManager.registerConfigurationFactory("ZeroAtLocationOffsetProvider", new ZeroAtLocationOffsetProvider.ConfigFactory());
 
         new PacketOffsetAdapter(this).registerAdapters();
-
-        if (isDebugEnabled()) {
-            new PacketDebugger(this).registerAdapters();
-        }
     }
 
     void onAllPluginsEnabled() {
@@ -87,7 +82,7 @@ public final class CoordinateOffset extends JavaPlugin {
     }
 
     public boolean isDebugEnabled() {
-        return getConfig().getBoolean("debug");
+        return getConfig().getBoolean("debug.enable");
     }
 
     boolean isUnsafeResetOnTeleportEnabled() {

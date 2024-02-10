@@ -103,3 +103,8 @@ obfuscateWorldBorder: true
 
 # Enable a log message when a player's offset changes.
 verbose: false
+
+# Enable additional logging when errors occur in the plugin.
+debug:
+  enable: false
+  packetHistorySize: 8
