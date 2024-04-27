@@ -17,3 +17,10 @@ permissions:
       coordinateoffset.query: true
   coordinateoffset.reload:
     description: Allows you to reload the plugin config with /offsetreload.
+commands:
+  offset:
+    description: "Check a player's current offset and true coordinates"
+    permission: coordinateoffset.query
+  offsetreload:
+    description: "Reload CoordinateOffset config.yml"
+    permission: coordinateoffset.reload

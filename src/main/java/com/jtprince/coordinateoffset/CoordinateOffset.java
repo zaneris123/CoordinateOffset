@@ -4,14 +4,14 @@ import com.github.retrooper.packetevents.PacketEvents;
 import com.jtprince.coordinateoffset.provider.ConstantOffsetProvider;
 import com.jtprince.coordinateoffset.provider.RandomOffsetProvider;
 import com.jtprince.coordinateoffset.provider.ZeroAtLocationOffsetProvider;
-import dev.jorel.commandapi.CommandAPI;
-import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Objects;
 
 public final class CoordinateOffset extends JavaPlugin {
     private static CoordinateOffset instance;
@@ -27,17 +27,17 @@ public final class CoordinateOffset extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).silentLogs(true).verboseOutput(false));
-        CommandAPI.onEnable();
-
         instance = this;
         saveDefaultConfig();
 
         playerOffsetsManager = new PlayerOffsetsManager(this);
         providerManager = new OffsetProviderManager(this);
-        new CoordinateOffsetCommands(this).registerCommands();
         worldBorderObfuscator = new WorldBorderObfuscator(this);
         Bukkit.getPluginManager().registerEvents(new BukkitEventListener(this, playerOffsetsManager, worldBorderObfuscator), this);
+
+        CoordinateOffsetCommands commands = new CoordinateOffsetCommands(this);
+        Objects.requireNonNull(this.getCommand("offset")).setExecutor(commands.new OffsetCommand());
+        Objects.requireNonNull(this.getCommand("offsetreload")).setExecutor(commands.new OffsetReloadCommand());
 
         providerManager.registerConfigurationFactory("ConstantOffsetProvider", new ConstantOffsetProvider.ConfigFactory());
         providerManager.registerConfigurationFactory("RandomOffsetProvider", new RandomOffsetProvider.ConfigFactory());

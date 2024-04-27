@@ -36,7 +36,7 @@ repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://oss.sonatype.org/content/repositories/snapshots")
-    maven("https://repo.codemc.org/repository/maven-public/") // CommandAPI
+    maven("https://repo.codemc.org/repository/maven-public/") // PacketEvents
     maven("https://hub.jeff-media.com/nexus/repository/jeff-media-public/") // MorePDTs
 }
 
@@ -48,7 +48,6 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
     // Shade and Relocate: Shaded into plugin, exposed to API consumers with relocated names if necessary
     shadeAndRelocate("org.bstats:bstats-bukkit:3.0.2")
-    shadeAndRelocate("dev.jorel:commandapi-bukkit-shade:9.3.0")
     shadeAndRelocate("com.jeff_media:MorePersistentDataTypes:2.4.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")

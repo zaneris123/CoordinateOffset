@@ -106,5 +106,4 @@ CoordinateOffset's packet translation logic was heavily modeled after the work d
 Libraries used:
 * [bStats](https://bstats.org/) ([Statistics for this plugin](https://bstats.org/plugin/bukkit/CoordinateOffset/19988))
 * [PacketEvents](https://github.com/retrooper/packetevents)
-* [CommandAPI](https://commandapi.jorel.dev/)
 * [MorePersistentDataTypes](https://github.com/JEFF-Media-GbR/MorePersistentDataTypes)

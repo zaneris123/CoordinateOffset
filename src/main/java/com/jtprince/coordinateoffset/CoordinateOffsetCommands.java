@@ -1,12 +1,16 @@
 package com.jtprince.coordinateoffset;
 
-import dev.jorel.commandapi.CommandAPICommand;
-import dev.jorel.commandapi.arguments.PlayerArgument;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ComponentBuilder;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 @SuppressWarnings("deprecation")
 class CoordinateOffsetCommands {
@@ -17,62 +21,67 @@ class CoordinateOffsetCommands {
         this.plugin = plugin;
     }
 
-    void registerCommands() {
-        new CommandAPICommand("offset")
-                .withPermission(CoordinateOffsetPermissions.QUERY_SELF)
-                .executesPlayer((player, args) -> {
-                    Offset offset = plugin.getPlayerManager().getOffset(player);
-                    player.spigot().sendMessage(new ComponentBuilder(prefix)
-                            .append("[x=" + offset.x() + ", z=" + offset.z() + "]").color(ChatColor.GOLD)
-                            .append(" is your current offset.").color(ChatColor.GREEN)
-                            .create());
+    public class OffsetCommand implements CommandExecutor {
+        @Override
+        public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
+                                 @NotNull String cmd, @NotNull String[] args) {
+            // Base permission checked by command in plugin.yml
+            Player target;
+            String pronoun;
+            if (args.length == 0) {
+                if (!(sender instanceof Player)) {
+                    replyError(sender, "You must be a player or specify a player to query offsets.");
+                    return true;
+                }
+                target = (Player) sender;
+                pronoun = "your";
+            } else {
+                if (!sender.hasPermission(CoordinateOffsetPermissions.QUERY_OTHERS)) {
+                    sender.sendMessage(Objects.requireNonNull(command.permissionMessage()));
+                    return true;
+                }
+                target = Bukkit.getPlayer(args[0]);
+                if (target == null) {
+                    replyError(sender, "Unknown player \"" + args[0] + "\".");
+                    return true;
+                }
+                pronoun = target.getName() + "'s";
+            }
 
-                    Location real = player.getLocation();
-                    player.spigot().sendMessage(new ComponentBuilder(prefix)
-                            .append(String.format("(%.1f, %.1f, %.1f)", real.getX(), real.getY(), real.getZ())).color(ChatColor.YELLOW)
-                            .append(" is your real position in world ").color(ChatColor.GREEN)
-                            .append(player.getWorld().getName()).color(ChatColor.YELLOW)
-                            .append(".").color(ChatColor.GREEN)
-                            .create());
-                })
-                .register();
+            Offset offset = plugin.getPlayerManager().getOffset(target);
 
-        new CommandAPICommand("offset")
-                .withArguments(new PlayerArgument("player").withPermission(CoordinateOffsetPermissions.QUERY_OTHERS))
-                .executes((sender, args) -> {
-                    Player player = (Player) args.get("player");
-                    if (player == null) {
-                        replyError(sender, "Unknown player.");
-                        return;
-                    }
-                    Offset offset = plugin.getPlayerManager().getOffset(player);
-                    sender.spigot().sendMessage(new ComponentBuilder(prefix)
-                            .append("[x=" + offset.x() + ", z=" + offset.z() + "]").color(ChatColor.GOLD)
-                            .append(" is " + player.getName() + "'s current offset.").color(ChatColor.GREEN)
-                            .create());
+            sender.spigot().sendMessage(new ComponentBuilder(prefix)
+                    .append("[x=" + offset.x() + ", z=" + offset.z() + "]").color(ChatColor.GOLD)
+                    .append(" is " + pronoun + " current offset.").color(ChatColor.GREEN)
+                    .create());
 
-                    Location real = player.getLocation();
-                    sender.spigot().sendMessage(new ComponentBuilder(prefix)
-                            .append(String.format("(%.1f, %.1f, %.1f)", real.getX(), real.getY(), real.getZ())).color(ChatColor.YELLOW)
-                            .append(" is their real position in world ").color(ChatColor.GREEN)
-                            .append(player.getWorld().getName()).color(ChatColor.YELLOW)
-                            .append(".").color(ChatColor.GREEN)
-                            .create());
-                })
-                .register();
+            Location real = target.getLocation();
+            sender.spigot().sendMessage(new ComponentBuilder(prefix)
+                    .append(String.format("(%.1f, %.1f, %.1f)", real.getX(), real.getY(), real.getZ())).color(ChatColor.YELLOW)
+                    .append(" is " + pronoun + " real position in world ").color(ChatColor.GREEN)
+                    .append(target.getWorld().getName()).color(ChatColor.YELLOW)
+                    .append(".").color(ChatColor.GREEN)
+                    .create());
 
-        new CommandAPICommand("offsetreload")
-                .withPermission(CoordinateOffsetPermissions.RELOAD)
-                .executes((sender, args) -> {
-                    try {
-                        plugin.reload();
-                        replyOk(sender, "Reloaded CoordinateOffset config. Players may need to relog to see the changes.");
-                    } catch (Exception e) {
-                        replyError(sender, "Failed to reload the config. Check the console for details.");
-                        e.printStackTrace();
-                    }
-                })
-                .register();
+            return true;
+        }
+    }
+
+    public class OffsetReloadCommand implements CommandExecutor {
+        @Override
+        public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
+                                 @NotNull String cmd, @NotNull String[] args) {
+            // Base permission checked by command in plugin.yml
+            try {
+                plugin.reload();
+                replyOk(sender, "Reloaded CoordinateOffset config. Players may need to relog to see the changes.");
+            } catch (Exception e) {
+                replyError(sender, "Failed to reload the config. Check the console for details.");
+                e.printStackTrace();
+            }
+
+            return true;
+        }
     }
 
     private void replyOk(CommandSender to, @SuppressWarnings("SameParameterValue") String message) {
