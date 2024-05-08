@@ -12,7 +12,7 @@ This document hopes to describe all the gotchas surrounding these events.
 
 Event and Packet Ordering
 -------------------------
-Most of the complexity comes from the fact that Bukkit generates events and ProtocolLib generates packets in a fixed
+Most of the complexity comes from the fact that Bukkit generates events and PacketEvents generates packets in a fixed
 but non-obvious order. The complete order is documented at the bottom of this file. In summary, this is the order these
 gameplay events tend to fire the relevant Bukkit events and packets. All-caps are packets, "..." implies many packets
 of that type.
