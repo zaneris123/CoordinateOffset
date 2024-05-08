@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -lt 1 ]]; then
-  echo "Usage: $0 <version>"
-  echo "Example: $0 1.20.2"
+if [[ $# -lt 2 ]]; then
+  echo "Usage: $0 <version> <packetevents version>"
+  echo "Example: $0 1.20.5 2.2.1"
   exit 1
 fi
 
@@ -23,8 +23,8 @@ mkdir -p "plugins/bStats"
 echo "enabled: false" > plugins/bStats/config.yml
 
 # Copy plugins
-if [[ ! -f "plugins/ProtocolLib.jar" ]]; then
-  curl -o "plugins/ProtocolLib.jar" https://ci.dmulloy2.net/job/ProtocolLib/lastSuccessfulBuild/artifact/build/libs/ProtocolLib.jar
+if [[ ! -f "plugins/PacketEvents.jar" ]]; then
+  curl -o "plugins/PacketEvents.jar" "https://ci.codemc.io/job/retrooper/job/packetevents/lastSuccessfulBuild/artifact/spigot/build/libs/packetevents-spigot-$2.jar"
 fi
 if [[ ! -e "plugins/CoordinateOffset-SNAPSHOT.jar" ]]; then
   ln -s ../../build/CoordinateOffset-SNAPSHOT.jar plugins/CoordinateOffset-SNAPSHOT.jar

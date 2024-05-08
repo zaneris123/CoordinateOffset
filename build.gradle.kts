@@ -43,7 +43,7 @@ repositories {
 dependencies {
     // API dependencies: Not shaded into plugin, but needed for API consumers
     api("org.jetbrains:annotations:24.0.1")
-    api("com.github.retrooper.packetevents:spigot:2.2.0")
+    api("com.github.retrooper.packetevents:spigot:2.2.1")
     // Compile Only dependencies: Neither shaded nor needed by API consumers (assumed they'll already add it themselves)
     compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
     // Shade and Relocate: Shaded into plugin, exposed to API consumers with relocated names if necessary

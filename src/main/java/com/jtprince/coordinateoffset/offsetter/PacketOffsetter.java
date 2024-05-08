@@ -1,5 +1,7 @@
 package com.jtprince.coordinateoffset.offsetter;
 
+import com.github.retrooper.packetevents.protocol.component.ComponentTypes;
+import com.github.retrooper.packetevents.protocol.component.builtin.item.LodestoneTracker;
 import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
 import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
@@ -86,6 +88,7 @@ public abstract class PacketOffsetter<T extends PacketWrapper<T>> {
         if (item == null) return null;
 
         if (item.getType() == ItemTypes.COMPASS) {
+            // Up to 1.20.4 only: NBT tags
             NBTCompound nbt = item.getNBT();
             if (nbt != null) {
                 NBTCompound lodestonePos = nbt.getCompoundTagOrNull("LodestonePos");
@@ -93,6 +96,15 @@ public abstract class PacketOffsetter<T extends PacketWrapper<T>> {
                     lodestonePos.setTag("X", new NBTInt(lodestonePos.getNumberTagOrThrow("X").getAsInt() - offset.x()));
                     lodestonePos.setTag("Z", new NBTInt(lodestonePos.getNumberTagOrThrow("Z").getAsInt() - offset.z()));
                 }
+            }
+
+            // 1.20.5+ only: Components
+            var lodestoneComponent = item.getComponents().getPatches().get(ComponentTypes.LODESTONE_TRACKER);
+            if (lodestoneComponent != null
+                    && lodestoneComponent.isPresent()
+                    && lodestoneComponent.get() instanceof LodestoneTracker lodestone
+                    && lodestone.getTarget() != null) {
+                lodestone.setTarget(apply(lodestone.getTarget(), offset));
             }
         }
 
