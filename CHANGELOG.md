@@ -1,3 +1,8 @@
+# v3.1.0
+- Support 1.20.6 (requires PacketEvents [dev build](https://ci.codemc.io/job/retrooper/job/packetevents/) #397+)
+- Improve exception handling and debuggability
+- Drop CommandAPI dependency; rewrite commands in standard Bukkit API
+
 # v3.0.2
 - Fixes for lodestone compasses
     - Fix Creative players seeing lodestone compasses pointing the wrong direction
