@@ -14,7 +14,10 @@ import com.github.retrooper.packetevents.protocol.world.chunk.Column;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
+import com.jtprince.coordinateoffset.CoordinateOffset;
 import com.jtprince.coordinateoffset.Offset;
+
+import java.util.Optional;
 
 public abstract class PacketOffsetter<T extends PacketWrapper<T>> {
     public final PacketTypeCommon[] packetTypes;
@@ -99,7 +102,15 @@ public abstract class PacketOffsetter<T extends PacketWrapper<T>> {
             }
 
             // 1.20.5+ only: Components
-            var lodestoneComponent = item.getComponents().getPatches().get(ComponentTypes.LODESTONE_TRACKER);
+            Optional<?> lodestoneComponent = null;
+            try {
+                lodestoneComponent = item.getComponents().getPatches().get(ComponentTypes.LODESTONE_TRACKER);
+            } catch (NoSuchMethodError e) {
+                // No error logged here because this Components branch only affects 1.20.5+, and PE will hit other
+                //  issues if an outdated version is installed. (i.e. this branch only happens on <1.20.5 where it does
+                //  not matter)
+                CoordinateOffset.getInstance().getLogger().fine("Outdated PacketEvents! Failed to get item components.");
+            }
             if (lodestoneComponent != null
                     && lodestoneComponent.isPresent()
                     && lodestoneComponent.get() instanceof LodestoneTracker lodestone
