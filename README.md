@@ -35,8 +35,7 @@ Requirements and Installation
 -----------------------------
 * Spigot, [Paper (recommended)](https://papermc.io/), or a fork for Minecraft
   1.17.x, 1.18.x, 1.19.x, 1.20, 1.20.1, 1.20.2, 1.20.3, 1.20.4, 1.20.5, 1.20.6
-* [PacketEvents](https://github.com/retrooper/packetevents/releases) (for Spigot)
-  **[Dev Build](https://ci.codemc.io/job/retrooper/job/packetevents/) #397** or higher (or v2.2.2)
+* [PacketEvents](https://github.com/retrooper/packetevents/releases) (for Spigot) **v2.3.0** or higher
 * An understanding of the [implications of installing this
 plugin](https://github.com/joshuaprince/CoordinateOffset/wiki/Implications-and-Limitations).
 
