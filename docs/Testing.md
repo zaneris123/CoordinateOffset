@@ -17,7 +17,7 @@ Basic Tests
 -----------
 * Verify the plugin loads and prints an informational message with no errors or warnings.
 * Join the server with a default plugin config and verify that offsets are working, chunks load, and commands
-  (`/offset`) function.
+  (`/offset`, `/offsetreload`) function.
 * Verify that there are no errors in the console after connecting and waiting a few seconds for chunks to load.
 * Verify that placing and breaking blocks behave as expected.
 * Throw an item on the ground and pick it up, verifying that it behaves the same as Vanilla.
@@ -57,10 +57,10 @@ These items and blocks have some kind of interactions that use packets that need
   * Verify that it spins in the Nether.
   * Verify that it still points to the world spawn point after returning from the Nether.
 * Recovery Compass
+  * Log in on a profile that has never played or died before and verify that the compass spins.
   * Die and verify that it properly points to the place you died.
   * Change worlds and verify that it spins when in a different world from where you died.
   * Log out and back in in the world you died, and verify that it still points to the place you died.
-  * Log in on an empty profile (that has never played or died before) and verify that the compass spins.
 * Lodestone/Lodestone Compass
   * NOTE: These behave differently in Creative mode and Survival mode. Do these tests once in both modes.
   * Verify that an attuned compass points to the Lodestone.
@@ -68,8 +68,8 @@ These items and blocks have some kind of interactions that use packets that need
   * Change worlds and verify that it spins when in a different world from the Lodestone.
   * In Creative mode, move the compass around in your inventory and ensure it keeps pointing to the Lodestone.
   * Throw the attuned compass on the ground. Verify that while it rotates, the needle on one face of the compass always
-    points towards the lodestone. (The other face is mirrored horizontally, so it will face the lodestone but flipped.)
-    Do this from a few different sides of the lodestone.
+    points towards the lodestone. (The other face might be mirrored horizontally, so it will face the lodestone but
+    flipped.) Do this from a few different sides of the lodestone.
 * Sculk Sensor
   * Verify that you can activate it by moving around, it visibly gives off a redstone signal, and you can see the
     particle fly from yourself to the sensor.

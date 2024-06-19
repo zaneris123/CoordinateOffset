@@ -21,6 +21,17 @@ shows them.
 server and client. The player still sees the exact same world they would normally see. But no matter which mods they
 install, they cannot see their real coordinates.
 
+Why?
+----
+This plugin isn't intended for all servers. Here are a few ideas that might make CoordinateOffset useful:
+* **Prevent metagaming**: If you consider coordinate usage and sharing to be metagaming, this prevents it.
+* **Buff in-game items**: Compasses, lodestones, recovery compasses, and maps are no longer outclassed by coordinates 
+  when those coordinates are inconsistent.
+* **Prevent coordinate leaks**: If everyone sees different coordinates, players cannot derive each other's coordinates
+  from an accidental leak in a screenshot.
+* **Guard the world seed**: Any unknown offset makes seed-cracking tactics harder.
+* **Center the origin**: Put the (0, 0) coordinate anywhere you'd like.
+
 Features
 --------
 * Fully-configurable, flexible methods of determining how to apply offsets
@@ -29,13 +40,12 @@ Features
 * Persist the same offset every time a player joins so that they don't notice coordinates changing
 * Configure different offsets per-player, per-world, and with permissions
 * Extensible API to flexibly get and set offsets
-* (Beta) Compatible with ViaVersion, ViaBackwards, BungeeCord, Waterfall, and Velocity
+* Compatible with ViaVersion, ViaBackwards, BungeeCord, Waterfall, and Velocity
 
 Requirements and Installation
 -----------------------------
 * Spigot, [Paper (recommended)](https://papermc.io/), or a fork for Minecraft
-  1.17.x, 1.18.x, 1.19.x, 1.20, 1.20.1, 1.20.2, 1.20.3, 1.20.4, 1.20.5, 1.20.6
-* [PacketEvents](https://github.com/retrooper/packetevents/releases) (for Spigot) **v2.3.0** or higher
+  1.17.x, 1.18.x, 1.19.x, 1.20.*, 1.21
 * An understanding of the [implications of installing this
 plugin](https://github.com/joshuaprince/CoordinateOffset/wiki/Implications-and-Limitations).
 
