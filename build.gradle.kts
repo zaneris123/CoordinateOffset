@@ -33,10 +33,22 @@ configurations {
 }
 
 repositories {
+    /*
+     * Temporary build steps for 1.21 using Maven Local publication of forked PE:
+     *  - Clone https://github.com/joshuaprince/packetevents/tree/coordinateoffset/1.21
+     *  - cd packetevents && ./gradlew publishShadowPublicationToMavenLocal
+     *  - Then build CoordinateOffset.
+     *
+     * Purposes of using a private fork:
+     *  - Update to 1.21 is not yet merged to packetevents upstream
+     *  - Horse/wolf equipment bug in upstream https://github.com/retrooper/packetevents/pull/827
+     * After all of these merge to upstream, this local use of a fork can be removed.
+     */
+    mavenLocal() // PacketEvents - Must clone and use ./gradlew publishShadowPublicationToMavenLocal on
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://oss.sonatype.org/content/repositories/snapshots")
-    maven("https://repo.codemc.org/repository/maven-public/") // PacketEvents
+//    maven("https://repo.codemc.org/repository/maven-public/") // PacketEvents - TBD, see temp build steps above
     maven("https://hub.jeff-media.com/nexus/repository/jeff-media-public/") // MorePDTs
 }
 
