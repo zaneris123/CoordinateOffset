@@ -2,7 +2,6 @@ name: CoordinateOffset
 version: "${version}"
 main: com.jtprince.coordinateoffset.CoordinateOffset
 api-version: "${apiVersion}"
-depend: [ packetevents ]
 authors: [ jtprince, Cavallium ]
 website: https://github.com/joshuaprince/CoordinateOffset
 description: Configurably obfuscate players' coordinates.
@@ -24,3 +23,10 @@ commands:
   offsetreload:
     description: "Reload CoordinateOffset config.yml"
     permission: coordinateoffset.reload
+softdepend:
+  - ProtocolLib
+  - ProtocolSupport
+  - ViaVersion
+  - ViaBackwards
+  - ViaRewind
+  - Geyser-Spigot
