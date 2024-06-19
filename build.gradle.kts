@@ -21,17 +21,6 @@ val pluginYmlApiVersion: String by project
 val paperApiVersion: String by project
 val javaVersion: JavaLanguageVersion = JavaLanguageVersion.of(17)
 
-val shadeAndRelocate: Configuration = project.configurations.create("shadeAndRelocate")
-
-configurations {
-    compileClasspath {
-        extendsFrom(shadeAndRelocate)
-    }
-    testImplementation {
-        extendsFrom(shadeAndRelocate, configurations["api"], configurations["compileOnly"])
-    }
-}
-
 repositories {
     /*
      * Temporary build steps for 1.21 using Maven Local publication of forked PE:
@@ -58,11 +47,12 @@ dependencies {
     // Compile Only dependencies: Neither shaded nor needed by API consumers (assumed they'll already add it themselves)
     compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
     // Shade and Relocate: Shaded into plugin, exposed to API consumers with relocated names if necessary
-    shadeAndRelocate("com.github.retrooper:packetevents-spigot:2.3.1-SNAPSHOT")
-    shadeAndRelocate("org.bstats:bstats-bukkit:3.0.2")
-    shadeAndRelocate("com.jeff_media:MorePersistentDataTypes:2.4.0")
+    implementation("com.github.retrooper:packetevents-spigot:2.3.1-SNAPSHOT")
+    implementation("org.bstats:bstats-bukkit:3.0.2")
+    implementation("com.jeff_media:MorePersistentDataTypes:2.4.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
+    testImplementation("io.papermc.paper:paper-api:$paperApiVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -91,11 +81,9 @@ tasks {
     }
 
     shadowJar {
-        configurations = listOf(shadeAndRelocate)
         archiveClassifier.set("")
-        shadeAndRelocate.dependencies.forEach {
-            relocate(it.group, "${project.group}.lib.${it.group}")
-        }
+        isEnableRelocation = true
+        relocationPrefix = "${project.group}.lib"
         minimize()
     }
 
