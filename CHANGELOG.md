@@ -1,3 +1,18 @@
+# v4.0.0
+- Support 1.21
+- Fix movement near bamboo and dripstone when an offset is applied
+    - **NOTE**: Servers migrating from v3 should add the [`fixCollision`](https://github.com/joshuaprince/CoordinateOffset/commit/226586c8412c142bc1b6c0a254013533526fc4f7#diff-58cdd3d308ccba6c594e040ff9c065bb11eeb6e30f35ba87694ea45d5ae6096c)
+      section to their CoordinateOffset config.yml. However, this fix is enabled by default even if these lines are
+      omitted.
+- Remove separate PacketEvents dependency
+    - PacketEvents is now shaded into CoordinateOffset, so it is not necessary to install as a separate plugin.
+- Several fixes to 1.20.6 bugs present in PacketEvents v2.3.0
+    - Fix players being kicked while near a horse or wolf that is wearing armor ([packetevents#827](https://github.com/retrooper/packetevents/pull/827))
+    - Fix players respawning instantly after dying ([packetevents#816](https://github.com/retrooper/packetevents/issues/816))
+    - Fix treasure maps with icons kicking players ([packetevents#811](https://github.com/retrooper/packetevents/issues/810))
+    - Fix banners with patterns kicking players ([packetevents#772](https://github.com/retrooper/packetevents/issues/772))
+    - Fix decorated pots in an inventory kicking players ([packetevents#768](https://github.com/retrooper/packetevents/issues/768))
+
 # v3.1.0
 - Support 1.20.6 (requires PacketEvents [dev build](https://ci.codemc.io/job/retrooper/job/packetevents/) #397+)
 - Improve exception handling and debuggability
