@@ -92,6 +92,16 @@ offsetProviders:
   #   offsetZ: 16000
 
 
+# Coordinates are used to determine how to shift these blocks slightly. That
+#   means that if the client and server disagree about coordinates, they also
+#   disagree about how to shift these blocks, so movement is glitchy near these
+#   blocks. These settings completely disable collisions for these blocks.
+#   More info: https://github.com/joshuaprince/CoordinateOffset/issues/8
+# Note: Requires a server restart for changes to take effect.
+fixCollision:
+  bamboo: true
+  dripstone: true
+
 # If true, players with the `coordinateoffset.bypass` permission will bypass
 #   all providers and see their real coordinates.
 bypassByPermission: true

@@ -4,6 +4,7 @@ import com.github.retrooper.packetevents.PacketEvents;
 import com.jtprince.coordinateoffset.provider.ConstantOffsetProvider;
 import com.jtprince.coordinateoffset.provider.RandomOffsetProvider;
 import com.jtprince.coordinateoffset.provider.ZeroAtLocationOffsetProvider;
+import com.jtprince.lib.org.geysermc.hurricane.CollisionFix;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -18,6 +19,7 @@ public final class CoordinateOffset extends JavaPlugin {
     private PlayerOffsetsManager playerOffsetsManager;
     private OffsetProviderManager providerManager;
     private WorldBorderObfuscator worldBorderObfuscator;
+    private @Nullable CollisionFix collisionFix;
 
     @Override
     public void onLoad() {
@@ -44,6 +46,19 @@ public final class CoordinateOffset extends JavaPlugin {
         providerManager.registerConfigurationFactory("ZeroAtLocationOffsetProvider", new ZeroAtLocationOffsetProvider.ConfigFactory());
 
         new PacketOffsetAdapter(this).registerAdapters();
+
+        boolean collisionFixBambooEnabled = getConfig().getBoolean("fixCollision.bamboo", true);
+        boolean collisionFixDripstoneEnabled = getConfig().getBoolean("fixCollision.dripstone", true);
+        if (collisionFixBambooEnabled || collisionFixDripstoneEnabled) {
+            try {
+                collisionFix = new CollisionFix(this, collisionFixBambooEnabled, collisionFixDripstoneEnabled);
+            } catch (Exception e) {
+                getLogger().severe("Failed to enable bamboo/dripstone collision fix: " + e.getMessage());
+                if (isVerboseLoggingEnabled()) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     void onAllPluginsEnabled() {
