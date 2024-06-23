@@ -45,13 +45,13 @@ Features
 Requirements and Installation
 -----------------------------
 * Spigot, [Paper (recommended)](https://papermc.io/), or a fork for Minecraft
-  1.17.x, 1.18.x, 1.19.x, 1.20.*, 1.21
+  1.17.x, 1.18.x, 1.19.x, 1.20.x, 1.21
 * An understanding of the [implications of installing this
 plugin](https://github.com/joshuaprince/CoordinateOffset/wiki/Implications-and-Limitations).
 
 After ensuring that you meet the requirements, just grab the latest
 [release](https://github.com/joshuaprince/CoordinateOffset/releases/latest) and drop it in your server's `plugins`
-folder.
+folder. Then follow steps below to configure how coordinates are affected for each player.
 
 Configuration
 -------------
