@@ -1,3 +1,6 @@
+# v4.0.1
+- Fix NBT errors causing world to sometimes not load when joining
+
 # v4.0.0
 - Support 1.21
 - Fix movement near bamboo and dripstone when an offset is applied
