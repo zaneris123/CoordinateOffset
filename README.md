@@ -4,11 +4,16 @@ CoordinateOffset
 
 ![Icon](.github/img/icon128.png)
 
-[Spigot](https://www.spigotmc.org/resources/coordinateoffset.111292/) |
-[Modrinth](https://modrinth.com/plugin/coordinateoffset) |
-[Hangar](https://hangar.papermc.io/jtchips/CoordinateOffset) |
-[CurseForge](https://legacy.curseforge.com/minecraft/bukkit-plugins/coordinateoffset) |
-[bStats](https://bstats.org/plugin/bukkit/CoordinateOffset/19988)
+[![GitHub Release](https://img.shields.io/github/v/release/joshuaprince/CoordinateOffset?link=https%3A%2F%2Fgithub.com%2Fjoshuaprince%2FCoordinateOffset%2Freleases)](https://github.com/joshuaprince/CoordinateOffset/releases)
+[![Discord](https://img.shields.io/discord/1258675512583389236?logo=discord&logoColor=7389D8&label=discord&color=7389D8&link=https%3A%2F%2Fdiscord.gg%2FV3xYtqU9JU)](https://discord.gg/V3xYtqU9JU)
+[![Ko-Fi Donations](https://img.shields.io/badge/ko--fi-jtprince-red?logo=ko-fi)](https://ko-fi.com/jtprince)
+
+[![bStats Servers](https://img.shields.io/bstats/servers/19988?color=lightblue&link=https%3A%2F%2Fbstats.org%2Fplugin%2Fbukkit%2FCoordinateOffset%2F19988)](https://bstats.org/plugin/bukkit/CoordinateOffset/19988)
+[![bStats Players](https://img.shields.io/bstats/players/19988?color=lightblue&link=https%3A%2F%2Fbstats.org%2Fplugin%2Fbukkit%2FCoordinateOffset%2F19988)](https://bstats.org/plugin/bukkit/CoordinateOffset/19988)
+[![Modrinth Downloads](https://img.shields.io/modrinth/dt/coordinateoffset?logo=modrinth&label=modrinth&link=https%3A%2F%2Fmodrinth.com%2Fplugin%2Fcoordinateoffset)](https://modrinth.com/plugin/coordinateoffset)
+[![Spigot Downloads](https://img.shields.io/spiget/downloads/111292?logo=spigotmc&logoColor=yellow&label=spigot&color=yellow&link=https%3A%2F%2Fwww.spigotmc.org%2Fresources%2Fcoordinateoffset.111292%2F)](https://www.spigotmc.org/resources/coordinateoffset.111292/)
+[![Hangar Downloads](https://img.shields.io/hangar/dt/CoordinateOffset?logo=paper&label=hangar&color=blue&link=https%3A%2F%2Fhangar.papermc.io%2Fjtchips%2FCoordinateOffset)](https://hangar.papermc.io/jtchips/CoordinateOffset)
+[![CurseForge Downloads](https://img.shields.io/curseforge/dt/889789?logo=curseforge&logoColor=orange&label=bukkitdev&color=orange&link=https%3A%2F%2Fdev.bukkit.org%2Fprojects%2Fcoordinateoffset)](https://dev.bukkit.org/projects/coordinateoffset)
 
 Minecraft offers a useful debug menu (F3) that allows anyone to easily see their coordinates in the world.
 This makes it easy to save points of interest and share locations with friends (or enemies).
@@ -16,6 +21,10 @@ This makes it easy to save points of interest and share locations with friends (
 However, not all multiplayer servers want coordinates to be so easily accessible. `/gamerule reducedDebugInfo` can
 administratively hide coordinates from the F3 menu, but it is trivial for a player to add a client-side mod that
 shows them.
+
+<p align="center">
+<img src=".github/img/end.png" alt="Image demonstrating coordinate offsetting">
+</p>
 
 **CoordinateOffset** is a plugin for Spigot and Paper servers that modifies every coordinate in packets between the
 server and client. The player still sees the exact same world they would normally see. But no matter which mods they
@@ -106,6 +115,11 @@ API
 ---
 You can use or extend CoordinateOffset in your own plugin by using the API. Please see the
 [API Guide](https://github.com/joshuaprince/CoordinateOffset/wiki/API).
+
+Support
+-------
+* Open an [issue on GitHub](https://github.com/joshuaprince/CoordinateOffset/issues) to report a bug or request a feature.
+* Join the [Chips's Mods](https://discord.gg/V3xYtqU9JU) Discord for help.
 
 Credits
 -------
