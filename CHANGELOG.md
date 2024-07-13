@@ -1,3 +1,8 @@
+# v4.0.2
+- Fix "Unknown player for Offset lookup" errors printed occasionally when players disconnect
+- Fix Random offsets occasionally resetting when changing worlds or dying even when the option is disabled
+- Update packetevents dependency
+
 # v4.0.1
 - Fix NBT errors causing world to sometimes not load when joining
 
