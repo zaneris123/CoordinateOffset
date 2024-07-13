@@ -9,8 +9,9 @@ import com.jtprince.coordinateoffset.provider.util.ResetConfig;
 import com.jtprince.coordinateoffset.provider.util.WorldAlignmentConfig;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.UUID;
 
 public class ZeroAtLocationOffsetProvider extends OffsetProvider {
     private ResetConfig resetConfig;
@@ -56,8 +57,8 @@ public class ZeroAtLocationOffsetProvider extends OffsetProvider {
     }
 
     @Override
-    public void onPlayerQuit(@NotNull Player player) {
-        perWorldOffsetStore.reset(player);
+    public void onPlayerDisconnect(@NotNull UUID playerUuid) {
+        perWorldOffsetStore.reset(playerUuid);
     }
 
     public static class ConfigFactory implements OffsetProvider.ConfigurationFactory<ZeroAtLocationOffsetProvider> {

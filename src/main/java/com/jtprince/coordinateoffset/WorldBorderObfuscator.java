@@ -50,8 +50,8 @@ class WorldBorderObfuscator {
         }
     }
 
-    void onPlayerQuit(Player player) {
-        knownSeenWalls.remove(player.getUniqueId());
+    void onPlayerDisconnect(UUID playerUuid) {
+        knownSeenWalls.remove(playerUuid);
     }
 
     boolean enableObfuscation() {

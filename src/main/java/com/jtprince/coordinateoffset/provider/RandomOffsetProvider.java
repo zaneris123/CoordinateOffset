@@ -9,9 +9,10 @@ import com.jtprince.coordinateoffset.provider.util.ResetConfig;
 import com.jtprince.coordinateoffset.provider.util.WorldAlignmentConfig;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.UUID;
 
 public class RandomOffsetProvider extends OffsetProvider {
     private static final String DEFAULT_PERSISTENCE_KEY = "default";
@@ -36,7 +37,7 @@ public class RandomOffsetProvider extends OffsetProvider {
     public @NotNull Offset getOffset(@NotNull OffsetProviderContext context) {
         //noinspection DuplicatedCode (with ZeroAtLocationOffsetProvider)
         if (resetConfig.resetOn(context.reason())) {
-            perWorldOffsetStore.reset(context.player());
+            perWorldOffsetStore.reset(context.player().getUniqueId());
         }
 
         // Check if this world already has an offset calculated
@@ -73,9 +74,9 @@ public class RandomOffsetProvider extends OffsetProvider {
     }
 
     @Override
-    public void onPlayerQuit(@NotNull Player player) {
+    public void onPlayerDisconnect(@NotNull UUID playerUuid) {
         if (perWorldOffsetStore instanceof PerWorldOffsetStore.Cached) {
-            perWorldOffsetStore.reset(player);
+            perWorldOffsetStore.reset(playerUuid);
         }
     }
 

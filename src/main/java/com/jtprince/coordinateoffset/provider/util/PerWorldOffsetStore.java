@@ -1,7 +1,9 @@
 package com.jtprince.coordinateoffset.provider.util;
 
 import com.jeff_media.morepersistentdatatypes.DataType;
+import com.jtprince.coordinateoffset.CoordinateOffset;
 import com.jtprince.coordinateoffset.Offset;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -19,6 +21,7 @@ public interface PerWorldOffsetStore {
     @NotNull Map<String, Offset> getAll(Player player);
     void put(Player player, String worldName, Offset offset);
     void reset(Player player);
+    void reset(UUID playerUuid);
 
     class Cached implements PerWorldOffsetStore {
         private final Map<UUID, Map<String, Offset>> playerCache = new HashMap<>();
@@ -40,6 +43,11 @@ public interface PerWorldOffsetStore {
         @Override
         public void reset(Player player) {
             playerCache.remove(player.getUniqueId());
+        }
+
+        @Override
+        public void reset(UUID uuid) {
+            playerCache.remove(uuid);
         }
     }
 
@@ -69,6 +77,18 @@ public interface PerWorldOffsetStore {
         @Override
         public void reset(Player player) {
             player.getPersistentDataContainer().remove(key);
+        }
+
+        @Override
+        public void reset(UUID playerUuid) {
+            Player player = Bukkit.getPlayer(playerUuid);
+            if (player != null) {
+                player.getPersistentDataContainer().remove(key);
+            } else {
+                CoordinateOffset.getInstance().getLogger().warning("Failed to reset a persistent offset! " +
+                        "Is \"persistent\" enabled at the same time as a \"resetOn\" option? (Player UUID: " +
+                        playerUuid + ")");
+            }
         }
     }
 }

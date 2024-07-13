@@ -5,6 +5,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.UUID;
+
 /**
  * Offset Providers are an extensible way to determine what {@link Offset} each player should have in each world.
  */
@@ -30,14 +32,34 @@ public abstract class OffsetProvider {
     public abstract @NotNull Offset getOffset(@NotNull OffsetProviderContext context);
 
     /**
-     * Called on this provider whenever a player leaves. The provider should override this function to clean up or write
-     * to disk any saved state related to that player.
+     * Called on this provider whenever a player leaves. The provider may override this function to write to disk
+     * any persistent saved state related to that player.
+     *
+     * <p>This is usually called <b>before</b> {@link OffsetProvider#onPlayerDisconnect(UUID)}.</p>
      *
      * <p>The implementor should NOT assume that {@link #getOffset} has been called with this Player at any point before
      * this.</p>
+     *
+     * @see OffsetProvider#onPlayerDisconnect(UUID)
      * @param player The player that's leaving.
      */
     public void onPlayerQuit(@NotNull Player player) {}
+
+    /**
+     * Called on this provider when a player's connection is closed. The provider may override this function to clean
+     * up any cached and/or transient state related to that player.
+     *
+     * <p>This is usually called <b>after</b> {@link OffsetProvider#onPlayerQuit(Player)} and may be called after
+     * the player has already left the server.</p>
+     *
+     * <p>The implementor should NOT assume that {@link #getOffset} has been called with this Player at any point before
+     * this.</p>
+     *
+     * @see OffsetProvider#onPlayerQuit(Player)
+     * @param playerUuid The UUID of the player that has disconnected. This is NOT guaranteed to correspond to an online Player
+     *                   at the time this function is called.
+     */
+    public void onPlayerDisconnect(@NotNull UUID playerUuid) {}
 
     /**
      * An {@link ConfigurationFactory} encodes how the CoordinateOffset plugin should create providers defined by the

@@ -117,6 +117,10 @@ class PacketOffsetAdapter {
 
         @Override
         public void onUserDisconnect(UserDisconnectEvent event) {
+            coPlugin.getPlayerManager().remove(event.getUser().getUUID());
+            coPlugin.getOffsetProviderManager().disconnectPlayer(event.getUser().getUUID());
+            coPlugin.getWorldBorderObfuscator().onPlayerDisconnect(event.getUser().getUUID());
+
             if (coPlugin.isDebugEnabled()) {
                 packetHistory.forget(event.getUser());
             }

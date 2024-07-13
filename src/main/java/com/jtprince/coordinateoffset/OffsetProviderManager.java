@@ -220,4 +220,10 @@ class OffsetProviderManager {
             provider.onPlayerQuit(player);
         }
     }
+
+    void disconnectPlayer(@NotNull UUID playerUuid) {
+        for (OffsetProvider provider : providersFromConfig.values()) {
+            provider.onPlayerDisconnect(playerUuid);
+        }
+    }
 }

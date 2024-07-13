@@ -112,11 +112,11 @@ class PlayerOffsetsManager {
 
     /**
      * Drop a player from all caching in this offset manager.
-     * @param player The player to drop, presumably that is quitting the server.
+     * @param uuid The UUID of the player to drop, presumably who is disconnecting from the server.
      */
-    synchronized void remove(@NotNull Player player) {
-        playerOffsets.remove(player.getUniqueId());
-        playerLookaheadWorld.remove(player.getUniqueId());
-        playerPositionedWorld.remove(player.getUniqueId());
+    synchronized void remove(@NotNull UUID uuid) {
+        playerOffsets.remove(uuid);
+        playerLookaheadWorld.remove(uuid);
+        playerPositionedWorld.remove(uuid);
     }
 }

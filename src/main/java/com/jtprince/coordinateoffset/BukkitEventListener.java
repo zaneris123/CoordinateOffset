@@ -114,9 +114,7 @@ class BukkitEventListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(PlayerQuitEvent event) {
-        players.remove(event.getPlayer());
         plugin.getOffsetProviderManager().quitPlayer(event.getPlayer());
-        worldBorderObfuscator.onPlayerQuit(event.getPlayer());
     }
 
     private int getMinimumTeleportDistanceSquared(World world) {
