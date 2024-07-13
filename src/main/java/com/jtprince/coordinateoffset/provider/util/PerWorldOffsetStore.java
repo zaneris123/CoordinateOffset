@@ -39,7 +39,7 @@ public interface PerWorldOffsetStore {
 
         @Override
         public void reset(Player player) {
-            playerCache.clear();
+            playerCache.remove(player.getUniqueId());
         }
     }
 
