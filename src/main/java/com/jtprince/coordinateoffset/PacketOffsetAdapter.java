@@ -5,9 +5,11 @@ import com.github.retrooper.packetevents.event.*;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.jtprince.coordinateoffset.offsetter.OffsetterRegistry;
 import com.jtprince.util.PartialStacktraceLogger;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 class PacketOffsetAdapter {
@@ -117,9 +119,32 @@ class PacketOffsetAdapter {
 
         @Override
         public void onUserDisconnect(UserDisconnectEvent event) {
-            coPlugin.getPlayerManager().remove(event.getUser().getUUID());
-            coPlugin.getOffsetProviderManager().disconnectPlayer(event.getUser().getUUID());
-            coPlugin.getWorldBorderObfuscator().onPlayerDisconnect(event.getUser().getUUID());
+            UUID playerUuid = event.getUser().getUUID();
+            if (playerUuid == null) return;
+
+            Player onlinePlayer = Bukkit.getPlayer(playerUuid);
+            if (onlinePlayer != null
+                    && PacketEvents.getAPI().getPlayerManager().getUser(onlinePlayer) != event.getUser()) {
+                /*
+                 * Special handling for attempting to "reconnect from another location":
+                 * When a player reconnects from a second instance or location, the original TCP connection is closed.
+                 * This eventually fires UserDisconnectEvent on the Netty thread.
+                 *
+                 * It is possible in certain previously-observed circumstances for UserDisconnectEvent to fire AFTER
+                 * the new connection's Player is fully in-game. The result is that the Player's data is erased from
+                 * the cache despite the second connection still being in-game, so we get "Unknown player for Offset
+                 * lookup" ad infinitum.
+                 *
+                 * Solution: If the User (connection) object PacketEvents knows about for this Player is not the same
+                 * connection that is closing, then the player must still be online in a new User. Therefore, do not
+                 * wipe their data.
+                 */
+                return;
+            }
+
+            coPlugin.getPlayerManager().remove(playerUuid);
+            coPlugin.getOffsetProviderManager().disconnectPlayer(playerUuid);
+            coPlugin.getWorldBorderObfuscator().onPlayerDisconnect(playerUuid);
 
             if (coPlugin.isDebugEnabled()) {
                 packetHistory.forget(event.getUser());
