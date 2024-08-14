@@ -1,3 +1,7 @@
+# v4.0.3
+- Support 1.21.1
+- Fix "Unknown player of Offset lookup" errors related to logging in from another location
+
 # v4.0.2
 - Fix "Unknown player for Offset lookup" errors printed occasionally when players disconnect
 - Fix Random offsets occasionally resetting when changing worlds or dying even when the option is disabled
