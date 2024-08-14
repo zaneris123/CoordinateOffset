@@ -52,7 +52,7 @@ class PacketOffsetAdapter {
             try {
                 if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK
                         || event.getPacketType() == PacketType.Play.Server.UPDATE_VIEW_POSITION) {
-                    Player player = (Player) event.getPlayer();
+                    Player player = event.getPlayer();
                     if (player != null) {
                         coPlugin.getPlayerManager().setPositionedWorld(player, player.getWorld());
                     }
@@ -71,7 +71,7 @@ class PacketOffsetAdapter {
                 } else {
                     if (event.getPlayer() == null) return;
 
-                    offset = coPlugin.getPlayerManager().getOffset((Player) event.getPlayer());
+                    offset = coPlugin.getPlayerManager().getOffset(event.getPlayer());
                 }
 
                 // Short-circuit when no offset is applied
@@ -80,7 +80,7 @@ class PacketOffsetAdapter {
                 // World border packets must only be manipulated by the World Border Obfuscator
                 //noinspection SuspiciousMethodCalls
                 if (PACKETS_WORLD_BORDER.contains(event.getPacketType())) {
-                    coPlugin.getWorldBorderObfuscator().translate(event, (Player) event.getPlayer());
+                    coPlugin.getWorldBorderObfuscator().translate(event, event.getPlayer());
                     return;
                 }
 
@@ -101,7 +101,7 @@ class PacketOffsetAdapter {
             }
 
             try {
-                Player player = (Player) event.getPlayer();
+                Player player = event.getPlayer();
                 if (player == null) return;
 
                 Offset offset = coPlugin.getPlayerManager().getOffset(player, player.getWorld());
