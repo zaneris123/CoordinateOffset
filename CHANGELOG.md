@@ -1,3 +1,7 @@
+# v4.0.4
+- Update packetevents dependency
+- Make "version not found" joke in the changelog
+
 # v4.0.3
 - Support 1.21.1
 - Fix "Unknown player of Offset lookup" errors related to logging in from another location
