@@ -113,6 +113,7 @@ class WorldBorderObfuscator {
                 WrapperPlayServerInitializeWorldBorder wrapper = new WrapperPlayServerInitializeWorldBorder(packet);
                 wrapper.setX(wrapper.getX() - (offset.x() * scaleFactor));
                 wrapper.setZ(wrapper.getZ() - (offset.z() * scaleFactor));
+                wrapper.setPortalTeleportBoundary(60_000_000);
             } else if (packet.getPacketType().equals(PacketType.Play.Server.WORLD_BORDER_CENTER)) {
                 WrapperPlayServerWorldBorderCenter wrapper = new WrapperPlayServerWorldBorderCenter(packet);
                 wrapper.setX(wrapper.getX() - (offset.x() * scaleFactor));
@@ -173,6 +174,7 @@ class WorldBorderObfuscator {
             wrapper.setZ(centerZ * scaleFactor);
             wrapper.setOldDiameter(diameter);
             wrapper.setNewDiameter(diameter);
+            wrapper.setPortalTeleportBoundary(60_000_000);
         } else if (packet.getPacketType().equals(PacketType.Play.Server.WORLD_BORDER_CENTER)) {
             var wrapper = new WrapperPlayServerWorldBorderCenter(packet);
             wrapper.setX(centerX * scaleFactor);
