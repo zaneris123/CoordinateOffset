@@ -7,8 +7,8 @@ buildscript {
 plugins {
     java
     `java-library`
-    id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("com.palantir.git-version") version "3.0.0"
+    id("com.gradleup.shadow") version "8.3.3"
+    id("com.palantir.git-version") version "3.1.0"
     `maven-publish`
 }
 
@@ -34,7 +34,7 @@ dependencies {
     // Compile Only dependencies: Neither shaded nor needed by API consumers (assumed they'll already add it themselves)
     compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
     // Shade and Relocate: Shaded into plugin, exposed to API consumers with relocated names if necessary
-    implementation("com.github.retrooper:packetevents-spigot:2.4.1-SNAPSHOT")
+    implementation("com.github.retrooper:packetevents-spigot:2.5.0")
     implementation("org.bstats:bstats-bukkit:3.0.2")
     implementation("com.jeff-media:MorePersistentDataTypes:2.4.0")
 
