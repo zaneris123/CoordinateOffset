@@ -34,7 +34,7 @@ dependencies {
     // Compile Only dependencies: Neither shaded nor needed by API consumers (assumed they'll already add it themselves)
     compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
     // Shade and Relocate: Shaded into plugin, exposed to API consumers with relocated names if necessary
-    implementation("com.github.retrooper:packetevents-spigot:2.5.0")
+    implementation("com.github.retrooper:packetevents-spigot:2.6.0")
     implementation("org.bstats:bstats-bukkit:3.0.2")
     implementation("com.jeff-media:MorePersistentDataTypes:2.4.0")
 
