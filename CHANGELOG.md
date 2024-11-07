@@ -1,3 +1,6 @@
+# v4.0.5
+- Support 1.21.2 and 1.21.3
+
 # v4.0.4
 - Update packetevents dependency
 - Make "version not found" joke in the changelog
