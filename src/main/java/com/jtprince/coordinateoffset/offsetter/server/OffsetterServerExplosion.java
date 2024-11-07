@@ -14,6 +14,8 @@ public class OffsetterServerExplosion extends PacketOffsetter<WrapperPlayServerE
     @Override
     public void offset(WrapperPlayServerExplosion packet, Offset offset, User user) {
         packet.setPosition(apply(packet.getPosition(), offset));
-        packet.setRecords(packet.getRecords().stream().map(v -> apply(v, offset)).toList());
+        if (packet.getRecords() != null) { // Can be null >=1.21.2
+            packet.setRecords(packet.getRecords().stream().map(v -> apply(v, offset)).toList());
+        }
     }
 }

@@ -33,7 +33,8 @@ Multi-world Tests
 * Go to The End (`/execute in minecraft:the_end run tp @p 0 100 0`).
   * Verify that there is an offset present in the End.
   * Verify that the Dragon appears to move naturally and connect to End Crystals.
-  * Kill the Dragon (`/kill @e[type=minecraft:ender_dragon]`) and verify that the exit portal appears correctly.
+  * Kill the Dragon (`/damage @e[type=minecraft:ender_dragon,limit=1] 10000 minecraft:player_attack by @s`) and verify 
+    that the death animation plays properly and the exit portal appears correctly.
   * Exit the End through the portal and verify that "(player changed worlds)" is printed in the console debug message.
 
 Item and Block Tests
@@ -81,9 +82,10 @@ These items and blocks have some kind of interactions that use packets that need
   * Verify that a second passenger in a boat moves along with the boat properly.
   * Verify that "vehicle moved too quickly" messages do not cause the player to be kicked.
     * Enter a boat
-    * Cause the server to freeze (with a debugger breakpoint)
+    * Cause the server to freeze (with the "pause" button in the IntelliJ debugger)
     * Move the boat ~100 blocks
     * Unfreeze the server and ensure the boat moves back to near where you started without getting kicked
+    * Ignore "moved too quickly" warnings printed on unfreeze
 
 Entity Tests
 ------------
@@ -91,6 +93,7 @@ Entity Tests
   * Throw an XP bottle and ensure that the XP orb shows up and moves towards you.
 * Explosives
   * Blow up TNT and make sure it shows particles, makes sound, and destroys blocks that drop.
+  * Verify that the explosion properly applies knockback on the player.
 * Villager
   * Verify that trading works as expected and Villagers display particles after a successful trade.
   * Verify that villagers appear to enter beds properly at night.
