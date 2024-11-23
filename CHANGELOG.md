@@ -1,3 +1,7 @@
+# v4.0.6
+- Fix packet decoding error and kick caused by potions in inventory or in a container
+- Update packetevents dependency
+
 # v4.0.5
 - Support 1.21.2 and 1.21.3
 
