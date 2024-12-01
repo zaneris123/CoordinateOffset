@@ -26,6 +26,7 @@ repositories {
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://oss.sonatype.org/content/repositories/snapshots")
     maven("https://repo.codemc.org/repository/maven-public/") // PacketEvents
+    maven("https://repo.extendedclip.com/releases/") // PlaceholderAPI
 }
 
 dependencies {
@@ -33,6 +34,7 @@ dependencies {
     api("org.jetbrains:annotations:24.0.1")
     // Compile Only dependencies: Neither shaded nor needed by API consumers (assumed they'll already add it themselves)
     compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
+    compileOnly("me.clip:placeholderapi:2.11.6")
     // Shade and Relocate: Shaded into plugin, exposed to API consumers with relocated names if necessary
     implementation("com.github.retrooper:packetevents-spigot:2.6.1-SNAPSHOT")
     implementation("org.bstats:bstats-bukkit:3.0.2")

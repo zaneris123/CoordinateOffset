@@ -59,6 +59,10 @@ public final class CoordinateOffset extends JavaPlugin {
                 }
             }
         }
+
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            new CoordinateOffsetPlaceholderExpansion(this).register();
+        }
     }
 
     void onAllPluginsEnabled() {
