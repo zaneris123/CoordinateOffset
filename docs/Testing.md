@@ -25,6 +25,9 @@ Basic Tests
   * Attack them
   * Hear sounds coming from them
   * Receive damage from them
+* Verify that the "pick block" key (default middle-click) works in both survival and creative mode.
+  * Hold a block (e.g. dirt or sand) in your hotbar, hold a different item or nothing in your main hand, and pick-block
+    on the same block type placed in the world. The block should become selected in your hotbar.
 
 Multi-world Tests
 -----------------
@@ -99,6 +102,8 @@ Entity Tests
   * Verify that villagers appear to enter beds properly at night.
 * Warden
   * Verify in survival mode that a sound/vibration particle visibly moves towards the Warden's head.
+* Creaking
+  * Verify that by hitting a creaking, particles fly between the creaking and its creaking heart located nearby.
 
 Multiplayer Tests
 -----------------

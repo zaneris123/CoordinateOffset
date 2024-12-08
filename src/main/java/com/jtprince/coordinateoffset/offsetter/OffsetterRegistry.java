@@ -21,6 +21,7 @@ public class OffsetterRegistry {
             new OffsetterClientClickWindow(),
             new OffsetterClientCreativeInventoryAction(),
             new OffsetterClientGenerateStructure(),
+            new OffsetterClientPickItemFromBlock(),
             new OffsetterClientPlayerBlockPlacement(),
             new OffsetterClientPlayerDigging(),
             new OffsetterClientPlayerPosition(),

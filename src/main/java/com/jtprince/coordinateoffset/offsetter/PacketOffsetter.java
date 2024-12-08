@@ -12,6 +12,7 @@ import com.github.retrooper.packetevents.protocol.world.Location;
 import com.github.retrooper.packetevents.protocol.world.WorldBlockPosition;
 import com.github.retrooper.packetevents.protocol.world.chunk.Column;
 import com.github.retrooper.packetevents.util.Vector3d;
+import com.github.retrooper.packetevents.util.Vector3f;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.jtprince.coordinateoffset.CoordinateOffset;
@@ -34,12 +35,20 @@ public abstract class PacketOffsetter<T extends PacketWrapper<T>> {
         return new Vector3d(vec.x - offset.x(), vec.y, vec.z - offset.z());
     }
 
+    protected static Vector3f apply(Vector3f vec, Offset offset) {
+        return new Vector3f(vec.x - offset.x(), vec.y, vec.z - offset.z());
+    }
+
     protected static Vector3i apply(Vector3i vec, Offset offset) {
         return new Vector3i(vec.x - offset.x(), vec.y, vec.z - offset.z());
     }
 
     protected static Vector3d unapply(Vector3d vec, Offset offset) {
         return new Vector3d(vec.x + offset.x(), vec.y, vec.z + offset.z());
+    }
+
+    protected static Vector3f unapply(Vector3f vec, Offset offset) {
+        return new Vector3f(vec.x + offset.x(), vec.y, vec.z + offset.z());
     }
 
     protected static Vector3i unapply(Vector3i vec, Offset offset) {

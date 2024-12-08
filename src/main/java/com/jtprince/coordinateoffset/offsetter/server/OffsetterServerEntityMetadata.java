@@ -32,9 +32,12 @@ public class OffsetterServerEntityMetadata extends PacketOffsetter<WrapperPlaySe
     }
 
     private static Object applyOffsetToEntityMeta(Object object, Offset offset) {
+        /*
+         * Warning: Beware of adding Vector3d/Vector3f here as they are also used in display entity translation and
+         * scale values (and probably other ones that should not be offsetted)
+         */
         if (object instanceof Vector3i blockPosition) {
-            // TBD: subtract instead of adding negative https://github.com/retrooper/packetevents/issues/646
-            return blockPosition.add(-offset.x(), 0, -offset.z());
+            return apply(blockPosition, offset);
         }
         if (object instanceof ItemStack) {
             return applyItemStack((ItemStack) object, offset);

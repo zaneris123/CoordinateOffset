@@ -2,6 +2,7 @@ package com.jtprince.coordinateoffset.offsetter.server;
 
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.particle.data.ParticleItemStackData;
+import com.github.retrooper.packetevents.protocol.particle.data.ParticleTrailData;
 import com.github.retrooper.packetevents.protocol.particle.data.ParticleVibrationData;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.util.Vector3i;
@@ -32,6 +33,10 @@ public class OffsetterServerParticle extends PacketOffsetter<WrapperPlayServerPa
 
         if (packet.getParticle().getData() instanceof ParticleItemStackData itemStackData) {
             itemStackData.setItemStack(applyItemStack(itemStackData.getItemStack(), offset));
+        }
+
+        if (packet.getParticle().getData() instanceof ParticleTrailData trailData) {
+            trailData.setTarget(apply(trailData.getTarget(), offset));
         }
     }
 }
