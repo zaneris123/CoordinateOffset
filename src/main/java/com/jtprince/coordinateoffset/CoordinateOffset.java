@@ -2,7 +2,6 @@ package com.jtprince.coordinateoffset;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.jtprince.coordinateoffset.provider.ConstantOffsetProvider;
-import com.jtprince.coordinateoffset.provider.PlaceholderOffsetProvider;
 import com.jtprince.coordinateoffset.provider.RandomOffsetProvider;
 import com.jtprince.coordinateoffset.provider.ZeroAtLocationOffsetProvider;
 import com.jtprince.lib.org.geysermc.hurricane.CollisionFix;
@@ -45,7 +44,6 @@ public final class CoordinateOffset extends JavaPlugin {
         providerManager.registerConfigurationFactory("ConstantOffsetProvider", new ConstantOffsetProvider.ConfigFactory());
         providerManager.registerConfigurationFactory("RandomOffsetProvider", new RandomOffsetProvider.ConfigFactory());
         providerManager.registerConfigurationFactory("ZeroAtLocationOffsetProvider", new ZeroAtLocationOffsetProvider.ConfigFactory());
-        providerManager.registerConfigurationFactory("PlaceholderOffsetProvider", new PlaceholderOffsetProvider.ConfigFactory());
 
         new PacketOffsetAdapter(this).registerAdapters();
 
@@ -60,10 +58,6 @@ public final class CoordinateOffset extends JavaPlugin {
                     e.printStackTrace();
                 }
             }
-        }
-
-        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-            new CoordinateOffsetPlaceholderExpansion(this).register();
         }
     }
 

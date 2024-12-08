@@ -4,25 +4,30 @@ import com.jtprince.coordinateoffset.CoordinateOffset;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.OffsetProvider;
 import com.jtprince.coordinateoffset.OffsetProviderContext;
-import com.jtprince.coordinateoffset.provider.util.WorldScalingConfig;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class ConstantOffsetProvider extends OffsetProvider {
     final Offset offset;
-    final @NotNull WorldScalingConfig worldScalingConfig;
+    final Map<String, Double> worldScaling;
 
-    private ConstantOffsetProvider(String name, Offset offset, @NotNull WorldScalingConfig worldScalingConfig) {
+    private ConstantOffsetProvider(String name, Offset offset, Map<String, Double> worldScaling) {
         super(name);
         this.offset = offset;
-        this.worldScalingConfig = worldScalingConfig;
+        this.worldScaling = worldScaling;
     }
 
     @Override
     public @NotNull Offset getOffset(@NotNull OffsetProviderContext context) {
-        return worldScalingConfig.scale(offset, context.world().getName());
+        Double scaling = worldScaling.get(context.world().getName());
+        if (scaling != null) {
+            return offset.scaleByDouble(scaling);
+        }
+        return offset;
     }
 
     public static class ConfigFactory implements OffsetProvider.ConfigurationFactory<ConstantOffsetProvider> {
@@ -47,15 +52,19 @@ public class ConstantOffsetProvider extends OffsetProvider {
                 throw new IllegalArgumentException("Provider \"" + name + "\": offsetZ is too large! (Max 30M)");
             }
 
-            WorldScalingConfig worldScalingConfig;
+            Map<String, Double> worldScaling = new HashMap<>();
             if (providerConfig.isConfigurationSection("worldScaling")) {
                 var section = Objects.requireNonNull(providerConfig.getConfigurationSection("worldScaling"));
-                worldScalingConfig = WorldScalingConfig.fromConfig(section);
-            } else {
-                worldScalingConfig = WorldScalingConfig.EMPTY;
+                for (Map.Entry<String, Object> entry : section.getValues(false).entrySet()) {
+                    if (entry.getValue() instanceof Number n) {
+                        worldScaling.put(entry.getKey(), n.doubleValue());
+                    } else {
+                        throw new IllegalArgumentException("Provider \"" + name + "\": World scaling for world \"" + entry.getKey() + "\" must be a number!");
+                    }
+                }
             }
 
-            return new ConstantOffsetProvider(name, new Offset(offsetX, offsetZ), worldScalingConfig);
+            return new ConstantOffsetProvider(name, new Offset(offsetX, offsetZ), worldScaling);
         }
     }
 }

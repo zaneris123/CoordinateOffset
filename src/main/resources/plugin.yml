@@ -24,7 +24,6 @@ commands:
     description: "Reload CoordinateOffset config.yml"
     permission: coordinateoffset.reload
 softdepend:
-  - PlaceholderAPI
   - ProtocolLib
   - ProtocolSupport
   - ViaVersion
