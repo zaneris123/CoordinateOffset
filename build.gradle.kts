@@ -24,7 +24,7 @@ val javaVersion: JavaLanguageVersion = JavaLanguageVersion.of(17)
 repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
-    maven("https://oss.sonatype.org/content/repositories/snapshots")
+    maven("https://s01.oss.sonatype.org/content/repositories/snapshots") // Adventure (required by PacketEvents)
     maven("https://repo.codemc.org/repository/maven-public/") // PacketEvents
 }
 
@@ -34,7 +34,7 @@ dependencies {
     // Compile Only dependencies: Neither shaded nor needed by API consumers (assumed they'll already add it themselves)
     compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
     // Shade and Relocate: Shaded into plugin, exposed to API consumers with relocated names if necessary
-    implementation("com.github.retrooper:packetevents-spigot:2.6.1-SNAPSHOT")
+    implementation("com.github.retrooper:packetevents-spigot:2.7.0-SNAPSHOT")
     implementation("org.bstats:bstats-bukkit:3.0.2")
     implementation("com.jeff-media:MorePersistentDataTypes:2.4.0")
 
