@@ -1,3 +1,7 @@
+# v4.0.8
+- Fix compatibility with GrimAC
+- Update packetevents dependency
+
 # v4.0.7
 - Support 1.21.4
 
