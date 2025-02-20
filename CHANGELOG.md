@@ -1,3 +1,7 @@
+# v4.0.9
+- Fix chat validation error when plugin is installed in certain Geyser/offline-mode setups
+- Update packetevents dependency
+
 # v4.0.8
 - Fix compatibility with GrimAC
 - Update packetevents dependency
