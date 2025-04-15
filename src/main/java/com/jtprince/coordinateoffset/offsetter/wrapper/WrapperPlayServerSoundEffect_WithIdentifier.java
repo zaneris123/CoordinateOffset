@@ -29,11 +29,11 @@ import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import javax.annotation.Nullable;
 
 /*
- * In 1.19, the NAMED_SOUND_EFFECT packet was merged with the standard SOUND_EFFECT packet and 3 optional fields added:
+ * In 1.19.3, the NAMED_SOUND_EFFECT packet was merged with the standard SOUND_EFFECT packet and 3 optional fields added:
  *  - Sound Name (Optional Identifier, only present if Sound ID is 0)
  *  - Has Fixed Range (Optional Boolean, only present if Sound ID is 0)
  *  - Range (Optional Float, only present if Sound ID is 0 AND Has Fixed Range is true)
- * source: https://wiki.vg/Protocol#Sound_Effect
+ * source: https://prismarinejs.github.io/minecraft-data/protocol/pc/1.19.3/#play.toClient.types.packet_sound_effect
  *
  * These fields are not currently included in the PacketEvents-provided wrapper. I copied that wrapper here and added
  * the code marked with "CO" so that these packets can be properly parsed and offsetted.

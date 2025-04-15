@@ -29,8 +29,11 @@ backwards compatibility with previous server versions.
 Step 1: Fix Existing Offsetters
 -------------------------------
 Starting at the top of the list in [Testing.md](./Testing.md), execute each existing test in the new version. If a test
-case does not work or results in a console error, investigate changes in the protocol related to that feature. Use
-[wiki.vg protocol documentation](https://wiki.vg/Protocol) to determine what changed in the packet.
+case does not work or results in a console error, investigate changes in the protocol related to that feature. Some
+resources which might be helpful:
+* [Minecraft Wiki protocol documentation](https://minecraft.wiki/w/Java_Edition_protocol)
+* [PacketEvents Git history](https://github.com/retrooper/packetevents/commits/2.0/)
+* [Prismarine minecraft-data protocol docs](https://prismarinejs.github.io/minecraft-data/protocol/)
 
 The easiest way to debug wrappers from PacketEvents is to use a debugger in IntelliJ or similar. There are plenty of
 guides online for how to attach a debugger to the running Minecraft server and place breakpoints within plugin code.
