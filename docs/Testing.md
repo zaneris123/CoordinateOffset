@@ -89,6 +89,14 @@ These items and blocks have some kind of interactions that use packets that need
     * Move the boat ~100 blocks
     * Unfreeze the server and ensure the boat moves back to near where you started without getting kicked
     * Ignore "moved too quickly" warnings printed on unfreeze
+* Technical Blocks (in Operator Items creative tab)
+  * *There are probably more involved tests to do here, but these tests are implied by the packet contents.*
+  * Structure blocks: Place one and type a name into the "Structure name" field. Verify that the name is saved when
+    reopening the block.
+  * Test Instance blocks: Place one and set test instance ID to `minecraft:always_pass`. Click "Load and Run" and verify
+    that a green beacon beam appears and some success messages are printed in the console and chat.
+  * Test blocks: Place one and change its mode. Verify that the block texture changes. Verify that adding a message in
+    "log mode", the message is saved when reopening.
 
 Entity Tests
 ------------
