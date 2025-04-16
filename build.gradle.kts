@@ -70,7 +70,7 @@ tasks {
     shadowJar {
         archiveClassifier.set("")
         isEnableRelocation = true
-        relocationPrefix = "${project.group}.lib"
+        relocationPrefix = "${project.group}.coordinateoffset.lib"
         minimize()
     }
 
