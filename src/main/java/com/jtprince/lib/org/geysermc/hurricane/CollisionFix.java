@@ -1,5 +1,6 @@
 package com.jtprince.lib.org.geysermc.hurricane;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -12,7 +13,6 @@ import org.bukkit.util.BoundingBox;
 import org.jetbrains.annotations.Contract;
 
 import java.lang.reflect.*;
-import java.util.Arrays;
 
 public final class CollisionFix implements Listener {
     private final boolean bambooEnabled;
@@ -34,9 +34,35 @@ public final class CollisionFix implements Listener {
         if (bambooEnabled) {
             try {
                 final Class<?> bambooBlockClass = NMSReflection.getNMSClass("world.level.block", "BlockBamboo");
-                // Codec field being first bumps all fields - as of 1.20.5
-                boolean hasCodec = Arrays.stream(bambooBlockClass.getFields()).anyMatch(field -> field.getType().getSimpleName().equals("MapCodec"));
-                final Field bambooBoundingBox = ReflectionAPI.getFieldAccessible(bambooBlockClass, hasCodec ? "g" : NMSReflection.mojmap ? "f" : "c"); // Bounding box for "no leaves", according to Yarn.
+                // CoordinateOffset start - Improve bamboo collision box field lookup to try Mojang-mapped names first
+                Field bambooBoundingBox;
+                bambooBoundingBox = ReflectionAPI.getFieldAccessible(bambooBlockClass, "SHAPE_COLLISION"); // 1.21.5+ Mojang
+                if (bambooBoundingBox != null) {
+                    plugin.getLogger().fine("Found bamboo collision hack reflection mapping: SHAPE_COLLISION");
+                }
+                if (bambooBoundingBox == null) {
+                    bambooBoundingBox = ReflectionAPI.getFieldAccessible(bambooBlockClass, "COLLISION_SHAPE"); // 1.17-1.21.4 Mojang
+                    if (bambooBoundingBox != null) {
+                        plugin.getLogger().fine("Found bamboo collision hack reflection mapping: COLLISION_SHAPE");
+                    }
+                }
+                if (bambooBoundingBox == null) {
+                    // If Mojang-mapped names failed, only obfuscated names are left to try.
+                    // See https://mappings.dev/history/d57353968b.html
+                    // Use https://minecraft.wiki/w/Data_version to map to a version string.
+                    int dataVersion = Bukkit.getUnsafe().getDataVersion();
+                    plugin.getLogger().fine("Bamboo collision hack reflection mappings are obfuscated; using data version " + dataVersion);
+                    if (dataVersion >= 4325) { // 1.21.5+
+                        bambooBoundingBox = ReflectionAPI.getFieldAccessible(bambooBlockClass, "S");
+                    } else if (dataVersion >= 3700) { // 1.20.4 - 1.21.4
+                        bambooBoundingBox = ReflectionAPI.getFieldAccessible(bambooBlockClass, "g");
+                    } else if (dataVersion >= 2724) { // 1.17 - 1.20.3
+                        bambooBoundingBox = ReflectionAPI.getFieldAccessible(bambooBlockClass, "f");
+                    } else { // < 1.17 (Not supported by CoordinateOffset)
+                        bambooBoundingBox = ReflectionAPI.getFieldAccessible(bambooBlockClass, "c");
+                    }
+                }
+                // CoordinateOffset end
                 applyNoBoundingBox(bambooBoundingBox);
                 plugin.getLogger().info("Bamboo collision hack enabled.");
             } catch (Exception e) {
