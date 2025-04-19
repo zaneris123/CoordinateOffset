@@ -1,3 +1,7 @@
+# v4.0.10
+- Support 1.21.5
+- Fix structure blocks being unusable when an offset is applied
+
 # v4.0.9
 - Fix chat validation error when plugin is installed in certain Geyser/offline-mode setups
 - Update packetevents dependency
