@@ -1,3 +1,6 @@
+# v4.0.11
+- Fix underground rain and missing beacon beams in 1.21.5 caused by missing heightmaps
+
 # v4.0.10
 - Support 1.21.5
 - Fix structure blocks being unusable when an offset is applied
