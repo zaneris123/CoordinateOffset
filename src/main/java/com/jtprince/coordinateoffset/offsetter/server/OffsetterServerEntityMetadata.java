@@ -40,7 +40,12 @@ public class OffsetterServerEntityMetadata extends PacketOffsetter<WrapperPlaySe
             return apply(blockPosition, offset);
         }
         if (object instanceof ItemStack) {
-            return applyItemStack((ItemStack) object, offset);
+            ItemStack modifiedItemStack = applyItemStack((ItemStack) object, offset);
+            if (modifiedItemStack != null) {
+                return modifiedItemStack;
+            } else {
+                return object;
+            }
         }
         return object;
     }

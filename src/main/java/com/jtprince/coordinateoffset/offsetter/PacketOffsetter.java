@@ -17,6 +17,8 @@ import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.jtprince.coordinateoffset.CoordinateOffset;
 import com.jtprince.coordinateoffset.Offset;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
@@ -96,7 +98,12 @@ public abstract class PacketOffsetter<T extends PacketWrapper<T>> {
         return new Vector3i(vec.x - (offset.x() * 8), vec.y, vec.z - (offset.z() * 8));
     }
 
-    protected static ItemStack applyItemStack(ItemStack item, Offset offset) {
+    /**
+     * Apply an offset to all locational data components on an ItemStack.
+     * @return The modified ItemStack, or null if no locational data components exist on the ItemStack.
+     */
+    @Contract("null, _ -> null")
+    protected static @Nullable ItemStack applyItemStack(ItemStack item, Offset offset) {
         if (item == null) return null;
 
         if (item.getType() == ItemTypes.COMPASS) {
@@ -107,6 +114,7 @@ public abstract class PacketOffsetter<T extends PacketWrapper<T>> {
                 if (lodestonePos != null) {
                     lodestonePos.setTag("X", new NBTInt(lodestonePos.getNumberTagOrThrow("X").getAsInt() - offset.x()));
                     lodestonePos.setTag("Z", new NBTInt(lodestonePos.getNumberTagOrThrow("Z").getAsInt() - offset.z()));
+                    return item;
                 }
             }
 
@@ -125,13 +133,19 @@ public abstract class PacketOffsetter<T extends PacketWrapper<T>> {
                     && lodestoneComponent.get() instanceof LodestoneTracker lodestone
                     && lodestone.getTarget() != null) {
                 lodestone.setTarget(apply(lodestone.getTarget(), offset));
+                return item;
             }
         }
 
-        return item;
+        return null;
     }
 
-    protected static ItemStack unapplyItemStack(ItemStack item, Offset offset) {
+    /**
+     * Unapply an offset to all locational data components on an ItemStack.
+     * @return The modified ItemStack, or null if no locational data components exist on the ItemStack.
+     */
+    @Contract("null, _ -> null")
+    protected static @Nullable ItemStack unapplyItemStack(ItemStack item, Offset offset) {
         return applyItemStack(item, offset.negate());
     }
 }

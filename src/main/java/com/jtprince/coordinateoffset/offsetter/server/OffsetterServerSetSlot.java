@@ -1,5 +1,6 @@
 package com.jtprince.coordinateoffset.offsetter.server;
 
+import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetSlot;
@@ -13,6 +14,9 @@ public class OffsetterServerSetSlot extends PacketOffsetter<WrapperPlayServerSet
 
     @Override
     public void offset(WrapperPlayServerSetSlot packet, Offset offset, User user) {
-        packet.setItem(applyItemStack(packet.getItem(), offset));
+        ItemStack modifiedItemStack = applyItemStack(packet.getItem(), offset);
+        if (modifiedItemStack != null) {
+            packet.setItem(modifiedItemStack);
+        }
     }
 }
