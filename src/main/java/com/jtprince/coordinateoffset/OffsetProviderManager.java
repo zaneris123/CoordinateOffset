@@ -167,7 +167,7 @@ class OffsetProviderManager {
         Offset offset = provider.getOffset(context);
         if (plugin.isVerboseLoggingEnabled()) {
             String usingOrReusing;
-            if (offset.equals(previousOffset)) {
+            if (offset != null && offset.equals(previousOffset)) {
                 usingOrReusing = "Reusing";
             } else {
                 usingOrReusing = "Using";

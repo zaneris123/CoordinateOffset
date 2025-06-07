@@ -2,6 +2,7 @@ name: CoordinateOffset
 version: "${version}"
 main: com.jtprince.coordinateoffset.CoordinateOffset
 api-version: "${apiVersion}"
+folia-supported: true
 authors: [ jtprince, Cavallium ]
 website: https://github.com/joshuaprince/CoordinateOffset
 description: Configurably obfuscate players' coordinates.

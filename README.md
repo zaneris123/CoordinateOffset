@@ -1,3 +1,5 @@
+Really badly vibed (I dont know java i'll be honest) folia support, use with caution.
+
 CoordinateOffset
 ================
 **A Minecraft Spigot/Paper plugin that configurably obfuscates players' coordinates.**

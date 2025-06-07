@@ -14,12 +14,16 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
+
 public final class CoordinateOffset extends JavaPlugin {
     private static CoordinateOffset instance;
     private PlayerOffsetsManager playerOffsetsManager;
     private OffsetProviderManager providerManager;
     private WorldBorderObfuscator worldBorderObfuscator;
     private @Nullable CollisionFix collisionFix;
+
+    /** True if running on Folia (detected at runtime). */
+    public static boolean isFoliaPresent = false;
 
     @Override
     public void onLoad() {
@@ -32,9 +36,21 @@ public final class CoordinateOffset extends JavaPlugin {
         instance = this;
         saveDefaultConfig();
 
+        // Folia detection: check for RegionScheduler class
+        try {
+            Class.forName("io.papermc.paper.threadedregions.RegionScheduler");
+            isFoliaPresent = true;
+            getLogger().info("Folia detected: Running in Folia concurrency mode.");
+            getLogger().warning("CoordinateOffset: Folia support is experimental. Some features may not work as expected. Please report any issues.");
+        } catch (ClassNotFoundException ignored) {
+            isFoliaPresent = false;
+        }
+
         playerOffsetsManager = new PlayerOffsetsManager(this);
         providerManager = new OffsetProviderManager(this);
         worldBorderObfuscator = new WorldBorderObfuscator(this);
+        // Register early login listener to ensure offset cache is initialized before any packets
+        Bukkit.getPluginManager().registerEvents(new LoginListener(this, playerOffsetsManager), this);
         Bukkit.getPluginManager().registerEvents(new BukkitEventListener(this, playerOffsetsManager, worldBorderObfuscator), this);
 
         CoordinateOffsetCommands commands = new CoordinateOffsetCommands(this);

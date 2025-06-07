@@ -25,96 +25,139 @@ class BukkitEventListener implements Listener {
         this.worldBorderObfuscator = worldBorderObfuscator;
     }
 
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onServerLoad(ServerLoadEvent event) {
-        plugin.onAllPluginsEnabled();
+        if (CoordinateOffset.isFoliaPresent) {
+            // Folia: Use GlobalRegionScheduler for server-wide events via reflection
+            try {
+                Class<?> bukkitClass = Class.forName("org.bukkit.Bukkit");
+                Object globalScheduler = bukkitClass.getMethod("getGlobalRegionScheduler").invoke(null);
+                globalScheduler.getClass().getMethod("execute", org.bukkit.plugin.Plugin.class, Runnable.class)
+                        .invoke(globalScheduler, plugin, (Runnable) plugin::onAllPluginsEnabled);
+            } catch (Exception e) {
+                plugin.getLogger().severe("Failed to schedule onAllPluginsEnabled with Folia GlobalRegionScheduler: " + e.getMessage());
+            }
+        } else {
+            plugin.onAllPluginsEnabled();
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onSpawnLocation(PlayerSpawnLocationEvent event) {
-        plugin.getPlayerManager().setPositionedWorld(event.getPlayer(), event.getSpawnLocation().getWorld());
-
-        OffsetProviderContext context = new OffsetProviderContext(
-                event.getPlayer(), event.getSpawnLocation().getWorld(), event.getSpawnLocation(),
-                OffsetProviderContext.ProvideReason.JOIN, plugin
-        );
-        plugin.getPlayerManager().regenerateOffset(context);
+        Runnable logic = () -> {
+            plugin.getPlayerManager().setPositionedWorld(event.getPlayer(), event.getSpawnLocation().getWorld());
+            OffsetProviderContext context = new OffsetProviderContext(
+                    event.getPlayer(), event.getSpawnLocation().getWorld(), event.getSpawnLocation(),
+                    OffsetProviderContext.ProvideReason.JOIN, plugin
+            );
+            plugin.getPlayerManager().regenerateOffset(context);
+        };
+        if (CoordinateOffset.isFoliaPresent) {
+            runOnFoliaPlayerScheduler(event.getPlayer(), plugin, logic);
+        } else {
+            logic.run();
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerRespawn(PlayerRespawnEvent event) {
-        /*
-         * The Respawn event is fired after using an End exit portal, but users probably expect that portal to trigger
-         * a world change, not a death-based respawn.
-         */
-        OffsetProviderContext.ProvideReason reason = OffsetProviderContext.ProvideReason.DEATH_RESPAWN;
-        try {
-            if (event.getRespawnReason() != PlayerRespawnEvent.RespawnReason.DEATH) {
-                reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
-            }
-        } catch (NoClassDefFoundError | NoSuchMethodError e) {
+        Runnable logic = () -> {
+            OffsetProviderContext.ProvideReason reason = OffsetProviderContext.ProvideReason.DEATH_RESPAWN;
             try {
-                if (event.getRespawnFlags().contains(PlayerRespawnEvent.RespawnFlag.END_PORTAL)) {
+                if (event.getRespawnReason() != PlayerRespawnEvent.RespawnReason.DEATH) {
                     reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
                 }
-            } catch (NoClassDefFoundError | NoSuchMethodError e2) {
-                plugin.getLogger().fine("No supported method for determining respawn reason.");
+            } catch (NoClassDefFoundError | NoSuchMethodError e) {
+                try {
+                    if (event.getRespawnFlags().contains(PlayerRespawnEvent.RespawnFlag.END_PORTAL)) {
+                        reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
+                    }
+                } catch (NoClassDefFoundError | NoSuchMethodError e2) {
+                    plugin.getLogger().fine("No supported method for determining respawn reason.");
+                }
             }
-        }
 
-        var context = new OffsetProviderContext(
-                event.getPlayer(), Objects.requireNonNull(event.getRespawnLocation().getWorld()),
-                event.getRespawnLocation(), reason, plugin);
-        plugin.getPlayerManager().regenerateOffset(context);
+            var context = new OffsetProviderContext(
+                    event.getPlayer(), Objects.requireNonNull(event.getRespawnLocation().getWorld()),
+                    event.getRespawnLocation(), reason, plugin);
+            plugin.getPlayerManager().regenerateOffset(context);
+        };
+        if (CoordinateOffset.isFoliaPresent) {
+            runOnFoliaPlayerScheduler(event.getPlayer(), plugin, logic);
+        } else {
+            logic.run();
+        }
     }
 
     @SuppressWarnings("UnstableApiUsage")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerTeleport(PlayerTeleportEvent event) {
-        OffsetProviderContext.ProvideReason reason = null;
-        if (event.getFrom().getWorld() != Objects.requireNonNull(event.getTo()).getWorld()) {
-            reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
-        } else if (event.getFrom().distanceSquared(event.getTo()) > getMinimumTeleportDistanceSquared(event.getTo().getWorld())) {
-            if (plugin.isUnsafeResetOnTeleportEnabled()) {
-                /*
-                 * DISTANT_TELEPORT activation requires opt-in
-                 * https://github.com/joshuaprince/CoordinateOffset/wiki/resetOnDistantTeleport
-                 */
-                boolean isTeleportDefinitelyRelative = false;
-                try {
-                    // Extra Paper-only check - ensure that we're not attempting to offset a relative teleportation packet.
-                    var flags = event.getRelativeTeleportationFlags();
-                    if (flags.contains(TeleportFlag.Relative.X) || flags.contains(TeleportFlag.Relative.Z)) {
-                        isTeleportDefinitelyRelative = true;
+        Runnable logic = () -> {
+            OffsetProviderContext.ProvideReason reason = null;
+            if (event.getFrom().getWorld() != Objects.requireNonNull(event.getTo()).getWorld()) {
+                reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
+            } else if (event.getFrom().distanceSquared(event.getTo()) > getMinimumTeleportDistanceSquared(event.getTo().getWorld())) {
+                if (plugin.isUnsafeResetOnTeleportEnabled()) {
+                    boolean isTeleportDefinitelyRelative = false;
+                    try {
+                        var flags = event.getRelativeTeleportationFlags();
+                        if (flags.contains(TeleportFlag.Relative.X) || flags.contains(TeleportFlag.Relative.Z)) {
+                            isTeleportDefinitelyRelative = true;
+                        }
+                    } catch (NoClassDefFoundError | NoSuchMethodError err) {
+                        // Spigot does not support relative teleport flags. This is a Paper-only API.
                     }
-                } catch (NoClassDefFoundError | NoSuchMethodError err) {
-                    // Spigot does not support relative teleport flags. This is a Paper-only API.
-                }
-
-                if (!isTeleportDefinitelyRelative) {
-                    reason = OffsetProviderContext.ProvideReason.DISTANT_TELEPORT;
+                    if (!isTeleportDefinitelyRelative) {
+                        reason = OffsetProviderContext.ProvideReason.DISTANT_TELEPORT;
+                    }
                 }
             }
+            if (reason == null) return;
+            var context = new OffsetProviderContext(
+                    event.getPlayer(), Objects.requireNonNull(event.getTo().getWorld()),
+                    event.getTo(), reason, plugin);
+            plugin.getPlayerManager().regenerateOffset(context);
+            worldBorderObfuscator.tryUpdatePlayerBorders(event.getPlayer(), event.getTo());
+        };
+        if (CoordinateOffset.isFoliaPresent) {
+            runOnFoliaPlayerScheduler(event.getPlayer(), plugin, logic);
+        } else {
+            logic.run();
         }
-
-        if (reason == null) return;
-
-        var context = new OffsetProviderContext(
-                event.getPlayer(), Objects.requireNonNull(event.getTo().getWorld()),
-                event.getTo(), reason, plugin);
-        plugin.getPlayerManager().regenerateOffset(context);
-
-        worldBorderObfuscator.tryUpdatePlayerBorders(event.getPlayer(), event.getTo());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent event) {
-        worldBorderObfuscator.tryUpdatePlayerBorders(event.getPlayer(), event.getTo());
+        Runnable logic = () -> worldBorderObfuscator.tryUpdatePlayerBorders(event.getPlayer(), event.getTo());
+        if (CoordinateOffset.isFoliaPresent) {
+            runOnFoliaPlayerScheduler(event.getPlayer(), plugin, logic);
+        } else {
+            logic.run();
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(PlayerQuitEvent event) {
-        plugin.getOffsetProviderManager().quitPlayer(event.getPlayer());
+        Runnable logic = () -> plugin.getOffsetProviderManager().quitPlayer(event.getPlayer());
+        if (CoordinateOffset.isFoliaPresent) {
+            runOnFoliaPlayerScheduler(event.getPlayer(), plugin, logic);
+        } else {
+            logic.run();
+        }
+    }
+
+    /**
+     * Schedules a task on the Folia Player RegionScheduler using reflection, if available.
+     */
+    private static void runOnFoliaPlayerScheduler(org.bukkit.entity.Player player, org.bukkit.plugin.Plugin plugin, Runnable logic) {
+        try {
+            Object scheduler = player.getClass().getMethod("getScheduler").invoke(player);
+            scheduler.getClass().getMethod("run", org.bukkit.plugin.Plugin.class, java.util.function.Consumer.class, Runnable.class)
+                    .invoke(scheduler, plugin, (java.util.function.Consumer<Object>) t -> logic.run(), null);
+        } catch (Exception e) {
+            plugin.getLogger().severe("Failed to schedule task on Folia Player RegionScheduler: " + e.getMessage());
+        }
     }
 
     private int getMinimumTeleportDistanceSquared(World world) {

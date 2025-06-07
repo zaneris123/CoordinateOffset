@@ -49,48 +49,78 @@ class PacketOffsetAdapter {
                 packetHistory.logPacket(event.getUser(), event.getPacketType());
             }
 
-            try {
-                if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK
-                        || event.getPacketType() == PacketType.Play.Server.UPDATE_VIEW_POSITION) {
-                    Player player = event.getPlayer();
-                    if (player != null) {
-                        coPlugin.getPlayerManager().setPositionedWorld(player, player.getWorld());
+            Runnable logic = () -> {
+                try {
+                    if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK
+                            || event.getPacketType() == PacketType.Play.Server.UPDATE_VIEW_POSITION) {
+                        Player player = event.getPlayer();
+                        if (player != null) {
+                            coPlugin.getPlayerManager().setPositionedWorld(player, player.getWorld());
+                        }
+                    }
+
+                    Offset offset;
+                    if (event.getPacketType() == PacketType.Play.Server.JOIN_GAME
+                            || event.getPacketType() == PacketType.Play.Server.RESPAWN) {
+                        offset = coPlugin.getPlayerManager().getOffsetLookahead(event.getUser().getUUID());
+                    } else {
+                        Player player = event.getPlayer();
+                        if (player == null) return;
+                        try {
+                            offset = coPlugin.getPlayerManager().getOffset(player);
+                        } catch (Exception e) {
+                            // Fallback: initialize offset cache if missing
+                            OffsetProviderContext context = new OffsetProviderContext(
+                                player,
+                                player.getWorld(),
+                                player.getLocation(),
+                                OffsetProviderContext.ProvideReason.JOIN,
+                                coPlugin
+                            );
+                            coPlugin.getPlayerManager().regenerateOffset(context);
+                            coPlugin.getPlayerManager().setPositionedWorld(player, player.getWorld());
+                            offset = coPlugin.getPlayerManager().getOffset(player);
+                            logger.warning("[PacketOffsetAdapter] Offset cache was missing for player '" + player.getName() + "' during packet send (" + event.getPacketType().getName() + "). Initialized on the fly and positioned world set. This may indicate a race condition or Folia timing issue.");
+                        }
+                    }
+
+                    if (offset == null) {
+                        String playerName = null;
+                        if (event.getPlayer() instanceof org.bukkit.entity.Player p) {
+                            playerName = p.getName();
+                        } else if (event.getUser() != null) {
+                            playerName = event.getUser().getUUID().toString();
+                        }
+                        logger.warning("[PacketOffsetAdapter] Offset is still null for player '" + playerName + "' during packet send (" + event.getPacketType().getName() + "). Skipping packet offset.");
+                        return;
+                    }
+                    if (offset.equals(Offset.ZERO)) return;
+
+                    if (PACKETS_WORLD_BORDER.contains(event.getPacketType())) {
+                        coPlugin.getWorldBorderObfuscator().translate(event, event.getPlayer());
+                        return;
+                    }
+
+                    OffsetterRegistry.attemptToOffset(event, offset);
+                } catch (Exception e) {
+                    PartialStacktraceLogger.logStacktrace(logger, "Failed to apply offset for outgoing packet " +
+                            event.getPacketType().getName() + " to " + event.getUser().getName(), e);
+                    if (coPlugin.isDebugEnabled()) {
+                        logger.warning("Packet history for above stacktrace: " + packetHistory.getHistory(event.getUser()));
                     }
                 }
-
-                Offset offset;
-                if (event.getPacketType() == PacketType.Play.Server.JOIN_GAME
-                        || event.getPacketType() == PacketType.Play.Server.RESPAWN) {
-                    /*
-                     * Join packets happen before the Player object exists.
-                     * Respawn packets need to apply a new world's offsets ahead of actually moving the player to that
-                     * new world.
-                     * See `docs/OffsetChangeHandling.md`
-                     */
-                    offset = coPlugin.getPlayerManager().getOffsetLookahead(event.getUser().getUUID());
-                } else {
-                    if (event.getPlayer() == null) return;
-
-                    offset = coPlugin.getPlayerManager().getOffset(event.getPlayer());
+            };
+            if (CoordinateOffset.isFoliaPresent && event.getPlayer() != null) {
+                // Schedule on region thread using reflection
+                try {
+                    Object scheduler = event.getPlayer().getClass().getMethod("getScheduler").invoke(event.getPlayer());
+                    scheduler.getClass().getMethod("run", org.bukkit.plugin.Plugin.class, java.util.function.Consumer.class, Runnable.class)
+                            .invoke(scheduler, coPlugin, (java.util.function.Consumer<Object>) t -> logic.run(), null);
+                } catch (Exception e) {
+                    logger.severe("Failed to schedule packet send logic on Folia Player RegionScheduler: " + e.getMessage());
                 }
-
-                // Short-circuit when no offset is applied
-                if (offset.equals(Offset.ZERO)) return;
-
-                // World border packets must only be manipulated by the World Border Obfuscator
-                //noinspection SuspiciousMethodCalls
-                if (PACKETS_WORLD_BORDER.contains(event.getPacketType())) {
-                    coPlugin.getWorldBorderObfuscator().translate(event, event.getPlayer());
-                    return;
-                }
-
-                OffsetterRegistry.attemptToOffset(event, offset);
-            } catch (Exception e) {
-                PartialStacktraceLogger.logStacktrace(logger, "Failed to apply offset for outgoing packet " +
-                        event.getPacketType().getName() + " to " + event.getUser().getName(), e);
-                if (coPlugin.isDebugEnabled()) {
-                    logger.warning("Packet history for above stacktrace: " + packetHistory.getHistory(event.getUser()));
-                }
+            } else {
+                logic.run();
             }
         }
 
@@ -100,20 +130,59 @@ class PacketOffsetAdapter {
                 packetHistory.logPacket(event.getUser(), event.getPacketType());
             }
 
-            try {
-                Player player = event.getPlayer();
-                if (player == null) return;
+            Runnable logic = () -> {
+                try {
+                    Player player = event.getPlayer();
+                    if (player == null) return;
 
-                Offset offset = coPlugin.getPlayerManager().getOffset(player, player.getWorld());
-                if (offset.equals(Offset.ZERO)) return;
+                    Offset offset;
+                    try {
+                        offset = coPlugin.getPlayerManager().getOffset(player, player.getWorld());
+                    } catch (Exception e) {
+                        // Fallback: initialize offset cache if missing
+                        OffsetProviderContext context = new OffsetProviderContext(
+                            player,
+                            player.getWorld(),
+                            player.getLocation(),
+                            OffsetProviderContext.ProvideReason.JOIN,
+                            coPlugin
+                        );
+                        coPlugin.getPlayerManager().regenerateOffset(context);
+                        coPlugin.getPlayerManager().setPositionedWorld(player, player.getWorld());
+                        offset = coPlugin.getPlayerManager().getOffset(player, player.getWorld());
+                        logger.warning("[PacketOffsetAdapter] Offset cache was missing for player '" + player.getName() + "' during packet receive (" + event.getPacketType().getName() + "). Initialized on the fly and positioned world set. This may indicate a race condition or Folia timing issue.");
+                    }
+                    if (offset == null) {
+                        String playerName = null;
+                        if (event.getPlayer() instanceof org.bukkit.entity.Player p) {
+                            playerName = p.getName();
+                        } else if (event.getUser() != null) {
+                            playerName = event.getUser().getUUID().toString();
+                        }
+                        logger.warning("[PacketOffsetAdapter] Offset is still null for player '" + playerName + "' during packet receive (" + event.getPacketType().getName() + "). Skipping packet un-offset.");
+                        return;
+                    }
+                    if (offset.equals(Offset.ZERO)) return;
 
-                OffsetterRegistry.attemptToUnOffset(event, offset);
-            } catch (Exception e) {
-                PartialStacktraceLogger.logStacktrace(logger, "Failed to reverse offset for incoming packet " +
-                        event.getPacketType().getName() + " from " + event.getUser().getName(), e);
-                if (coPlugin.isDebugEnabled()) {
-                    logger.warning("Packet history for above stacktrace: " + packetHistory.getHistory(event.getUser()));
+                    OffsetterRegistry.attemptToUnOffset(event, offset);
+                } catch (Exception e) {
+                    PartialStacktraceLogger.logStacktrace(logger, "Failed to reverse offset for incoming packet " +
+                            event.getPacketType().getName() + " from " + event.getUser().getName(), e);
+                    if (coPlugin.isDebugEnabled()) {
+                        logger.warning("Packet history for above stacktrace: " + packetHistory.getHistory(event.getUser()));
+                    }
                 }
+            };
+            if (CoordinateOffset.isFoliaPresent && event.getPlayer() != null) {
+                try {
+                    Object scheduler = event.getPlayer().getClass().getMethod("getScheduler").invoke(event.getPlayer());
+                    scheduler.getClass().getMethod("run", org.bukkit.plugin.Plugin.class, java.util.function.Consumer.class, Runnable.class)
+                            .invoke(scheduler, coPlugin, (java.util.function.Consumer<Object>) t -> logic.run(), null);
+                } catch (Exception e) {
+                    logger.severe("Failed to schedule packet receive logic on Folia Player RegionScheduler: " + e.getMessage());
+                }
+            } else {
+                logic.run();
             }
         }
 
